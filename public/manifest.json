@@ -1,0 +1,25 @@
+{
+  "name": "Profitora",
+  "short_name": "Profitora",
+  "description": "KI-gestützte Wirtschaftlichkeitsanalyse für Ihr Unternehmen",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0D1630",
+  "theme_color": "#0D1630",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"]
+}

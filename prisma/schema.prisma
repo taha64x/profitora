@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Nutzer ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships OrganizationMember[]
+  uploads     Upload[]
+  reports     AnalysisReport[]
+}
+
+// ─── Organisation / Unternehmen ───────────────────────────────────────────────
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  businessType String   @default("other")   // z.B. "hotel", "restaurant", "retail", "medical", etc.
+  unitCount    Int?     @map("roomCount")    // Zimmer / Sitzplätze / Behandlungsräume / etc.
+  unitLabel    String?                       // "Zimmer", "Sitzplätze", "Behandlungsplätze", etc.
+  city         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  members        OrganizationMember[]
+  uploads        Upload[]
+  reports        AnalysisReport[]
+  expenses       Expense[]
+  revenues       Revenue[]
+  subscription   Subscription?
+  settings       Settings?
+  monthlyTargets MonthlyTarget[]
+}
+
+model OrganizationMember {
+  id             String     @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MemberRole @default(MEMBER)
+  createdAt      DateTime   @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ─── Datei-Uploads ────────────────────────────────────────────────────────────
+
+model Upload {
+  id             String         @id @default(cuid())
+  filename       String
+  originalName   String
+  category       UploadCategory
+  mimeType       String
+  fileSize       Int
+  storagePath    String
+  organizationId String
+  uploadedById   String
+  columnMapping  Json?
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  createdAt      DateTime       @default(now())
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploadedBy   User           @relation(fields: [uploadedById], references: [id])
+  reportItems  ReportUpload[]
+}
+
+enum UploadCategory {
+  EMPLOYEE_HOURS
+  REVENUE
+  EXPENSES
+  BOOKINGS
+  ROOM_CATEGORIES
+  OTHER
+}
+
+// ─── Analyseberichte ──────────────────────────────────────────────────────────
+
+model AnalysisReport {
+  id             String         @id @default(cuid())
+  title          String
+  organizationId String
+  createdById    String
+  status         AnalysisStatus @default(PENDING)
+  htmlContent    String?        @db.Text
+  metadata       Json?
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User           @relation(fields: [createdById], references: [id])
+  uploads      ReportUpload[]
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model ReportUpload {
+  reportId String
+  uploadId String
+
+  report AnalysisReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  upload Upload         @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, uploadId])
+}
+
+// ─── Ausgaben ────────────────────────────────────────────────────────────────
+
+model Expense {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  createdById         String
+  date                DateTime
+  category            String
+  description         String
+  amount              Float
+  currency            String   @default("EUR")
+  paymentMethod       String?
+  vendor              String?
+  isRecurring         Boolean  @default(false)
+  recurrenceInterval  String?  // monthly | quarterly | yearly
+  fileId              String?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Einnahmen ────────────────────────────────────────────────────────────────
+
+model Revenue {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  createdById         String
+  date                DateTime
+  category            String
+  description         String
+  amount              Float
+  currency            String   @default("EUR")
+  customerOrSource    String?
+  paymentStatus       String   @default("paid") // paid | open | cancelled
+  isRecurring         Boolean  @default(false)
+  recurrenceInterval  String?
+  fileId              String?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Abonnement ───────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                     String    @id @default(cuid())
+  organizationId         String    @unique
+  planName               String    @default("free") // free | schnellcheck | standard | tiefenanalyse | komplett
+  status                 String    @default("active") // active | cancelled | past_due | trialing
+  monthlyAnalysisLimit   Int       @default(1)
+  usedAnalysesThisMonth  Int       @default(0)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Einstellungen ────────────────────────────────────────────────────────────
+
+model Settings {
+  id                     String   @id @default(cuid())
+  organizationId         String   @unique
+  language               String   @default("de")
+  currency               String   @default("EUR")
+  emailNotifications     Boolean  @default(true)
+  monthlyReminder        Boolean  @default(true)
+  defaultAnalysisPeriod  String   @default("last_month") // last_month | last_quarter | last_year | custom
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Monatliche Ziele (Profitabilitäts-Tracking) ─────────────────────────────
+
+model MonthlyTarget {
+  id             String   @id @default(cuid())
+  organizationId String
+  year           Int
+  month          Int      // 1–12
+  revenueTarget  Float?
+  expenseTarget  Float?
+  note           String?
+  sourceReportId String?  // aus welchem Analysebericht abgeleitet
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, year, month])
+}
+
+// ─── Analyseanfragen (neues Universal-Modell) ─────────────────────────────────
+
+model AnalysisRequest {
+  id                  String   @id @default(cuid())
+  companyName         String?
+  industry            String?
+  analysisTypes       String[] // ["kosten", "mitarbeiter", "buchhaltung", "prozess", "branche", "komplett"]
+  accuracyLevel       String   @default("standard") // schnellcheck | standard | tiefenanalyse | komplett
+  inputMethod         String   @default("questionnaire") // upload | questionnaire | hybrid
+  goals               String[] // ["kosten_senken", "gewinn_steigern", ...]
+  questionnaireData   Json?    // alle Fragebogen-Antworten strukturiert
+  uploadedFiles       String[] // Dateipfade
+  consentConfirmed    Boolean  @default(false)
+  privacyConfirmed    Boolean  @default(false)
+  uploadAuthConfirmed Boolean  @default(false)
+  status              String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED
+  reportContent       String?  @db.Text
+  organizationId      String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
