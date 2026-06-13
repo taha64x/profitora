@@ -15,6 +15,7 @@ sofern gesetzt – verhindert öffentlichen Missbrauch der Funktion.
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import sys
@@ -71,9 +72,17 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_POST(self) -> None:  # noqa: N802 – von BaseHTTPRequestHandler vorgegeben
-        # Optionaler interner Token-Schutz
+        # Fail-closed: Token ist Pflicht. Ohne konfigurierten Token verweigert die
+        # Funktion jede Anfrage (sonst wäre der Endpunkt öffentlich missbrauchbar).
         expected = os.environ.get("PY_INTERNAL_TOKEN")
-        if expected and self.headers.get("x-internal-token") != expected:
+        if not expected:
+            self._send(
+                503,
+                {"success": False, "error": "Server nicht konfiguriert (PY_INTERNAL_TOKEN fehlt)."},
+            )
+            return
+        provided = self.headers.get("x-internal-token") or ""
+        if not hmac.compare_digest(provided, expected):
             self._send(401, {"success": False, "error": "Nicht autorisiert."})
             return
 

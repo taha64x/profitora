@@ -21,6 +21,11 @@ import json
 import sys
 import os
 import argparse
+import ipaddress
+import socket
+import urllib.request
+from io import BytesIO
+from urllib.parse import urlparse
 from datetime import datetime
 from typing import Optional, Any
 
@@ -96,24 +101,91 @@ def resolve_column(
     return find_column(df, candidates)
 
 
-def read_file(path: str) -> Optional[pd.DataFrame]:
-    """Liest CSV oder Excel ein – von lokalem Pfad ODER http(s)-URL (Vercel Blob)."""
-    is_url = path.lower().startswith(("http://", "https://"))
-    if not is_url and not os.path.exists(path):
-        print(f"[WARN] Datei nicht gefunden: {path}", file=sys.stderr)
+# Erlaubter Host-Suffix für Remote-Downloads (Vercel Blob). Über env überschreibbar.
+_ALLOWED_HOST_SUFFIX = os.environ.get(
+    "BLOB_ALLOWED_HOST_SUFFIX", ".public.blob.vercel-storage.com"
+).lower()
+# Basis-Verzeichnis für lokale Dateien (nur lokale Entwicklung).
+_ALLOWED_LOCAL_DIR = os.path.realpath(
+    os.environ.get("UPLOAD_DIR")
+    or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
+)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Unterbindet Redirects – verhindert SSRF-Umleitung auf interne Hosts."""
+
+    def redirect_request(self, *args, **kwargs):  # noqa: D401, ANN002, ANN003
         return None
+
+
+def _validate_remote_url(url: str) -> Optional[str]:
+    """Prüft eine Remote-URL gegen SSRF. Gibt Fehlergrund zurück oder None (=ok)."""
+    parsed = urlparse(url)
+    if parsed.scheme != "https":
+        return "nur https erlaubt"
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if not host:
+        return "kein Host"
+    allowed = _ALLOWED_HOST_SUFFIX.lstrip(".")
+    if not (host == allowed or host.endswith("." + allowed)):
+        return f"Host nicht erlaubt: {host}"
+    # DNS auflösen und nicht-öffentliche Adressen ablehnen
+    try:
+        infos = socket.getaddrinfo(host, parsed.port or 443, proto=socket.IPPROTO_TCP)
+    except socket.gaierror as exc:
+        return f"DNS fehlgeschlagen: {exc}"
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return "ungültige IP"
+        if (
+            ip.is_private or ip.is_loopback or ip.is_link_local
+            or ip.is_reserved or ip.is_multicast or ip.is_unspecified
+        ):
+            return f"nicht-öffentliche IP blockiert: {ip}"
+    return None
+
+
+def _validate_local_path(path: str) -> Optional[str]:
+    """Stellt sicher, dass ein lokaler Pfad innerhalb des Upload-Verzeichnisses liegt."""
+    real = os.path.realpath(path)
+    base = _ALLOWED_LOCAL_DIR
+    if real != base and not real.startswith(base + os.sep):
+        return f"Pfad außerhalb des Upload-Verzeichnisses: {real}"
+    if not os.path.exists(real):
+        return "Datei nicht gefunden"
+    return None
+
+
+def read_file(path: str) -> Optional[pd.DataFrame]:
+    """Liest CSV oder Excel ein – von lokalem Pfad ODER http(s)-URL (Vercel Blob).
+
+    SSRF/LFI-abgesichert: Remote-URLs nur vom erlaubten Blob-Host (https, keine
+    privaten IPs, keine Redirects); lokale Pfade nur aus dem Upload-Verzeichnis.
+    """
+    is_url = path.lower().startswith(("http://", "https://"))
 
     # Bei URLs einmal in den Speicher laden, damit mehrere Encoding-Versuche
     # nicht zu mehreren Downloads führen.
     source: Any = path
     if is_url:
+        reason = _validate_remote_url(path)
+        if reason:
+            print(f"[WARN] URL abgelehnt ({reason}): {path}", file=sys.stderr)
+            return None
         try:
-            import urllib.request
-            from io import BytesIO
-            with urllib.request.urlopen(path, timeout=30) as resp:
+            opener = urllib.request.build_opener(_NoRedirect())
+            with opener.open(path, timeout=30) as resp:
                 source = BytesIO(resp.read())
         except Exception as e:
             print(f"[WARN] Download fehlgeschlagen {path}: {e}", file=sys.stderr)
+            return None
+    else:
+        reason = _validate_local_path(path)
+        if reason:
+            print(f"[WARN] Lokaler Pfad abgelehnt ({reason}): {path}", file=sys.stderr)
             return None
 
     # Dateityp anhand der Endung (URL-Querystrings ignorieren)
