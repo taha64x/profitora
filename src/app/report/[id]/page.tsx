@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import PdfDownloadButton from '@/components/report/PdfDownloadButton'
+import { IconXCircle } from '@/components/ui/icons'
 
 interface PageProps {
   params: { id: string }
@@ -95,7 +96,9 @@ export default async function ReportPage({ params }: PageProps) {
           </div>
         ) : report.status === 'FAILED' ? (
           <div className="card p-12 text-center">
-            <div className="text-5xl mb-4">❌</div>
+            <div className="flex justify-center mb-4 text-red-400">
+              <IconXCircle className="w-14 h-14" />
+            </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Analyse fehlgeschlagen</h2>
             <p className="text-gray-500 text-sm mb-6">
               Bei der Analyse ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihre hochgeladenen

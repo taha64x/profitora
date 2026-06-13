@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconAlertTriangle } from '@/components/ui/icons'
 
 // Realistische Dummy-Daten: Boardinghotel Heidelberg, Mai 2025, 20 Zimmer
 const EXAMPLE = {
@@ -407,7 +408,7 @@ export default function ExampleReportPage() {
         {/* ─── 10. Disclaimer ───────────────────────────────────────────── */}
         <section className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
           <h2 className="text-base font-bold text-amber-900 mb-4 flex items-center gap-2">
-            <span>⚠️</span> 10. Rechtliche Abgrenzung und Warnhinweise
+            <IconAlertTriangle className="w-5 h-5" /> 10. Rechtliche Abgrenzung und Warnhinweise
           </h2>
           <div className="text-sm text-amber-800 space-y-3 leading-relaxed">
             <p>

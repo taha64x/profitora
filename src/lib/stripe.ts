@@ -17,20 +17,25 @@ export const STRIPE_PLANS: Record<string, {
   priceId: string
   limit: number
   label: string
+  /** 'subscription' für Abos, 'payment' für Einmalkauf */
+  mode: 'subscription' | 'payment'
 }> = {
-  standard: {
-    priceId: process.env.STRIPE_PRICE_STANDARD ?? '',
+  starter: {
+    priceId: process.env.STRIPE_PRICE_STARTER ?? '',
     limit: 5,
-    label: 'Standard',
+    label: 'Starter',
+    mode: 'subscription',
   },
-  tiefenanalyse: {
-    priceId: process.env.STRIPE_PRICE_TIEFENANALYSE ?? '',
-    limit: 15,
-    label: 'Tiefenanalyse',
-  },
-  komplett: {
-    priceId: process.env.STRIPE_PRICE_KOMPLETT ?? '',
+  business: {
+    priceId: process.env.STRIPE_PRICE_BUSINESS ?? '',
     limit: 9999,
-    label: 'Komplett',
+    label: 'Business',
+    mode: 'subscription',
+  },
+  single: {
+    priceId: process.env.STRIPE_PRICE_SINGLE ?? '',
+    limit: 1,
+    label: 'Einzel-Analyse',
+    mode: 'payment',
   },
 }

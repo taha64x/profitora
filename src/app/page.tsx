@@ -10,127 +10,25 @@ import DashboardPreviewSection from '@/components/landing/DashboardPreviewSectio
 import ZoomStorySection from '@/components/landing/ZoomStorySection'
 import FinanceFlowSection from '@/components/landing/FinanceFlowSection'
 import HeroSection from '@/components/landing/HeroSection'
+import ProfitChartSection from '@/components/landing/ProfitChartSection'
 
-// ─── SVG Icons (kein Emoji) ──────────────────────────────────────────────────
-
-function IconBuilding() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
-    </svg>
-  )
-}
-function IconUtensils() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
-    </svg>
-  )
-}
-function IconCoffee() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M17 8h1a4 4 0 010 8h-1M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8zM6 2v3M10 2v3M14 2v3"/>
-    </svg>
-  )
-}
-function IconBag() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
-    </svg>
-  )
-}
-function IconHeart() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-    </svg>
-  )
-}
-function IconWrench() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
-    </svg>
-  )
-}
-function IconZap() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-    </svg>
-  )
-}
-function IconSparkle() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.41 1.41M16.95 16.95l1.41 1.41M5.64 18.36l1.41-1.41M16.95 7.05l1.41-1.41"/>
-      <circle cx="12" cy="12" r="4"/>
-    </svg>
-  )
-}
-function IconBriefcase() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
-    </svg>
-  )
-}
-function IconGrid() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-      <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-    </svg>
-  )
-}
+import {
+  IconBuilding, IconUtensils, IconCoffee, IconBag, IconHeartPulse,
+  IconWrench, IconDumbbell, IconScissors, IconBriefcase, IconGrid,
+  IconChartBar, IconCpu, IconTrendingUp,
+} from '@/components/ui/icons'
 
 const INDUSTRIES = [
   { label: 'Hotel & Boarding', sub: 'ADR, RevPAR, Auslastung',          Icon: IconBuilding  },
   { label: 'Restaurant',       sub: 'Food Cost, Prime Cost, Gedecke',    Icon: IconUtensils  },
   { label: 'Café & Bäckerei',  sub: 'Rohstoffkosten, Transaktionen',     Icon: IconCoffee    },
   { label: 'Einzelhandel',     sub: 'Wareneinsatz, Rohertragsmarge',     Icon: IconBag       },
-  { label: 'Arztpraxis',       sub: 'Stundenumsatz, Auslastung',         Icon: IconHeart     },
+  { label: 'Arztpraxis',       sub: 'Stundenumsatz, Auslastung',         Icon: IconHeartPulse },
   { label: 'Handwerk',         sub: 'Materialquote, Auslastungsgrad',    Icon: IconWrench    },
-  { label: 'Fitness & Wellness', sub: 'Mitglieder, Kapazität',           Icon: IconZap       },
-  { label: 'Beauty & Kosmetik', sub: 'Behandlungen, Produktkosten',      Icon: IconSparkle   },
+  { label: 'Fitness & Wellness', sub: 'Mitglieder, Kapazität',           Icon: IconDumbbell  },
+  { label: 'Beauty & Kosmetik', sub: 'Behandlungen, Produktkosten',      Icon: IconScissors  },
   { label: 'Beratung & Agentur', sub: 'Billable Hours, Nettomarge',      Icon: IconBriefcase },
   { label: 'Andere Betriebe',  sub: 'Universelle Analyse',               Icon: IconGrid      },
-]
-
-const FEATURES = [
-  {
-    size: 'col-span-2 row-span-1',
-    title: 'KI-Analyse in unter 5 Minuten',
-    desc: 'CSV oder Excel hochladen – die KI erkennt Struktur und Spalten automatisch. Keine manuelle Zuordnung nötig. Kein Excel-Chaos.',
-    tag: 'Kern-Feature',
-  },
-  {
-    size: 'col-span-1 row-span-1',
-    title: 'Keine erfundenen Zahlen',
-    desc: 'Jede Aussage basiert auf Ihren echten Betriebsdaten. Fehlende Daten werden klar kommuniziert – nie geschätzt.',
-    tag: 'Transparenz',
-  },
-  {
-    size: 'col-span-1 row-span-1',
-    title: 'WPO / IDW Methodik',
-    desc: 'Orientiert an betriebswirtschaftlichen Prüfungsstandards. Professionelle Tiefe ohne Wirtschaftsprüfer-Rechnung.',
-    tag: 'Methodik',
-  },
-  {
-    size: 'col-span-1 row-span-1',
-    title: 'Sparpotenziale in EUR',
-    desc: 'Konkrete Zahlen: Nicht „Personal optimieren", sondern „~2.400 EUR/Monat Einsparpotenzial bei Personaleinsatz".',
-    tag: 'Klarheit',
-  },
-  {
-    size: 'col-span-1 row-span-1',
-    title: 'DSGVO-konform',
-    desc: 'Mitarbeiterdaten werden anonymisiert verarbeitet. Keine personenbezogenen Daten in KI-Prompts.',
-    tag: 'Datenschutz',
-  },
 ]
 
 const KPIS = [
@@ -162,7 +60,7 @@ const STEPS = [
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#06091A] text-white overflow-x-hidden">
+    <main className="min-h-screen bg-[#06091A] text-white overflow-x-clip">
       <StickyHeader />
       <HeroSection />
 
@@ -170,10 +68,10 @@ export default function LandingPage() {
       <section className="border-y border-white/6 bg-white/[0.02] py-12 px-6">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { target: 500,  prefix: '',  suffix: '+', label: 'Betriebe analysiert'    },
-            { target: 2800000, prefix: '€', suffix: '', label: 'identifizierte Sparpotenziale' },
-            { target: 10,   prefix: '',  suffix: '',  label: 'unterstützte Branchen'  },
-            { target: 5,    prefix: '<', suffix: ' Min', label: 'bis zum Bericht'     },
+            { target: 10,  prefix: '',  suffix: '',  label: 'unterstützte Branchen'   },
+            { target: 15,  prefix: '',  suffix: '+', label: 'berechnete Kennzahlen'   },
+            { target: 10,  prefix: '',  suffix: '',  label: 'Abschnitte je Bericht'   },
+            { target: 5,   prefix: '<', suffix: ' Min', label: 'bis zum Bericht'      },
           ].map((s, i) => (
             <div key={i}>
               <div className="text-3xl md:text-4xl font-bold text-white tracking-tight">
@@ -211,7 +109,7 @@ export default function LandingPage() {
               <ScrollReveal key={ind.label} delay={((i % 5) + 1) as 1 | 2 | 3 | 4 | 5}>
                 <Link
                   href="/register"
-                  className="group flex flex-col gap-3 p-5 rounded-2xl border border-gray-100 hover:border-hotel-navy/25 hover:bg-hotel-navy/3 transition-all duration-200 h-full"
+                  className="card-lift group flex flex-col gap-3 p-5 rounded-2xl border border-gray-100 hover:border-hotel-navy/25 hover:bg-hotel-navy/3 h-full"
                 >
                   <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-hotel-navy/10 flex items-center justify-center text-hotel-navy transition-colors">
                     <ind.Icon />
@@ -248,7 +146,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {STEPS.map((step, i) => (
               <ScrollReveal key={step.num} delay={((i + 1) as 1 | 2 | 3)}>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                <div className="card-lift relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm h-full">
                   <div className="text-5xl font-black text-gray-100 leading-none mb-5 select-none">
                     {step.num}
                   </div>
@@ -271,6 +169,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── UMSATZ RAUF, KOSTEN RUNTER (Scroll-Animation) ──────────────────── */}
+      <ProfitChartSection />
 
       {/* ── FÜR WEN ────────────────────────────────────────────────────────── */}
       <ForWhomSection />
@@ -298,13 +199,15 @@ export default function LandingPage() {
           </ScrollReveal>
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { icon: '📊', title: 'Monatliches Finanztracking', text: 'Kosten und Einnahmen strukturiert erfassen – nach Kategorie, Anbieter und Zeitraum.' },
-              { icon: '🤖', title: 'KI analysiert Ihre Daten', text: 'Auf Basis Ihrer gespeicherten Finanzdaten startet die KI-Analyse – präziser als mit Fragebögen allein.' },
-              { icon: '📈', title: 'Monatsvergleiche', text: 'Sehen Sie, wie sich Kosten und Einnahmen über Zeit entwickeln – und wo Handlungsbedarf besteht.' },
+              { Icon: IconChartBar, title: 'Monatliches Finanztracking', text: 'Kosten und Einnahmen strukturiert erfassen – nach Kategorie, Anbieter und Zeitraum.' },
+              { Icon: IconCpu, title: 'KI analysiert Ihre Daten', text: 'Auf Basis Ihrer gespeicherten Finanzdaten startet die KI-Analyse – präziser als mit Fragebögen allein.' },
+              { Icon: IconTrendingUp, title: 'Monatsvergleiche', text: 'Sehen Sie, wie sich Kosten und Einnahmen über Zeit entwickeln – und wo Handlungsbedarf besteht.' },
             ].map((item, i) => (
               <ScrollReveal key={item.title} delay={((i + 1) as 1 | 2 | 3)}>
                 <div className="bg-white/3 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-colors">
-                  <span className="text-2xl mb-4 block">{item.icon}</span>
+                  <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[#C9A84C] mb-4">
+                    <item.Icon className="w-[18px] h-[18px]" />
+                  </div>
                   <h3 className="font-bold text-white text-sm mb-2">{item.title}</h3>
                   <p className="text-white/40 text-xs leading-relaxed">{item.text}</p>
                 </div>
@@ -500,7 +403,12 @@ export default function LandingPage() {
 
       {/* ── CTA ────────────────────────────────────────────────────────────── */}
       <section className="bg-[#06091A] py-28 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 dot-grid opacity-40" />
+        {/* KI-generiertes Visual (Higgsfield) als atmosphärischer Hintergrund */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none"
+          style={{ backgroundImage: "url('/visuals/hero-data-flow.webp')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#06091A] via-[#06091A]/60 to-[#06091A] pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-au-gold/8 rounded-full blur-[100px] pointer-events-none" />
 
         <ScrollReveal className="relative z-10 max-w-2xl mx-auto text-center">
@@ -516,7 +424,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 bg-au-gold hover:bg-au-gold-light text-[#06091A] font-bold text-base px-10 py-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+              className="btn-shine inline-flex items-center gap-2 bg-au-gold hover:bg-au-gold-light text-[#06091A] font-bold text-base px-10 py-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
             >
               Analyse starten
               <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

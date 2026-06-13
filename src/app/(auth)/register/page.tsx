@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
+import { BusinessTypeIcon } from '@/components/ui/icons'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -119,7 +120,9 @@ export default function RegisterPage() {
                         : 'border-gray-200 bg-white hover:border-hotel-navy/40'
                     }`}
                   >
-                    <div className="text-xl mb-1">{bt.icon}</div>
+                    <div className={`mb-1.5 ${form.businessType === bt.value ? 'text-white' : 'text-hotel-navy'}`}>
+                      <BusinessTypeIcon type={bt.value} className="w-5 h-5" />
+                    </div>
                     <div className={`font-medium text-sm leading-tight ${form.businessType === bt.value ? 'text-white' : 'text-gray-800'}`}>
                       {bt.label}
                     </div>
@@ -160,8 +163,9 @@ export default function RegisterPage() {
                   ← Zurück
                 </button>
                 {selectedBusiness && (
-                  <span className="ml-auto text-sm bg-hotel-navy/10 text-hotel-navy px-3 py-1 rounded-full font-medium">
-                    {selectedBusiness.icon} {selectedBusiness.label}
+                  <span className="ml-auto inline-flex items-center gap-1.5 text-sm bg-hotel-navy/10 text-hotel-navy px-3 py-1 rounded-full font-medium">
+                    <BusinessTypeIcon type={selectedBusiness.value} className="w-4 h-4" />
+                    {selectedBusiness.label}
                   </span>
                 )}
               </div>

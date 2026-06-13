@@ -5,12 +5,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import CheckoutButton from '@/components/subscription/CheckoutButton'
 import PortalButton from '@/components/subscription/PortalButton'
+import { PLANS as PLAN_CONFIG } from '@/lib/plans'
 
 const PLANS = [
-  { key: 'free',          name: 'Free',          price: '0 €',      analyses: 1,   features: ['1 Analyse/Monat', 'Fragebogenbasiert', 'Schnellcheck', 'Basis-Bericht'] },
-  { key: 'standard',      name: 'Standard',      price: '49 €/Mo',  analyses: 5,   features: ['5 Analysen/Monat', 'Dokument-Upload', 'Alle Analysearten', 'Branchenvergleich', 'Kosten- & Einnahmentabelle'] },
-  { key: 'tiefenanalyse', name: 'Tiefenanalyse', price: '99 €/Mo',  analyses: 15,  features: ['15 Analysen/Monat', 'Tiefenanalyse', '30/60/90-Tage-Plan', 'Vollständige Finanzübersicht', 'Prioritätenplan'] },
-  { key: 'komplett',      name: 'Komplett',      price: '199 €/Mo', analyses: 999, features: ['Unbegrenzte Analysen', 'Alle Module', 'Persönlicher Review', 'API-Zugang (geplant)', 'Premium Support'] },
+  { key: 'free',     name: PLAN_CONFIG.free.name,     price: '0 €',                                           features: PLAN_CONFIG.free.features },
+  { key: 'starter',  name: PLAN_CONFIG.starter.name,  price: `${PLAN_CONFIG.starter.priceMonthly} €/Mo`,      features: PLAN_CONFIG.starter.features },
+  { key: 'business', name: PLAN_CONFIG.business.name, price: `${PLAN_CONFIG.business.priceMonthly} €/Mo`,     features: PLAN_CONFIG.business.features },
+  { key: 'single',   name: PLAN_CONFIG.single.name,   price: `${PLAN_CONFIG.single.priceOnce} € einmalig`,    features: PLAN_CONFIG.single.features },
 ]
 
 export default async function SubscriptionPage() {
@@ -78,7 +79,7 @@ export default async function SubscriptionPage() {
                 ) : (
                   <CheckoutButton
                     plan={plan.key}
-                    label={plan.key === 'free' ? 'Kostenlos' : `Upgrade auf ${plan.name}`}
+                    label={plan.key === 'free' ? 'Kostenlos' : plan.key === 'single' ? 'Einmalig kaufen' : `Upgrade auf ${plan.name}`}
                     disabled={plan.key === 'free'}
                   />
                 )}

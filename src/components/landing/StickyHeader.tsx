@@ -44,7 +44,7 @@ export default function StickyHeader() {
             <a
               key={item.href}
               href={item.href}
-              className="text-white/55 hover:text-white text-sm font-medium transition-colors duration-200"
+              className="nav-underline text-white/55 hover:text-white text-sm font-medium transition-colors duration-200"
             >
               {item.label}
             </a>
@@ -61,7 +61,7 @@ export default function StickyHeader() {
           </Link>
           <Link
             href="/analyze"
-            className="bg-au-gold hover:bg-au-gold-light text-[#06091A] text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
+            className="btn-shine bg-au-gold hover:bg-au-gold-light text-[#06091A] text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
           >
             Analyse starten
           </Link>

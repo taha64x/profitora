@@ -183,6 +183,23 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
               </OptionButton>
             ))}
           </div>
+
+          {/* Eigene Branche als Freitext */}
+          <div className="mt-5">
+            <p className="text-white/40 text-xs mb-2 uppercase tracking-wide font-medium">
+              Oder eigene Branche eingeben
+            </p>
+            <input
+              type="text"
+              placeholder='z.B. "Autowerkstatt", "Eventagentur", "Logistikunternehmen"…'
+              value={BUSINESS_TYPES.some((bt) => bt.value === config.industry) ? '' : config.industry}
+              onChange={(e) => setConfig((c) => ({ ...c, industry: e.target.value }))}
+              className="w-full bg-white/5 border border-white/10 focus:border-[#C9A84C]/60 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none transition-colors"
+            />
+            <p className="text-white/25 text-xs mt-2">
+              Die KI erstellt dann eine universelle Analyse, zugeschnitten auf Ihre Beschreibung.
+            </p>
+          </div>
         </div>
       )}
 

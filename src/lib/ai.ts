@@ -324,6 +324,7 @@ Tabelle mit Soll-Ist-Vergleich (null-Werte als "Keine Daten"):
 | Kennzahl | Wert | Richtwert | Bewertung |
 ${bc.kpiTableRows}
 Bewertungslegende: ✓ = im Normbereich, ⚠ = Optimierungspotenzial, ✗ = Handlungsbedarf
+Wichtig: Keine Emojis im gesamten Bericht verwenden – ausschließlich die Textsymbole ✓ ⚠ ✗ in Bewertungsspalten.
 </section>
 
 <section id="anomalies">
@@ -338,7 +339,7 @@ Titel: "7. Auffälligkeiten und Abweichungsprotokoll"
 Titel: "8. Top-Sparpotenziale"
 - Einleitung: "Basierend auf den geprüften Daten wurden folgende Sparpotenziale für das ${bc.name} identifiziert:"
 - Für jedes Potenzial (max. 5):
-  📌 [Titel]
+  <strong>[Titel]</strong> (als fette Überschrift, ohne Emoji)
   Begründung: "Die Analyse ergab [konkrete Kennzahl/Abweichung], daher..."
   Geschätzte Einsparung: ~X.XXX EUR/Monat (~Y.YYY EUR/Jahr)
   Priorität: HOCH / MITTEL / NIEDRIG
@@ -376,14 +377,14 @@ FORMATTING-REGELN (zwingend)
 
 // ─── Report-Generierung ───────────────────────────────────────────────────────
 
-export async function generateBusinessReport(data: AnalysisResult): Promise<string> {
+export async function generateBusinessReport(data: AnalysisResult, options?: { model?: string }): Promise<string> {
   const prompt = buildReportPrompt(data)
 
   if (AI_PROVIDER === 'anthropic') {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY nicht gesetzt')
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const message = await client.messages.create({
-      model: 'claude-opus-4-5',
+      model: options?.model ?? 'claude-opus-4-8',
       max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     })

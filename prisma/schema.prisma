@@ -186,6 +186,7 @@ model Subscription {
   status                 String    @default("active") // active | cancelled | past_due | trialing
   monthlyAnalysisLimit   Int       @default(1)
   usedAnalysesThisMonth  Int       @default(0)
+  assistantMsgsThisMonth Int       @default(0)
   stripeCustomerId       String?
   stripeSubscriptionId   String?
   currentPeriodStart     DateTime?

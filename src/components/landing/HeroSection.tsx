@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import GoldParticles from './GoldParticles'
 
 export default function HeroSection() {
   return (
@@ -10,10 +11,12 @@ export default function HeroSection() {
       <div className="absolute inset-0 dot-grid opacity-60" />
       <div className="absolute inset-0 hero-glow" />
       <motion.div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#C9A84C]/10 rounded-full blur-[120px] pointer-events-none"
-        animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#C9A84C]/10 rounded-full blur-[120px] pointer-events-none glow-drift"
+        animate={{ opacity: [0.6, 1, 0.6] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       />
+      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[260px] bg-[#1a2744]/40 rounded-full blur-[110px] pointer-events-none" />
+      <GoldParticles />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Badge */}
@@ -60,7 +63,7 @@ export default function HeroSection() {
         >
           <Link
             href="/analyze"
-            className="bg-[#C9A84C] hover:bg-[#d4b86a] text-[#06091A] font-bold text-base px-8 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-shine bg-[#C9A84C] hover:bg-[#d4b86a] text-[#06091A] font-bold text-base px-8 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             Analyse starten →
           </Link>
@@ -102,7 +105,7 @@ export default function HeroSection() {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"/>
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"/>
               </div>
-              <span className="text-white/20 text-xs font-mono">auditly.app/dashboard</span>
+              <span className="text-white/20 text-xs font-mono">profitora.de/dashboard</span>
               <div/>
             </div>
             {/* Stat cards */}

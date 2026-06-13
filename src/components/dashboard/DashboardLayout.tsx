@@ -116,6 +116,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SectionLabel label="KI-Analyse" collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/new-analysis" icon="M12 4v16m8-8H4"
             label="Neue Analyse" active={active('/dashboard/new-analysis')} special collapsed={collapsed && !mobile}/>
+          <NavLink href="/dashboard/assistant" icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+            label="KI-Assistent" active={active('/dashboard/assistant')} collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/analyses" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             label="Meine Analysen" active={active('/dashboard/analyses')} collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/files" icon="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"

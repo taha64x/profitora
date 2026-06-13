@@ -205,7 +205,12 @@ export default function SavingsCalculator() {
               <div className={`text-5xl md:text-6xl font-black tracking-tight mb-1 transition-all duration-300 ${
                 results.totalMonthly > 0 ? 'text-red-400' : 'text-green-400'
               }`}>
-                {results.totalMonthly > 0 ? formatEur(results.totalMonthly) : '✓'}
+                {results.totalMonthly > 0 ? formatEur(results.totalMonthly) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 inline-block">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M16 9l-5.5 6L8 12.5" />
+                  </svg>
+                )}
               </div>
               {results.totalMonthly > 0 && (
                 <p className="text-white/35 text-sm">pro Monat · {formatEur(results.totalAnnual)} pro Jahr</p>

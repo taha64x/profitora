@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import ColumnMapper from '@/components/upload/ColumnMapper'
+import { IconChartBar, IconFolder, IconFileText } from '@/components/ui/icons'
 
 function ColumnMappingContent() {
   const searchParams = useSearchParams()
@@ -18,9 +19,9 @@ function ColumnMappingContent() {
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
           {[
-            { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-            { href: '/upload', label: 'Dateien hochladen', icon: '📁', active: true },
-            { href: '/report', label: 'Berichte', icon: '📄' },
+            { href: '/dashboard', label: 'Dashboard', Icon: IconChartBar },
+            { href: '/upload', label: 'Dateien hochladen', Icon: IconFolder, active: true },
+            { href: '/report', label: 'Berichte', Icon: IconFileText },
           ].map((item) => (
             <Link
               key={item.href}
@@ -31,7 +32,7 @@ function ColumnMappingContent() {
                   : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
-              <span>{item.icon}</span>
+              <item.Icon className="w-4 h-4" />
               {item.label}
             </Link>
           ))}

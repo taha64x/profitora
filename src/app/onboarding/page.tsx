@@ -3,20 +3,21 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { BusinessTypeIcon } from '@/components/ui/icons'
 
 const BUSINESS_TYPES = [
-  { value: 'restaurant', label: 'Restaurant / Gastronomie', icon: '🍽️' },
-  { value: 'hotel', label: 'Hotel / Unterkunft', icon: '🏨' },
-  { value: 'retail', label: 'Einzelhandel', icon: '🛍️' },
-  { value: 'ecommerce', label: 'E-Commerce / Online-Shop', icon: '🌐' },
-  { value: 'consulting', label: 'Agentur / Beratung', icon: '💼' },
-  { value: 'craft', label: 'Handwerk / Baugewerbe', icon: '🔧' },
-  { value: 'medical', label: 'Gesundheit / Medizin', icon: '🏥' },
-  { value: 'fitness', label: 'Fitness / Wellness', icon: '💪' },
-  { value: 'beauty', label: 'Beauty / Kosmetik', icon: '✂️' },
-  { value: 'it', label: 'IT / Software', icon: '💻' },
-  { value: 'education', label: 'Bildung / Coaching', icon: '📚' },
-  { value: 'other', label: 'Sonstiges', icon: '🏢' },
+  { value: 'restaurant', label: 'Restaurant / Gastronomie' },
+  { value: 'hotel', label: 'Hotel / Unterkunft' },
+  { value: 'retail', label: 'Einzelhandel' },
+  { value: 'ecommerce', label: 'E-Commerce / Online-Shop' },
+  { value: 'consulting', label: 'Agentur / Beratung' },
+  { value: 'craft', label: 'Handwerk / Baugewerbe' },
+  { value: 'medical', label: 'Gesundheit / Medizin' },
+  { value: 'fitness', label: 'Fitness / Wellness' },
+  { value: 'beauty', label: 'Beauty / Kosmetik' },
+  { value: 'it', label: 'IT / Software' },
+  { value: 'education', label: 'Bildung / Coaching' },
+  { value: 'other', label: 'Sonstiges' },
 ]
 
 const GOALS = [
@@ -124,7 +125,9 @@ export default function OnboardingPage() {
                     onClick={() => set('businessType', bt.value)}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${data.businessType === bt.value ? 'border-[#0D1630] bg-[#EFF1F7]' : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    <span className="text-2xl">{bt.icon}</span>
+                    <span className={data.businessType === bt.value ? 'text-[#0D1630]' : 'text-gray-400'}>
+                      <BusinessTypeIcon type={bt.value} className="w-6 h-6" />
+                    </span>
                     <span className="text-xs font-medium text-gray-700 leading-tight">{bt.label}</span>
                   </button>
                 ))}

@@ -44,6 +44,28 @@ export default function AnalyzePage({ searchParams }: PageProps) {
           </p>
         </div>
 
+        {/* Freie Analyse – ohne Konfiguration direkt loslegen */}
+        <Link
+          href="/analyze/upload?industry=other&types=komplett&method=upload&level=standard&goals=alles_pruefen&free=1"
+          className="group flex items-center justify-between gap-4 bg-au-gold/8 border border-au-gold/25 hover:border-au-gold/50 rounded-2xl p-6 mb-8 transition-all"
+        >
+          <div>
+            <p className="font-bold text-white text-base mb-1 flex items-center gap-2">
+              Freie Analyse – einfach Dokumente hochladen
+              <span className="text-[10px] font-semibold uppercase tracking-wide bg-au-gold text-[#06091A] px-2 py-0.5 rounded-full">
+                Ohne Konfiguration
+              </span>
+            </p>
+            <p className="text-white/45 text-sm leading-relaxed">
+              Nichts einstellen: Laden Sie beliebige Unterlagen hoch (CSV, Excel, Rechnungen, Auswertungen) –
+              die KI erkennt Branche und Struktur automatisch und erstellt eine Komplett-Analyse.
+            </p>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </Link>
+
         {/* Configurator */}
         <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-8">
           <AnalysisConfigurator defaultLevel={searchParams.level} />

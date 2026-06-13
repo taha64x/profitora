@@ -65,7 +65,6 @@ export function getUploadCategoryLabels(businessType: string): Record<UploadCate
 export interface BusinessTypeConfig {
   value: string
   label: string
-  icon: string
   unitLabel: string
   unitHint: string
   description: string
@@ -75,7 +74,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'hotel',
     label: 'Hotel / Boardinghaus / Pension',
-    icon: '🏨',
     unitLabel: 'Zimmeranzahl',
     unitHint: 'z.B. 20',
     description: 'Hotels, Boardinghäuser, Pensionen, Ferienwohnungen',
@@ -83,7 +81,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'restaurant',
     label: 'Restaurant / Gastronomie',
-    icon: '🍽️',
     unitLabel: 'Sitzplätze',
     unitHint: 'z.B. 60',
     description: 'Restaurants, Gaststätten, Kantinen, Bistros',
@@ -91,7 +88,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'cafe_bakery',
     label: 'Café / Bäckerei',
-    icon: '☕',
     unitLabel: 'Sitzplätze / Plätze',
     unitHint: 'z.B. 30 (optional)',
     description: 'Cafés, Bäckereien, Konditoreien, Imbisse',
@@ -99,7 +95,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'retail',
     label: 'Einzelhandel / Ladengeschäft',
-    icon: '🛍️',
     unitLabel: 'Verkaufsfläche (m²)',
     unitHint: 'z.B. 200',
     description: 'Einzelhandel, Ladengeschäfte, Onlineshops, Kioske',
@@ -107,7 +102,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'medical',
     label: 'Arztpraxis / Therapeut / Praxis',
-    icon: '🏥',
     unitLabel: 'Behandlungsräume',
     unitHint: 'z.B. 3',
     description: 'Arztpraxen, Physiotherapeuten, Psychologen, Zahnarzt',
@@ -115,7 +109,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'craft',
     label: 'Handwerk / Dienstleister',
-    icon: '🔧',
     unitLabel: 'Mitarbeiter (Anzahl)',
     unitHint: 'z.B. 5 (optional)',
     description: 'Handwerksbetriebe, Dienstleister, Installateure, Maler',
@@ -123,7 +116,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'fitness',
     label: 'Fitnessstudio / Wellness',
-    icon: '💪',
     unitLabel: 'Kapazität (Plätze / Mitglieder)',
     unitHint: 'z.B. 200 (optional)',
     description: 'Fitnessstudios, Wellnesszentren, Yogastudios, Schwimmbäder',
@@ -131,7 +123,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'beauty',
     label: 'Kosmetik / Beauty-Salon',
-    icon: '💆',
     unitLabel: 'Behandlungsplätze',
     unitHint: 'z.B. 4',
     description: 'Friseursalons, Kosmetikstudios, Nagelstudios, Massagepraxen',
@@ -139,7 +130,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'consulting',
     label: 'Beratung / Agentur',
-    icon: '💼',
     unitLabel: 'Mitarbeiter (Anzahl)',
     unitHint: 'z.B. 8',
     description: 'Unternehmensberatung, Agenturen, Anwaltskanzleien, Steuerberater',
@@ -147,7 +137,6 @@ export const BUSINESS_TYPES: BusinessTypeConfig[] = [
   {
     value: 'other',
     label: 'Sonstiges Unternehmen',
-    icon: '🏢',
     unitLabel: 'Einheiten / Kapazität',
     unitHint: 'optional',
     description: 'Andere Unternehmensarten – universelle Analyse',

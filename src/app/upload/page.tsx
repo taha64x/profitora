@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getUploadCategoryLabels } from '@/types'
 import type { UploadCategory } from '@/types'
+import { IconChartBar, IconFolder, IconFileText, IconUpload, IconLoader } from '@/components/ui/icons'
 
 interface UploadedFile {
   id: string
@@ -158,9 +159,9 @@ export default function UploadPage() {
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
           {[
-            { href: '/dashboard', label: 'Dashboard',         icon: '📊' },
-            { href: '/upload',    label: 'Dateien hochladen', icon: '📁', active: true },
-            { href: '/report',    label: 'Berichte',          icon: '📄' },
+            { href: '/dashboard', label: 'Dashboard',         Icon: IconChartBar },
+            { href: '/upload',    label: 'Dateien hochladen', Icon: IconFolder, active: true },
+            { href: '/report',    label: 'Berichte',          Icon: IconFileText },
           ].map((item) => (
             <Link
               key={item.href}
@@ -171,7 +172,7 @@ export default function UploadPage() {
                   : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
-              <span>{item.icon}</span>
+              <item.Icon className="w-4 h-4" />
               {item.label}
             </Link>
           ))}
@@ -237,7 +238,9 @@ export default function UploadPage() {
               className="hidden"
               onChange={(e) => e.target.files && handleFiles(e.target.files)}
             />
-            <div className="text-4xl mb-3">{uploading ? '⏳' : '📂'}</div>
+            <div className="flex justify-center mb-3 text-hotel-navy/40">
+              {uploading ? <IconLoader className="w-10 h-10" /> : <IconUpload className="w-10 h-10" />}
+            </div>
             <p className="text-gray-700 font-medium mb-1">
               {uploading ? 'Wird hochgeladen...' : 'Datei hier ablegen oder klicken'}
             </p>
@@ -280,7 +283,7 @@ export default function UploadPage() {
                   return (
                     <div key={f.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">📄</span>
+                        <span className="text-gray-400"><IconFileText className="w-6 h-6" /></span>
                         <div>
                           <p className="text-sm font-medium text-gray-800">{f.originalName}</p>
                           <p className="text-xs text-gray-400">

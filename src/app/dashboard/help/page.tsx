@@ -1,5 +1,6 @@
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import Link from 'next/link'
+import { IconPlay, IconFileText, IconEuro, IconChartBar } from '@/components/ui/icons'
 
 const FAQ = [
   {
@@ -37,10 +38,10 @@ const FAQ = [
 ]
 
 const GUIDES = [
-  { title: 'Erste Schritte: Ihre erste Analyse', href: '#', icon: '▶' },
-  { title: 'CSV-Daten richtig vorbereiten', href: '#', icon: '📄' },
-  { title: 'Kosten und Einnahmen einpflegen', href: '#', icon: '€' },
-  { title: 'Bericht verstehen und nutzen', href: '#', icon: '📊' },
+  { title: 'Erste Schritte: Ihre erste Analyse', href: '#', Icon: IconPlay },
+  { title: 'CSV-Daten richtig vorbereiten', href: '#', Icon: IconFileText },
+  { title: 'Kosten und Einnahmen einpflegen', href: '#', Icon: IconEuro },
+  { title: 'Bericht verstehen und nutzen', href: '#', Icon: IconChartBar },
 ]
 
 export default function HelpPage() {
@@ -54,7 +55,9 @@ export default function HelpPage() {
         <div className="grid grid-cols-2 gap-3 mb-10">
           {GUIDES.map((g) => (
             <a key={g.title} href={g.href} className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all">
-              <span className="text-xl flex-shrink-0">{g.icon}</span>
+              <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-hotel-navy/5 text-hotel-navy flex items-center justify-center">
+                <g.Icon className="w-4 h-4" />
+              </span>
               <span className="text-sm font-medium text-gray-900">{g.title}</span>
             </a>
           ))}

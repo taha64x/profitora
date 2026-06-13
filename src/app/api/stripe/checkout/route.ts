@@ -47,15 +47,15 @@ export async function POST(req: Request) {
 
     const session = await getStripe().checkout.sessions.create({
       customer: customerId,
-      mode: 'subscription',
+      mode: planConfig.mode,
       payment_method_types: ['card'],
       line_items: [{ price: planConfig.priceId, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`,
       metadata: { organizationId: org.id, plan },
-      subscription_data: {
-        metadata: { organizationId: org.id, plan },
-      },
+      ...(planConfig.mode === 'subscription'
+        ? { subscription_data: { metadata: { organizationId: org.id, plan } } }
+        : {}),
     })
 
     return NextResponse.json({ url: session.url })

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CATEGORY_FIELD_DEFINITIONS, UPLOAD_CATEGORY_LABELS } from '@/types'
 import type { UploadCategory } from '@/types'
+import { IconClipboard, IconFileText } from '@/components/ui/icons'
 
 interface ColumnMapperProps {
   uploadId: string
@@ -96,7 +97,9 @@ export default function ColumnMapper({ uploadId }: ColumnMapperProps) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="text-3xl mb-3 animate-pulse">📋</div>
+          <div className="flex justify-center mb-3 animate-pulse text-hotel-navy/50">
+            <IconClipboard className="w-8 h-8" />
+          </div>
           <p className="text-gray-500">Datei wird gelesen...</p>
         </div>
       </div>
@@ -126,7 +129,7 @@ export default function ColumnMapper({ uploadId }: ColumnMapperProps) {
       {/* Header info */}
       <div className="card p-5 border-hotel-navy/20 bg-blue-50/50">
         <div className="flex items-start gap-3">
-          <span className="text-2xl">📄</span>
+          <span className="text-hotel-navy/60"><IconFileText className="w-6 h-6" /></span>
           <div>
             <p className="font-semibold text-gray-900">{info.originalName}</p>
             <p className="text-sm text-gray-500 mt-0.5">

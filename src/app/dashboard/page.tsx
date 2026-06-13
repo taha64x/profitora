@@ -96,7 +96,14 @@ export default async function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Guten Morgen 👋</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {(() => {
+                const h = new Date().getHours()
+                if (h < 11) return 'Guten Morgen'
+                if (h < 18) return 'Guten Tag'
+                return 'Guten Abend'
+              })()}
+            </h1>
             <p className="text-gray-500 text-sm mt-0.5">
               {org.name} · {new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>

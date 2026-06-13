@@ -1,77 +1,51 @@
 import Link from 'next/link'
 import ScrollReveal from './ScrollReveal'
+import { PLANS as PLAN_CONFIG } from '@/lib/plans'
 
 const PLANS = [
   {
-    name: 'Schnellcheck',
+    name: PLAN_CONFIG.free.name,
     tag: 'Einstieg',
     price: 'Kostenlos',
-    priceNote: 'Kein Kreditkarte erforderlich',
+    priceNote: 'Keine Kreditkarte erforderlich',
     highlight: false,
-    desc: 'Erster strukturierter Überblick über Kostenstruktur und erste erkennbare Einsparpotenziale.',
-    features: [
-      'Fragebogenbasierte Analyse',
-      'Überblick über Kostenstruktur',
-      'Erste Einsparpotenziale',
-      'Kompakter Ergebnisbericht',
-      'Branchenspezifische Benchmarks',
-    ],
-    cta: 'Jetzt starten',
-    href: '/analyze?level=schnellcheck',
+    desc: 'Finanztracking plus ein monatlicher KI-Schnellcheck – der perfekte Start.',
+    features: PLAN_CONFIG.free.features,
+    cta: 'Kostenlos starten',
+    href: '/register',
   },
   {
-    name: 'Standardanalyse',
+    name: PLAN_CONFIG.starter.name,
     tag: 'Empfohlen',
-    price: 'ab € 49',
-    priceNote: 'pro Analyse',
+    price: `€ ${PLAN_CONFIG.starter.priceMonthly}`,
+    priceNote: 'pro Monat, jederzeit kündbar',
     highlight: true,
-    desc: 'Solide betriebswirtschaftliche Auswertung auf Basis von Dokumenten und Fragebogen.',
-    features: [
-      'Dokumente + Fragebogen',
-      'Kosten- und Mitarbeiteranalyse',
-      'Prozessanalyse',
-      'Branchenvergleich',
-      'Konkreter Maßnahmenplan',
-      'Prioritätenliste',
-    ],
-    cta: 'Analyse starten',
-    href: '/analyze?level=standard',
+    desc: 'Für Betriebe, die ihre Zahlen jeden Monat im Griff haben wollen.',
+    features: PLAN_CONFIG.starter.features,
+    cta: 'Starter wählen',
+    href: '/register?plan=starter',
   },
   {
-    name: 'Tiefenanalyse',
-    tag: 'Detailliert',
-    price: 'ab € 149',
-    priceNote: 'pro Analyse',
-    highlight: false,
-    desc: 'Detaillierte Kosten- und Prozessprüfung mit vollständigem Branchenvergleich.',
-    features: [
-      'Umfangreicher Datei-Upload',
-      'Vollständige Buchhaltungsanalyse',
-      'Detaillierter Branchenvergleich',
-      'Finanz- und Effizienzanalyse',
-      'Prioritätenplan',
-      '30 / 60 / 90-Tage-Plan',
-    ],
-    cta: 'Analyse starten',
-    href: '/analyze?level=tiefenanalyse',
-  },
-  {
-    name: 'Komplettanalyse',
+    name: PLAN_CONFIG.business.name,
     tag: 'Maximal',
-    price: 'ab € 299',
-    priceNote: 'pro Analyse',
+    price: `€ ${PLAN_CONFIG.business.priceMonthly}`,
+    priceNote: 'pro Monat, jederzeit kündbar',
     highlight: false,
-    desc: 'Vollständige KI-gestützte Unternehmensanalyse aller Bereiche.',
-    features: [
-      'Alle Module kombiniert',
-      'Tiefgehender Gesamtbericht',
-      'Automatisierungsvorschläge',
-      'Risikoanalyse',
-      'Vollständiger 30/60/90-Tage-Plan',
-      'Optionaler persönlicher Review',
-    ],
-    cta: 'Analyse starten',
-    href: '/analyze?level=komplett',
+    desc: 'Unbegrenzte Tiefenanalysen mit dem besten KI-Modell und vollem Assistenten.',
+    features: PLAN_CONFIG.business.features,
+    cta: 'Business wählen',
+    href: '/register?plan=business',
+  },
+  {
+    name: PLAN_CONFIG.single.name,
+    tag: 'Ohne Abo',
+    price: `€ ${PLAN_CONFIG.single.priceOnce}`,
+    priceNote: 'einmalig, kein Abo',
+    highlight: false,
+    desc: 'Eine vollständige Komplett-Analyse als Einmalkauf – ideal zum Ausprobieren.',
+    features: PLAN_CONFIG.single.features,
+    cta: 'Einzel-Analyse kaufen',
+    href: '/register?plan=single',
   },
 ]
 
@@ -85,11 +59,11 @@ export default function PricingSection() {
               Pakete
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4">
-              Wählen Sie die passende Analysetiefe
+              Abo oder Einmalkauf – Sie entscheiden
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
-              Von einem ersten Überblick bis zur vollständigen betriebswirtschaftlichen
-              Unternehmensanalyse.
+              Jeder Tarif enthält Finanztracking und KI-Assistent.
+              Höhere Tarife nutzen leistungsstärkere KI-Modelle und bieten mehr Analysen.
             </p>
           </div>
         </ScrollReveal>
@@ -171,7 +145,7 @@ export default function PricingSection() {
 
         <ScrollReveal>
           <p className="text-center text-gray-400 text-xs mt-8 max-w-lg mx-auto leading-relaxed">
-            Preise sind Platzhalter und werden nach Abschluss der Entwicklung aktualisiert.
+            Alle Preise inkl. MwSt. Abos sind monatlich kündbar.
             Alle Analysen sind betriebswirtschaftliche Entscheidungshilfen –
             kein Ersatz für Steuerberater, Rechtsanwalt oder gesetzlichen Wirtschaftsprüfer.
           </p>
