@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join, extname } from 'path'
 import { randomUUID } from 'crypto'
+import { put } from '@vercel/blob'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import type { UploadCategory } from '@/types'
+
+export const dynamic = 'force-dynamic'
 
 const ALLOWED_EXTENSIONS = ['.csv', '.xlsx', '.xls']
 const ALLOWED_MIME = [
@@ -46,14 +49,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Datei zu groß. Maximum: ${MAX_SIZE_MB} MB` }, { status: 400 })
     }
 
-    const uploadDir = join(process.cwd(), process.env.UPLOAD_DIR || 'uploads')
-    await mkdir(uploadDir, { recursive: true })
-
     const safeFilename = `${randomUUID()}${ext}`
-    const storagePath = join(uploadDir, safeFilename)
+    let storagePath: string
 
-    const bytes = await file.arrayBuffer()
-    await writeFile(storagePath, Buffer.from(bytes))
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      // Produktion / Vercel: Datei in Vercel Blob ablegen.
+      // Pfad ist durch die UUID nicht erratbar; die Python-Analyse liest die Datei
+      // anschließend über diese URL.
+      const blob = await put(`uploads/${safeFilename}`, file, {
+        access: 'public',
+        addRandomSuffix: false,
+        contentType: file.type || 'application/octet-stream',
+      })
+      storagePath = blob.url
+    } else {
+      // Lokale Entwicklung: ins lokale uploads/-Verzeichnis schreiben.
+      const uploadDir = join(process.cwd(), process.env.UPLOAD_DIR || 'uploads')
+      await mkdir(uploadDir, { recursive: true })
+      storagePath = join(uploadDir, safeFilename)
+      const bytes = await file.arrayBuffer()
+      await writeFile(storagePath, Buffer.from(bytes))
+    }
 
     const upload = await db.upload.create({
       data: {

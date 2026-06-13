@@ -1,7 +1,33 @@
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
+
+/**
+ * Browser-Start: auf Vercel das serverless-taugliche @sparticuz/chromium,
+ * lokal ein installiertes Chrome/Chromium (Pfad via LOCAL_CHROME_PATH override).
+ */
+async function launchBrowser() {
+  if (process.env.VERCEL) {
+    return puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    })
+  }
+  const localChrome =
+    process.env.LOCAL_CHROME_PATH ||
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+  return puppeteer.launch({
+    executablePath: localChrome,
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+}
 
 function buildHtmlDocument(orgName: string, title: string, createdAt: Date, body: string): string {
   return `<!DOCTYPE html>
@@ -72,10 +98,7 @@ export async function GET(req: Request) {
       report.htmlContent,
     )
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    })
+    const browser = await launchBrowser()
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'load', timeout: 30000 })
     const pdfBuffer = await page.pdf({

@@ -97,19 +97,40 @@ def resolve_column(
 
 
 def read_file(path: str) -> Optional[pd.DataFrame]:
-    """Liest CSV oder Excel ein."""
-    if not os.path.exists(path):
+    """Liest CSV oder Excel ein – von lokalem Pfad ODER http(s)-URL (Vercel Blob)."""
+    is_url = path.lower().startswith(("http://", "https://"))
+    if not is_url and not os.path.exists(path):
         print(f"[WARN] Datei nicht gefunden: {path}", file=sys.stderr)
         return None
+
+    # Bei URLs einmal in den Speicher laden, damit mehrere Encoding-Versuche
+    # nicht zu mehreren Downloads führen.
+    source: Any = path
+    if is_url:
+        try:
+            import urllib.request
+            from io import BytesIO
+            with urllib.request.urlopen(path, timeout=30) as resp:
+                source = BytesIO(resp.read())
+        except Exception as e:
+            print(f"[WARN] Download fehlgeschlagen {path}: {e}", file=sys.stderr)
+            return None
+
+    # Dateityp anhand der Endung (URL-Querystrings ignorieren)
+    clean_path = path.split("?", 1)[0].lower()
     try:
-        if path.lower().endswith(".csv"):
+        if clean_path.endswith(".csv"):
             for encoding in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
                 try:
-                    return pd.read_csv(path, encoding=encoding, sep=None, engine="python")
+                    if hasattr(source, "seek"):
+                        source.seek(0)
+                    return pd.read_csv(source, encoding=encoding, sep=None, engine="python")
                 except Exception:
                     continue
         else:
-            return pd.read_excel(path)
+            if hasattr(source, "seek"):
+                source.seek(0)
+            return pd.read_excel(source)
     except Exception as e:
         print(f"[WARN] Fehler beim Lesen von {path}: {e}", file=sys.stderr)
     return None
@@ -265,43 +286,23 @@ def build_expense_breakdown(expenses_by_cat: dict[str, float], total: float) -> 
     ]
 
 
-def get_headers(file_path: str) -> None:
-    """Gibt Spaltennamen einer CSV/Excel-Datei als JSON aus."""
+def get_headers_result(file_path: str) -> dict:
+    """Liefert die Spaltennamen einer CSV/Excel-Datei als Dict (für Import-Nutzung)."""
     df = read_file(file_path)
     if df is None:
-        print(json.dumps({"success": False, "error": f"Datei konnte nicht gelesen werden: {file_path}"}))
-        sys.exit(1)
-    print(json.dumps({"success": True, "columns": list(df.columns)}, ensure_ascii=False))
+        return {"success": False, "error": f"Datei konnte nicht gelesen werden: {file_path}"}
+    return {"success": True, "columns": list(df.columns)}
 
 
 def sum_by_keywords(expenses_by_cat: dict[str, float], keywords: list[str]) -> float:
     return sum(v for k, v in expenses_by_cat.items() if any(kw in k.lower() for kw in keywords))
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config-json", help="JSON-Konfiguration für die Analyse")
-    parser.add_argument("--mode", choices=["analyze", "headers"], default="analyze")
-    parser.add_argument("--file", help="Dateipfad (nur für --mode headers)")
-    args = parser.parse_args()
+def run_analysis(config: dict) -> dict:
+    """Führt die vollständige Analyse aus und liefert das Ergebnis-Dict.
 
-    if args.mode == "headers":
-        if not args.file:
-            print(json.dumps({"success": False, "error": "--file ist erforderlich für --mode headers"}))
-            sys.exit(1)
-        get_headers(args.file)
-        return
-
-    if not args.config_json:
-        print(json.dumps({"success": False, "error": "--config-json ist erforderlich für --mode analyze"}))
-        sys.exit(1)
-
-    try:
-        config = json.loads(args.config_json)
-    except json.JSONDecodeError as e:
-        print(json.dumps({"success": False, "error": f"Ungültiges JSON: {e}"}))
-        sys.exit(1)
-
+    Wiederverwendbar für CLI (lokale Entwicklung) und Vercel-Python-Funktion.
+    """
     files: dict[str, list[str]] = config.get("files", {})
     unit_count: Optional[int] = config.get("unit_count") or config.get("room_count")  # Rückwärtskompatibilität
     business_type: str = config.get("business_type", "other")
@@ -376,7 +377,7 @@ def main() -> None:
     savings = detect_savings_potential(kpis, expenses_by_cat, business_type)
     expense_breakdown = build_expense_breakdown(expenses_by_cat, expense_data.get("total") or 0)
 
-    result = {
+    return {
         "success": True,
         "analyzedAt": datetime.now().isoformat(),
         "businessType": business_type,
@@ -388,6 +389,35 @@ def main() -> None:
         "warnings": warnings,
     }
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config-json", help="JSON-Konfiguration für die Analyse")
+    parser.add_argument("--mode", choices=["analyze", "headers"], default="analyze")
+    parser.add_argument("--file", help="Dateipfad (nur für --mode headers)")
+    args = parser.parse_args()
+
+    if args.mode == "headers":
+        if not args.file:
+            print(json.dumps({"success": False, "error": "--file ist erforderlich für --mode headers"}))
+            sys.exit(1)
+        result = get_headers_result(args.file)
+        print(json.dumps(result, ensure_ascii=False))
+        if not result.get("success"):
+            sys.exit(1)
+        return
+
+    if not args.config_json:
+        print(json.dumps({"success": False, "error": "--config-json ist erforderlich für --mode analyze"}))
+        sys.exit(1)
+
+    try:
+        config = json.loads(args.config_json)
+    except json.JSONDecodeError as e:
+        print(json.dumps({"success": False, "error": f"Ungültiges JSON: {e}"}))
+        sys.exit(1)
+
+    result = run_analysis(config)
     print(json.dumps(result, ensure_ascii=False, default=str))
 
 

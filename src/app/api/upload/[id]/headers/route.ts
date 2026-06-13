@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
-import { join } from 'path'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import { getColumnHeaders } from '@/lib/analyze-engine'
 
-const execFileAsync = promisify(execFile)
+export const dynamic = 'force-dynamic'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
@@ -22,14 +20,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const isMember = upload.organization.members.some((m) => m.userId === user.userId)
     if (!isMember) return NextResponse.json({ error: 'Kein Zugriff.' }, { status: 403 })
 
-    const scriptPath = join(process.cwd(), 'python', 'analyze_csv.py')
-    const { stdout } = await execFileAsync('python3', [
-      scriptPath,
-      '--mode', 'headers',
-      '--file', upload.storagePath,
-    ])
-
-    const result = JSON.parse(stdout) as { success: boolean; columns?: string[]; error?: string }
+    const result = await getColumnHeaders(upload.storagePath)
 
     if (!result.success || !result.columns) {
       return NextResponse.json(
