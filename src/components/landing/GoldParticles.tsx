@@ -1,6 +1,7 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 // Dezente goldene Partikel im Hero: schweben sanft (CSS-Float je Partikel)
 // und wandern beim Scrollen in drei Parallax-Ebenen unterschiedlich schnell mit.
@@ -66,11 +67,27 @@ function Layer({ particles, y }: { particles: Particle[]; y: any }) {
 }
 
 export default function GoldParticles() {
+  const reduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
   // Parallax: nahe Partikel wandern beim Scrollen schneller nach oben als ferne
   const y1 = useTransform(scrollY, [0, 900], [0, -260])
   const y2 = useTransform(scrollY, [0, 900], [0, -140])
   const y3 = useTransform(scrollY, [0, 900], [0, -60])
+
+  // Nur auf größeren Bildschirmen rendern: die 18 box-shadow-Partikel +
+  // scroll-gebundene Transforms sind auf Mobilgeräten ein spürbarer
+  // Repaint-/Jank-Treiber. Auf Mobile/bei "Bewegung reduzieren": komplett aus.
+  const [enabled, setEnabled] = useState(false)
+  useEffect(() => {
+    if (reduceMotion) return
+    const mq = window.matchMedia('(min-width: 768px)')
+    const update = () => setEnabled(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [reduceMotion])
+
+  if (!enabled) return null
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">

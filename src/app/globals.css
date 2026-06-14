@@ -91,6 +91,19 @@
   transform: scale(1);
 }
 
+/* ─── Sichtbarkeits-Sicherheitsnetz (Mobile / langsames JS) ───────────────────
+   Framer-Motion rendert Reveal-Elemente server-seitig mit inline `opacity:0`
+   und blendet sie erst per Client-JS ein. Auf schwachen Handys (langsame
+   Hydration) oder bei wackligem Mobilfunk (Script-Chunk kommt nicht an) bliebe
+   sonst der halbe Seiteninhalt – inkl. Hero – dauerhaft unsichtbar.
+   Bis JS bereit ist (html.js-ready, gesetzt nach Hydration), erzwingen wir
+   Sichtbarkeit. Danach übernimmt Framer die Reveal-Animationen normal. */
+html:not(.js-ready) [style*="opacity:0"],
+html:not(.js-ready) [style*="opacity: 0"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* ─── Landing Page – Background Patterns ───────────────────────────────────── */
 
 .dot-grid {
@@ -244,6 +257,11 @@
     transition-duration: 0.01ms !important;
   }
   html { scroll-behavior: auto; }
+  /* Reveal-Inhalte immer sichtbar, niemals JS-abhängig versteckt */
+  [style*="opacity:0"], [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* ─── Print ─────────────────────────────────────────────────────────────────── */

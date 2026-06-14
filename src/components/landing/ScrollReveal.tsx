@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
-import { useRef, ReactNode } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useRef, useState, useEffect, ReactNode } from 'react'
 
 interface Props {
   children: ReactNode
@@ -15,7 +15,21 @@ const DELAY_MAP: Record<number, number> = { 0: 0, 1: 0.1, 2: 0.2, 3: 0.3, 4: 0.4
 
 export default function ScrollReveal({ children, className = '', variant = 'default', delay = 0 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
+
+  // Erst NACH dem Mounten animieren. Dadurch ist der server-gerenderte Inhalt
+  // immer sofort sichtbar – auch wenn JS langsam lädt oder (z.B. auf wackligem
+  // Mobilfunk) ein Script-Chunk gar nicht ankommt. Die Reveal-Animation ist
+  // reine Progressive Enhancement und kann den Inhalt nie dauerhaft verstecken.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const inView = useInView(ref, { once: true, margin: '-60px' })
+
+  // Vor Mount oder bei "Bewegung reduzieren": Inhalt direkt sichtbar, keine Animation.
+  if (!mounted || reduceMotion) {
+    return <div className={className}>{children}</div>
+  }
 
   const initial =
     variant === 'left'  ? { opacity: 0, x: -24 } :
