@@ -106,8 +106,13 @@
    sonst der halbe Seiteninhalt – inkl. Hero – dauerhaft unsichtbar.
    Bis JS bereit ist (html.js-ready, gesetzt nach Hydration), erzwingen wir
    Sichtbarkeit. Danach übernimmt Framer die Reveal-Animationen normal. */
-html:not(.js-ready) [style*="opacity:0"],
-html:not(.js-ready) [style*="opacity: 0"] {
+/* Inhalt NIE von JS-Reveal-Animationen verstecken lassen. Grund: useInView
+   (IntersectionObserver) feuert nicht zuverlässig, wenn per Anker-Sprung direkt
+   in eine vorher nie sichtbare Sektion gesprungen wird -> Inhalt blieb auf
+   opacity:0 (leere weiße Flächen). Reveal-Elemente daher dauerhaft sichtbar
+   erzwingen. Partikel ausgenommen; Parallax (transform ohne opacity:0) bleibt. */
+[style*="opacity:0"]:not(.particle-float),
+[style*="opacity: 0"]:not(.particle-float) {
   opacity: 1 !important;
   transform: none !important;
 }
