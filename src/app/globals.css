@@ -12,8 +12,16 @@
     --hotel-gold: #c9a84c;
   }
 
+  /* Kein CSS-Smooth-Scroll: auf dieser Seite (overflow-x-clip auf <main>) ist
+     natives Smooth-Scrollen blockiert und ließ Anker-Klicks ins Leere laufen.
+     Sofort-Scrollen funktioniert zuverlässig. */
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
+  }
+
+  /* Sprungziele unter dem fixierten Header platzieren (Quick-Nav / Sticky-Header) */
+  #analysearten, #branchen, #ablauf, #vorschau, #features, #preise {
+    scroll-margin-top: 5rem;
   }
 
   body {

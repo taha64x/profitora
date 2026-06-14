@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { scrollToHash } from './QuickNav'
 
 const NAV_ITEMS = [
   { href: '#analysearten', label: 'Analysen' },
@@ -49,6 +50,7 @@ export default function StickyHeader() {
             <a
               key={item.href}
               href={item.href}
+              onClick={(e) => { e.preventDefault(); scrollToHash(item.href) }}
               className="nav-underline text-white/55 hover:text-white text-sm font-medium transition-colors duration-200"
             >
               {item.label}
@@ -97,7 +99,7 @@ export default function StickyHeader() {
               <a
                 key={item.href}
                 href={item.href}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollToHash(item.href) }}
                 className="text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium px-3 py-2.5 rounded-lg transition-colors"
               >
                 {item.label}
