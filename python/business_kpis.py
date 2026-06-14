@@ -85,6 +85,120 @@ def safe_div(a: Optional[float], b: Optional[float]) -> Optional[float]:
     return a / b
 
 
+def calculate_materiality(
+    total_revenue: Optional[float], net_result: Optional[float]
+) -> Optional[dict]:
+    """Wesentlichkeitsschwelle analog ISA 320 / IDW PS 250.
+
+    Richtwert (KEIN starrer Standard, ISA 320 = Ermessenssache):
+    - gewinnorientiert mit tragfähigem Ergebnis: ~5 % des Ergebnisses vor Steuern
+    - dünnes/negatives Ergebnis: stabiler ~1 % des Umsatzes
+    Performance Materiality (Toleranzwesentlichkeit) konservativ bei 75 %.
+    """
+    has_margin = (
+        net_result is not None
+        and total_revenue
+        and total_revenue > 0
+        and net_result > 0
+        and (net_result / total_revenue) >= 0.03
+    )
+    if has_margin:
+        materiality = round(0.05 * net_result, 2)
+        basis = "≈5 % des Ergebnisses vor Steuern (Richtwert ISA 320 – Ermessenssache)"
+    elif total_revenue and total_revenue > 0:
+        materiality = round(0.01 * total_revenue, 2)
+        basis = "≈1 % des Umsatzes (Richtwert ISA 320, da Ergebnis dünn/negativ)"
+    elif net_result and net_result > 0:
+        materiality = round(0.05 * net_result, 2)
+        basis = "≈5 % des Ergebnisses (Richtwert ISA 320)"
+    else:
+        return None
+    return {
+        "materiality": materiality,
+        "performanceMateriality": round(materiality * 0.75, 2),
+        "basis": basis,
+    }
+
+
+def detect_plausibility_flags(kpis: dict, expenses_by_cat: dict) -> list[dict]:
+    """Plausibilitäts-/Auffälligkeitsprüfung (analytische Prüfungshandlungen +
+    professionelle Skepsis, ISA 520/240). Liefert HINWEISE ZUR SELBSTPRÜFUNG,
+    ausdrücklich KEINE Betrugsbehauptung. An Assertions (ISA 315) angelehnt."""
+    flags: list[dict] = []
+    rev = kpis.get("totalRevenue")
+    exp = kpis.get("totalExpenses")
+    net_margin = kpis.get("netMarginPercent")
+    labor = kpis.get("laborCostRatio")
+    goods = kpis.get("goodsCostRatio")
+
+    # Kostenkonzentration – Vollständigkeit/Klassifizierung
+    if expenses_by_cat and exp and exp > 0:
+        top_cat, top_val = max(expenses_by_cat.items(), key=lambda kv: kv[1])
+        if top_val / exp > 0.6:
+            flags.append({
+                "type": "Kostenkonzentration",
+                "assertion": "Vollständigkeit/Klassifizierung",
+                "severity": "MITTEL",
+                "message": (
+                    f"Eine einzelne Kategorie ('{top_cat}') macht {top_val / exp * 100:.0f}% "
+                    "aller Ausgaben aus. Bitte prüfen, ob weitere Kosten fehlen oder die "
+                    "Zuordnung korrekt ist."
+                ),
+            })
+
+    # Unplausibel hohe Marge – Vollständigkeit der Ausgaben
+    if net_margin is not None and net_margin > 50:
+        flags.append({
+            "type": "Margenplausibilität",
+            "assertion": "Vollständigkeit",
+            "severity": "MITTEL",
+            "message": (
+                f"Nettomarge von {net_margin:.1f}% ist ungewöhnlich hoch. Bitte prüfen, "
+                "ob alle Ausgaben (z. B. Personal, Miete, Steuern) vollständig erfasst sind."
+            ),
+        })
+
+    # Waren-/Materialquote > 100 % – Genauigkeit/Datenkonsistenz
+    if goods is not None and goods > 100:
+        flags.append({
+            "type": "Datenkonsistenz",
+            "assertion": "Genauigkeit",
+            "severity": "HOCH",
+            "message": (
+                f"Waren-/Materialquote von {goods:.0f}% übersteigt den Umsatz – Hinweis auf "
+                "mögliche Daten- oder Zuordnungsfehler."
+            ),
+        })
+
+    # Kaum Personalkosten trotz Umsatz – Vollständigkeit
+    if rev and rev > 0 and (labor is None or labor < 3):
+        flags.append({
+            "type": "Datenvollständigkeit",
+            "assertion": "Vollständigkeit",
+            "severity": "NIEDRIG",
+            "message": (
+                "Es wurden kaum/keine Personalkosten erkannt. Falls Personal beschäftigt "
+                "wird, fehlen vermutlich Daten."
+            ),
+        })
+
+    # Ausgaben deutlich über Umsatz – Ergebnislage
+    if rev and exp and rev > 0 and exp > rev * 1.2:
+        flags.append({
+            "type": "Ergebnislage",
+            "assertion": "Genauigkeit/Periodenabgrenzung",
+            "severity": "HOCH",
+            "message": (
+                f"Die Ausgaben übersteigen den Umsatz um {(exp / rev - 1) * 100:.0f}%. "
+                "Verlustsituation – Kostenstruktur und Datengrundlage (richtige Periode?) prüfen."
+            ),
+        })
+
+    severity_order = {"HOCH": 0, "MITTEL": 1, "NIEDRIG": 2}
+    flags.sort(key=lambda f: severity_order.get(f.get("severity", "NIEDRIG"), 2))
+    return flags
+
+
 def calculate_business_kpis(
     business_type: str,
     total_revenue: Optional[float],

@@ -232,7 +232,13 @@ function buildReportPrompt(data: AnalysisResult): string {
   const kpis = data.businessKpis
   const laborTarget = bc.laborBenchmark
 
-  return `Du bist ein KI-gestützter Wirtschaftlichkeitsassistent für ${bc.name}. Du arbeitest nach den Grundsätzen betriebswirtschaftlicher Prüfungen, orientiert an WPO/IDW-Methodik – angepasst für diese Unternehmensart.
+  return `Du bist ein KI-gestützter Wirtschaftlichkeitsassistent für ${bc.name}. Du arbeitest nach den Grundsätzen betriebswirtschaftlicher Prüfungen, orientiert an WPO/IDW- und ISA-Methodik – angepasst für diese Unternehmensart.
+
+Methodische Grundhaltung (wie ein professioneller Prüfer):
+- RISIKOORIENTIERT (ISA 315 / IDW PS 261): Konzentriere dich zuerst auf die risikoreichsten Bereiche dieser Branche.
+- WESENTLICHKEIT (ISA 320): Bewerte Abweichungen relativ zur übergebenen Wesentlichkeitsschwelle ("materiality"). Unterhalb der Schwelle = unwesentlich.
+- ANALYTISCHE PRÜFUNG (ISA 520): Soll-Ist-Vergleich gegen Branchenrichtwerte, Abweichungen erklären.
+- PROFESSIONELLE SKEPSIS (ISA 240): Nutze die übergebenen "plausibilityFlags" als sachliche Hinweise zur Selbstprüfung – formuliere sie NEUTRAL und stelle NIEMALS einen Betrugs- oder Täuschungsvorwurf.
 
 ══════════════════════════════════════════════════════
 UNTERNEHMENSART: ${bc.name.toUpperCase()}
@@ -262,6 +268,8 @@ REGEL 3 – FEHLENDE DATEN: Bei null/fehlend → "Daten nicht verfügbar – Ein
 REGEL 4 – KEINE ERFINDUNGEN: Zahlen NIEMALS erfinden. Nur auf übergebenen Daten basieren.
 REGEL 5 – NACHVOLLZIEHBARKEIT: Berechnungsgrundlagen immer nennen.
 REGEL 6 – HAFTUNGSAUSSCHLUSS: An jede Empfehlung: "(Entscheidungshilfe – keine rechtsverbindliche Prüfung)"
+REGEL 7 – WESENTLICHKEIT: Markiere Abweichungen nur dann als "wesentlich", wenn sie die übergebene Wesentlichkeitsschwelle (materiality) übersteigen. Kleinere Abweichungen als "unwesentlich" einordnen.
+REGEL 8 – SKEPSIS OHNE VORWURF: plausibilityFlags sind neutrale Hinweise zur Selbstprüfung (z. B. fehlende/unvollständige Daten). NIEMALS als Betrug, Täuschung oder Schuldzuweisung formulieren.
 
 ══════════════════════════════════════════════════════
 ANALYSEDATEN
@@ -292,6 +300,9 @@ Titel: "2. Prüfungsauftrag und Datengrundlage"
   | ${bc.activeUnitLabel} | ... | ... |
   | Mitarbeiterzeiten | ... | ... |
 - IDW PS 312-Methode: "Die Analyse erfolgte mittels analytischer Prüfungshandlungen (Soll-Ist-Vergleich, Kennzahlenanalyse, Branchenvergleich)."
+- Wesentlichkeit (falls "materiality" vorhanden): "Für diese Analyse wurde eine Wesentlichkeitsschwelle von [materiality.materiality] EUR angesetzt ([materiality.basis]); die Toleranzwesentlichkeit beträgt [materiality.performanceMateriality] EUR. Abweichungen unterhalb dieser Schwelle werden als unwesentlich behandelt." (orientiert an ISA 320 – Richtwert, kein verbindlicher Standard)
+- Datenqualität entlang der Prüfungs-Aussagen (Assertions, ISA 315): bewerte je Kategorie Vollständigkeit (alle Posten erfasst?), Genauigkeit (Summen konsistent?) und Periodenabgrenzung (richtiger Zeitraum?).
+- Hinweis zur Datengrundlage: "Es erfolgte keine Prüfung der Echtheit oder Vollständigkeit der zugrunde liegenden Belege; die Auswertung basiert auf den bereitgestellten Daten."
 </section>
 
 <section id="revenue-analysis">
@@ -332,6 +343,8 @@ Titel: "7. Auffälligkeiten und Abweichungsprotokoll"
 - "Die analytischen Prüfungshandlungen ergaben folgende wesentliche Abweichungen vom Sollwert:"
 - Tabelle: Kennzahl | Ist-Wert | Soll-Wert | Abweichung | Handlungsbedarf (HOCH/MITTEL/NIEDRIG)
 - Nur Kennzahlen mit vorhandenen Daten einbeziehen
+- WESENTLICHKEIT: Abweichungen, die die Wesentlichkeitsschwelle (materiality) nicht übersteigen, ausdrücklich als "unwesentlich" kennzeichnen.
+- PLAUSIBILITÄTSHINWEISE: Falls "plausibilityFlags" vorhanden sind, liste sie als gesonderten Block "Plausibilitäts- und Datenhinweise (zur Selbstprüfung)" mit Schweregrad (HOCH/MITTEL/NIEDRIG) und der jeweiligen Prüfungs-Aussage (assertion). Streng NEUTRAL formulieren – kein Betrugs-/Täuschungsvorwurf.
 - Positives auch erwähnen: "Folgende Kennzahlen liegen im branchenüblichen Normbereich:"
 </section>
 

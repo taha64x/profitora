@@ -38,6 +38,8 @@ except ImportError:
 from business_kpis import (
     calculate_business_kpis,
     detect_savings_potential,
+    calculate_materiality,
+    detect_plausibility_flags,
     LABOR_KEYWORDS,
     ENERGY_KEYWORDS,
     SERVICE_KEYWORDS,
@@ -449,13 +451,19 @@ def run_analysis(config: dict) -> dict:
     savings = detect_savings_potential(kpis, expenses_by_cat, business_type)
     expense_breakdown = build_expense_breakdown(expenses_by_cat, expense_data.get("total") or 0)
 
+    # Wesentlichkeit (ISA 320) + Plausibilitäts-/Auffälligkeitsprüfung (ISA 520/240)
+    materiality = calculate_materiality(revenue_data.get("total"), kpis.get("netResult"))
+    plausibility_flags = detect_plausibility_flags(kpis, expenses_by_cat)
+
     return {
         "success": True,
         "analyzedAt": datetime.now().isoformat(),
         "businessType": business_type,
         "businessName": business_name,
         "businessKpis": kpis,
+        "materiality": materiality,
         "savingsPotential": savings,
+        "plausibilityFlags": plausibility_flags,
         "expenseBreakdown": expense_breakdown,
         "missingData": missing_data,
         "warnings": warnings,
