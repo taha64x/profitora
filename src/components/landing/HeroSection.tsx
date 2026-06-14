@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import Link from 'next/link'
 import GoldParticles from './GoldParticles'
 
@@ -10,7 +10,7 @@ export default function HeroSection() {
       {/* Background */}
       <div className="absolute inset-0 dot-grid opacity-60" />
       <div className="absolute inset-0 hero-glow" />
-      <motion.div
+      <m.div
         className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#C9A84C]/10 rounded-full blur-[120px] pointer-events-none glow-drift"
         animate={{ opacity: [0.6, 1, 0.6] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
@@ -20,7 +20,7 @@ export default function HeroSection() {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Badge */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -28,10 +28,10 @@ export default function HeroSection() {
         >
           <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
           Orientiert an Methoden aus Controlling, Kostenrechnung & betriebswirtschaftlicher Prüfung
-        </motion.div>
+        </m.div>
 
         {/* Headline */}
-        <motion.h1
+        <m.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.1 }}
@@ -40,10 +40,10 @@ export default function HeroSection() {
           <span className="gradient-text">KI-gestützte Unternehmensanalyse</span>
           <br />
           für Kosten, Prozesse und Einsparpotenziale
-        </motion.h1>
+        </m.h1>
 
         {/* Subtext */}
-        <motion.p
+        <m.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
@@ -52,10 +52,10 @@ export default function HeroSection() {
           Laden Sie Dokumente hoch oder beantworten Sie einen strukturierten Fragebogen.
           Die KI analysiert Kosten, Mitarbeiter, Buchhaltung, Prozesse und
           branchentypische Vergleichswerte – für klare Optimierungsvorschläge.
-        </motion.p>
+        </m.p>
 
         {/* CTAs */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.38 }}
@@ -73,10 +73,10 @@ export default function HeroSection() {
           >
             So funktioniert es
           </a>
-        </motion.div>
+        </m.div>
 
         {/* Trust */}
-        <motion.p
+        <m.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.55 }}
@@ -84,16 +84,16 @@ export default function HeroSection() {
         >
           Kein Ersatz für Steuerberater oder Wirtschaftsprüfer ·
           Betriebswirtschaftliche Entscheidungshilfe
-        </motion.p>
+        </m.p>
 
         {/* Floating dashboard mockup */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-16 mx-auto max-w-2xl"
         >
-          <motion.div
+          <m.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             className="bg-[#0A0E22]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/60"
@@ -116,7 +116,7 @@ export default function HeroSection() {
                 { l: 'Gewinn', v: '7.600 €', c: 'text-green-400' },
                 { l: 'Marge', v: '23.5 %', c: 'text-[#C9A84C]' },
               ].map((card, i) => (
-                <motion.div
+                <m.div
                   key={card.l}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -125,7 +125,7 @@ export default function HeroSection() {
                 >
                   <p className="text-white/30 text-xs mb-1">{card.l}</p>
                   <p className={`font-bold text-sm ${card.c}`}>{card.v}</p>
-                </motion.div>
+                </m.div>
               ))}
             </div>
             {/* Cost bars */}
@@ -140,7 +140,7 @@ export default function HeroSection() {
                     <span>{b.cat}</span><span>{b.pct} %</span>
                   </div>
                   <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
+                    <m.div
                       className="h-full rounded-full"
                       style={{ backgroundColor: b.color }}
                       initial={{ width: 0 }}
@@ -151,12 +151,12 @@ export default function HeroSection() {
                 </div>
               ))}
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
+      <m.div
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 1.8, repeat: Infinity }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20"
@@ -164,7 +164,7 @@ export default function HeroSection() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
           <path d="M12 5v14M5 12l7 7 7-7"/>
         </svg>
-      </motion.div>
+      </m.div>
     </section>
   )
 }

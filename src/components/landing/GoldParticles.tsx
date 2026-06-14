@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import { m, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
 // Dezente goldene Partikel im Hero: schweben sanft (CSS-Float je Partikel)
@@ -45,7 +45,7 @@ const LAYER_3: Particle[] = [ // fern – bewegt sich am wenigsten
 
 function Layer({ particles, y }: { particles: Particle[]; y: any }) {
   return (
-    <motion.div style={{ y }} className="absolute inset-0">
+    <m.div style={{ y }} className="absolute inset-0">
       {particles.map((p, i) => (
         <span
           key={i}
@@ -62,7 +62,7 @@ function Layer({ particles, y }: { particles: Particle[]; y: any }) {
           }}
         />
       ))}
-    </motion.div>
+    </m.div>
   )
 }
 

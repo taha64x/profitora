@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Link from 'next/link'
 
@@ -37,7 +37,7 @@ export default function FinanceFlowSection() {
       </div>
 
       <div className="max-w-5xl mx-auto relative">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
@@ -53,7 +53,7 @@ export default function FinanceFlowSection() {
           <p className="text-white/40 text-base max-w-lg mx-auto">
             Erfassen Sie Ausgaben, Einnahmen, Dateien und Analyseergebnisse zentral. Die KI erkennt Muster, Auffälligkeiten und mögliche Einsparbereiche.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Flow diagram */}
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-0 mb-16">
@@ -61,7 +61,7 @@ export default function FinanceFlowSection() {
           <div className="flex-1 space-y-3">
             <p className="text-white/30 text-xs uppercase tracking-widest text-center md:text-right mb-4">Einnahmen</p>
             {INCOME_STREAMS.map((s) => (
-              <motion.div
+              <m.div
                 key={s.label}
                 initial={{ opacity: 0, x: -24 }}
                 animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -73,21 +73,21 @@ export default function FinanceFlowSection() {
                   <p className="text-xs font-bold" style={{ color: s.color }}>{s.amount}</p>
                 </div>
                 <div className="w-2.5 h-2.5 rounded-full border-2 flex-shrink-0" style={{ borderColor: s.color, backgroundColor: `${s.color}30` }}/>
-              </motion.div>
+              </m.div>
             ))}
           </div>
 
           {/* Center – AI core */}
           <div className="relative flex items-center justify-center mx-8 flex-shrink-0">
             {/* Connecting lines */}
-            <motion.div
+            <m.div
               initial={{ scaleX: 0 }}
               animate={inView ? { scaleX: 1 } : {}}
               transition={{ delay: 0.6, duration: 0.5 }}
               className="absolute left-0 w-8 h-0.5 bg-gradient-to-r from-transparent to-[#C9A84C]/40 origin-left hidden md:block"
               style={{ top: '50%' }}
             />
-            <motion.div
+            <m.div
               initial={{ scaleX: 0 }}
               animate={inView ? { scaleX: 1 } : {}}
               transition={{ delay: 0.6, duration: 0.5 }}
@@ -95,7 +95,7 @@ export default function FinanceFlowSection() {
               style={{ top: '50%' }}
             />
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ delay: 0.55, duration: 0.6, ease: 'backOut' }}
@@ -114,19 +114,19 @@ export default function FinanceFlowSection() {
               </div>
 
               {/* Pulse ring */}
-              <motion.div
+              <m.div
                 className="absolute inset-0 rounded-full border border-[#C9A84C]/20"
                 animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0, 0.4] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
               />
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Right – Costs */}
           <div className="flex-1 space-y-3">
             <p className="text-white/30 text-xs uppercase tracking-widest text-center md:text-left mb-4">Ausgaben</p>
             {COST_STREAMS.map((s) => (
-              <motion.div
+              <m.div
                 key={s.label}
                 initial={{ opacity: 0, x: 24 }}
                 animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -138,7 +138,7 @@ export default function FinanceFlowSection() {
                   <p className="text-white/70 text-xs font-medium">{s.label}</p>
                   <p className="text-xs font-bold" style={{ color: s.color }}>{s.amount}</p>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function FinanceFlowSection() {
             { step: '3', title: 'Analyse starten', color: '#4CAF8C' },
             { step: '4', title: 'Bericht & Maßnahmen', color: '#A854F7' },
           ].map((item, i) => (
-            <motion.div
+            <m.div
               key={item.step}
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -162,19 +162,19 @@ export default function FinanceFlowSection() {
                 {item.step}
               </div>
               <p className="text-white/60 text-xs leading-relaxed">{item.title}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Trust badges */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 1.2, duration: 0.6 }}
           className="flex flex-wrap justify-center gap-2"
         >
           {TRUST_BADGES.map((badge, i) => (
-            <motion.span
+            <m.span
               key={badge}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
@@ -185,9 +185,9 @@ export default function FinanceFlowSection() {
                 <path d="M1.5 5l2 2 5-4" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               {badge}
-            </motion.span>
+            </m.span>
           ))}
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )

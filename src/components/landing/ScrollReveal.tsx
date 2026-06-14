@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { m, useInView, useReducedMotion } from 'framer-motion'
 import { useRef, useState, useEffect, ReactNode } from 'react'
 
 interface Props {
@@ -43,7 +43,7 @@ export default function ScrollReveal({ children, className = '', variant = 'defa
     : initial
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial={initial}
       animate={animate}
@@ -51,6 +51,6 @@ export default function ScrollReveal({ children, className = '', variant = 'defa
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }

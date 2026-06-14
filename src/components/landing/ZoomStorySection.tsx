@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 
 const STAGES = [
@@ -59,7 +59,7 @@ export default function ZoomStorySection() {
     <section ref={containerRef} className="relative py-28 px-6 bg-[#030610] overflow-hidden">
       <div className="max-w-5xl mx-auto">
         {/* Heading */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -77,12 +77,12 @@ export default function ZoomStorySection() {
           <p className="text-white/40 text-base max-w-lg mx-auto">
             Profitora verwandelt Ihre rohen Betriebsdaten in einen strukturierten Analysebericht mit konkreten Handlungsempfehlungen.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Stage cards */}
         <div className="grid md:grid-cols-2 gap-6">
           {STAGES.map((s, idx) => (
-            <motion.div
+            <m.div
               key={s.label}
               initial={{ opacity: 0, y: 32, scale: 0.96 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -122,7 +122,7 @@ export default function ZoomStorySection() {
               {idx === 1 && (
                 <div className="space-y-2">
                   {s.items!.map((item, i) => (
-                    <motion.div
+                    <m.div
                       key={item}
                       initial={{ opacity: 0, x: -8 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -136,11 +136,11 @@ export default function ZoomStorySection() {
                         </svg>
                       </div>
                       <span className="text-white/50 text-xs">{item}</span>
-                    </motion.div>
+                    </m.div>
                   ))}
                   <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2">
                     <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
+                      <m.div
                         className="h-full bg-[#C9A84C] rounded-full"
                         initial={{ width: 0 }}
                         whileInView={{ width: '100%' }}
@@ -163,7 +163,7 @@ export default function ZoomStorySection() {
                         <span>{b.eur} <span className="text-white/20">({b.pct} %)</span></span>
                       </div>
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
+                        <m.div
                           className="h-full rounded-full bg-[#6B8CFF]"
                           initial={{ width: 0 }}
                           whileInView={{ width: `${b.pct * 2}%` }}
@@ -180,7 +180,7 @@ export default function ZoomStorySection() {
               {idx === 3 && (
                 <div className="space-y-2.5">
                   {s.actions!.map((a, i) => (
-                    <motion.div
+                    <m.div
                       key={a.text}
                       initial={{ opacity: 0, x: 8 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -192,11 +192,11 @@ export default function ZoomStorySection() {
                         {a.prio}
                       </span>
                       <span className="text-white/60 text-xs leading-relaxed">{a.text}</span>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
               )}
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

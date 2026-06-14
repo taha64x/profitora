@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Link from 'next/link'
 
@@ -26,14 +26,14 @@ const HINT_ITEMS = [
 
 function MiniCard({ delay, children }: { delay: number; children: React.ReactNode }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: 'easeOut' }}
       className="bg-white/5 border border-white/10 rounded-xl p-4"
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -50,7 +50,7 @@ export default function DashboardPreviewSection() {
 
       <div className="max-w-6xl mx-auto relative">
         {/* Heading */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
@@ -67,10 +67,10 @@ export default function DashboardPreviewSection() {
           <p className="text-white/40 text-base max-w-xl mx-auto leading-relaxed">
             Speichern Sie Kosten, Einnahmen und Ausgaben dauerhaft. Starten Sie Analysen auf echten Finanzdaten. Verwalten Sie alles an einem Ort.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Mock dashboard */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.2 }}
@@ -134,7 +134,7 @@ export default function DashboardPreviewSection() {
                           <span>{b.pct} %</span>
                         </div>
                         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <motion.div
+                          <m.div
                             className="h-full rounded-full"
                             style={{ backgroundColor: b.color }}
                             initial={{ width: 0 }}
@@ -174,10 +174,10 @@ export default function DashboardPreviewSection() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* CTA */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.8, duration: 0.5 }}
@@ -190,7 +190,7 @@ export default function DashboardPreviewSection() {
             </svg>
           </Link>
           <p className="text-white/25 text-xs mt-3">Kostenlos starten · Kein Kreditkarte nötig</p>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )

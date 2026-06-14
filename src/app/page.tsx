@@ -6,12 +6,15 @@ import AnalysisTypesSection from '@/components/landing/AnalysisTypesSection'
 import WhatYouGetSection from '@/components/landing/WhatYouGetSection'
 import ForWhomSection from '@/components/landing/ForWhomSection'
 import PricingSection from '@/components/landing/PricingSection'
-import DashboardPreviewSection from '@/components/landing/DashboardPreviewSection'
-import ZoomStorySection from '@/components/landing/ZoomStorySection'
-import FinanceFlowSection from '@/components/landing/FinanceFlowSection'
 import HeroSection from '@/components/landing/HeroSection'
-import ProfitChartSection from '@/components/landing/ProfitChartSection'
 import AnalyseVideo from '@/components/landing/AnalyseVideo'
+import MotionProvider from '@/components/landing/MotionProvider'
+import {
+  ProfitChartLazy,
+  ZoomStoryLazy,
+  FinanceFlowLazy,
+  DashboardPreviewLazy,
+} from '@/components/landing/LazySections'
 
 import {
   IconBuilding, IconUtensils, IconCoffee, IconBag, IconHeartPulse,
@@ -63,6 +66,7 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#06091A] text-white overflow-x-clip">
       <StickyHeader />
+      <MotionProvider>
       <HeroSection />
 
       {/* ── STATS ──────────────────────────────────────────────────────────── */}
@@ -176,7 +180,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── UMSATZ RAUF, KOSTEN RUNTER (Scroll-Animation) ──────────────────── */}
-      <ProfitChartSection />
+      <ProfitChartLazy />
 
       {/* ── FÜR WEN ────────────────────────────────────────────────────────── */}
       <ForWhomSection />
@@ -223,14 +227,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── FINANCE FLOW ───────────────────────────────────────────────────── */}
-      <FinanceFlowSection />
+      <FinanceFlowLazy />
 
       {/* ── ZOOM STORY ─────────────────────────────────────────────────────── */}
-      <ZoomStorySection />
+      <ZoomStoryLazy />
 
       {/* ── DASHBOARD PREVIEW ──────────────────────────────────────────────── */}
       <div id="vorschau" className="scroll-mt-24">
-        <DashboardPreviewSection />
+        <DashboardPreviewLazy />
       </div>
 
       {/* ── BENTO FEATURES ─────────────────────────────────────────────────── */}
@@ -484,6 +488,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      </MotionProvider>
     </main>
   )
 }

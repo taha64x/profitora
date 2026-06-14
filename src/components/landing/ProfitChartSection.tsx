@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView, animate } from 'framer-motion'
+import { m, useInView, animate } from 'framer-motion'
 
 // Umsatz steigt, Kosten fallen: Animation startet automatisch beim Erreichen
 // der Sektion und läuft flüssig durch – kein Scroll-Scrubbing, kein "Festhängen".
@@ -85,7 +85,7 @@ export default function ProfitChartSection() {
             ))}
 
             {/* Gewinn-Fläche zwischen den Kurven */}
-            <motion.path
+            <m.path
               d="M40,200 C180,190 320,160 480,120 C600,90 700,70 780,60
                  L780,225 C700,232 600,240 480,242 C320,245 180,235 40,215 Z"
               fill="url(#profitGradient)"
@@ -95,7 +95,7 @@ export default function ProfitChartSection() {
             />
 
             {/* Umsatz – steigend */}
-            <motion.path
+            <m.path
               d="M40,200 C180,190 320,160 480,120 C600,90 700,70 780,60"
               stroke="#4ade80"
               strokeWidth="3"
@@ -105,7 +105,7 @@ export default function ProfitChartSection() {
               transition={{ duration: DRAW_DURATION, ease: 'easeInOut' }}
             />
             {/* Kosten – fallend */}
-            <motion.path
+            <m.path
               d="M40,215 C180,235 320,245 480,242 C600,240 700,232 780,225"
               stroke="#f87171"
               strokeWidth="3"
@@ -141,7 +141,7 @@ export default function ProfitChartSection() {
           </div>
 
           {/* Gewinn-Badge erscheint am Ende */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16, scale: 0.92 }}
             animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
             transition={{ delay: DRAW_DURATION * 0.85, duration: 0.6, type: 'spring', bounce: 0.35 }}
@@ -151,7 +151,7 @@ export default function ProfitChartSection() {
               +{formatEur(REVENUE_END - COSTS_END - (REVENUE_START - COSTS_START))}
             </p>
             <p className="text-white/45 text-xs mt-0.5">mehr Gewinn pro Monat</p>
-          </motion.div>
+          </m.div>
         </div>
 
         <p className="text-white/20 text-xs text-center mt-5 leading-relaxed max-w-md mx-auto">
