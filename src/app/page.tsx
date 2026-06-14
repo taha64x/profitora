@@ -11,6 +11,7 @@ import ZoomStorySection from '@/components/landing/ZoomStorySection'
 import FinanceFlowSection from '@/components/landing/FinanceFlowSection'
 import HeroSection from '@/components/landing/HeroSection'
 import ProfitChartSection from '@/components/landing/ProfitChartSection'
+import AnalyseVideo from '@/components/landing/AnalyseVideo'
 
 import {
   IconBuilding, IconUtensils, IconCoffee, IconBag, IconHeartPulse,
@@ -167,6 +168,10 @@ export default function LandingPage() {
               </ScrollReveal>
             ))}
           </div>
+
+          <ScrollReveal>
+            <AnalyseVideo />
+          </ScrollReveal>
         </div>
       </section>
 
