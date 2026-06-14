@@ -224,7 +224,9 @@ export default function LandingPage() {
       <ZoomStorySection />
 
       {/* ── DASHBOARD PREVIEW ──────────────────────────────────────────────── */}
-      <DashboardPreviewSection />
+      <div id="vorschau" className="scroll-mt-24">
+        <DashboardPreviewSection />
+      </div>
 
       {/* ── BENTO FEATURES ─────────────────────────────────────────────────── */}
       <section id="features" className="bg-[#06091A] py-28 px-6">
