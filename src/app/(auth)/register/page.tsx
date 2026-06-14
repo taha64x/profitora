@@ -1,14 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
+import { PLANS as PLAN_CONFIG, type PlanId } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
+
+const PAID_PLANS: PlanId[] = ['starter', 'business', 'single']
 
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2>(1)
+  // Tarif aus ?plan= (von der Preis-Sektion der Landing-Page) merken,
+  // damit wir nach der Anmeldung direkt zur Zahlung weiterleiten können.
+  const [plan, setPlan] = useState<PlanId | null>(null)
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('plan')
+    if (p && p in PLAN_CONFIG) setPlan(p as PlanId)
+  }, [])
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -63,6 +73,28 @@ export default function RegisterPage() {
         setError(data.error || 'Registrierung fehlgeschlagen.')
         return
       }
+
+      // Direkt-Kauf: bei kostenpflichtigem Tarif sofort zum Stripe-Checkout,
+      // ohne Umweg über das Dashboard (weniger Reibung = mehr Abschlüsse).
+      if (plan && PAID_PLANS.includes(plan)) {
+        try {
+          const checkoutRes = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan }),
+          })
+          const checkoutData = await checkoutRes.json()
+          if (checkoutRes.ok && checkoutData.url) {
+            window.location.href = checkoutData.url
+            return
+          }
+        } catch {
+          /* Checkout (noch) nicht möglich – sanft auf die Tarif-Seite ausweichen */
+        }
+        router.push('/dashboard/subscription')
+        return
+      }
+
       router.push('/dashboard')
     } catch {
       setError('Verbindungsfehler. Bitte versuchen Sie es erneut.')
@@ -79,10 +111,27 @@ export default function RegisterPage() {
           <Link href="/" className="inline-flex items-center gap-1">
             <span className="text-2xl font-bold text-hotel-navy">Profitora</span>
           </Link>
-          <p className="mt-2 text-gray-500 text-sm">Kostenlosen Account erstellen</p>
+          <p className="mt-2 text-gray-500 text-sm">
+            {plan && PAID_PLANS.includes(plan)
+              ? 'Account erstellen – danach geht es direkt zur Zahlung'
+              : 'Kostenlosen Account erstellen'}
+          </p>
         </div>
 
         <div className="card p-8">
+          {plan && PAID_PLANS.includes(plan) && (
+            <div className="mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
+              <span className="text-sm text-gray-600">Gewählter Tarif</span>
+              <span className="text-sm font-semibold text-hotel-navy">
+                {PLAN_CONFIG[plan].name}
+                {PLAN_CONFIG[plan].priceMonthly != null
+                  ? ` · ${PLAN_CONFIG[plan].priceMonthly} €/Monat`
+                  : PLAN_CONFIG[plan].priceOnce != null
+                  ? ` · ${PLAN_CONFIG[plan].priceOnce} € einmalig`
+                  : ''}
+              </span>
+            </div>
+          )}
           {/* Schritte */}
           <div className="flex items-center gap-3 mb-6">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${step === 1 ? 'bg-hotel-navy text-white' : 'bg-green-500 text-white'}`}>
