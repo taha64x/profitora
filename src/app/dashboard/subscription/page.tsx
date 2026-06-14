@@ -8,10 +8,8 @@ import PortalButton from '@/components/subscription/PortalButton'
 import { PLANS as PLAN_CONFIG } from '@/lib/plans'
 
 const PLANS = [
-  { key: 'free',     name: PLAN_CONFIG.free.name,     price: '0 €',                                           features: PLAN_CONFIG.free.features },
-  { key: 'starter',  name: PLAN_CONFIG.starter.name,  price: `${PLAN_CONFIG.starter.priceMonthly} €/Mo`,      features: PLAN_CONFIG.starter.features },
-  { key: 'business', name: PLAN_CONFIG.business.name, price: `${PLAN_CONFIG.business.priceMonthly} €/Mo`,     features: PLAN_CONFIG.business.features },
-  { key: 'single',   name: PLAN_CONFIG.single.name,   price: `${PLAN_CONFIG.single.priceOnce} € einmalig`,    features: PLAN_CONFIG.single.features },
+  { key: 'free',    name: PLAN_CONFIG.free.name,    price: '0 €',                                                      features: PLAN_CONFIG.free.features },
+  { key: 'premium', name: PLAN_CONFIG.premium.name, price: `${PLAN_CONFIG.premium.priceOnce?.toLocaleString('de-DE')} € einmalig`, features: PLAN_CONFIG.premium.features },
 ]
 
 export default async function SubscriptionPage() {
@@ -79,7 +77,7 @@ export default async function SubscriptionPage() {
                 ) : (
                   <CheckoutButton
                     plan={plan.key}
-                    label={plan.key === 'free' ? 'Kostenlos' : plan.key === 'single' ? 'Einmalig kaufen' : `Upgrade auf ${plan.name}`}
+                    label={plan.key === 'free' ? 'Kostenlos' : 'Komplettanalyse kaufen'}
                     disabled={plan.key === 'free'}
                   />
                 )}

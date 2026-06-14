@@ -5,47 +5,25 @@ import { PLANS as PLAN_CONFIG } from '@/lib/plans'
 const PLANS = [
   {
     name: PLAN_CONFIG.free.name,
-    tag: 'Einstieg',
+    tag: 'Gratis-Vorschau',
     price: 'Kostenlos',
     priceNote: 'Keine Kreditkarte erforderlich',
     highlight: false,
-    desc: 'Finanztracking plus ein monatlicher KI-Schnellcheck – der perfekte Start.',
+    desc: 'Sehen Sie kostenlos, wie Ihr Betrieb steht – die Vollauswertung schalten Sie bei Bedarf frei.',
     features: PLAN_CONFIG.free.features,
-    cta: 'Kostenlos starten',
+    cta: 'Gratis-Schnellcheck starten',
     href: '/register',
   },
   {
-    name: PLAN_CONFIG.starter.name,
-    tag: 'Empfohlen',
-    price: `€ ${PLAN_CONFIG.starter.priceMonthly}`,
-    priceNote: 'pro Monat, jederzeit kündbar',
-    highlight: true,
-    desc: 'Für Betriebe, die ihre Zahlen jeden Monat im Griff haben wollen.',
-    features: PLAN_CONFIG.starter.features,
-    cta: 'Starter wählen',
-    href: '/register?plan=starter',
-  },
-  {
-    name: PLAN_CONFIG.business.name,
-    tag: 'Maximal',
-    price: `€ ${PLAN_CONFIG.business.priceMonthly}`,
-    priceNote: 'pro Monat, jederzeit kündbar',
-    highlight: false,
-    desc: 'Unbegrenzte Tiefenanalysen mit dem besten KI-Modell und vollem Assistenten.',
-    features: PLAN_CONFIG.business.features,
-    cta: 'Business wählen',
-    href: '/register?plan=business',
-  },
-  {
-    name: PLAN_CONFIG.single.name,
-    tag: 'Ohne Abo',
-    price: `€ ${PLAN_CONFIG.single.priceOnce}`,
+    name: PLAN_CONFIG.premium.name,
+    tag: 'Komplett',
+    price: `€ ${PLAN_CONFIG.premium.priceOnce?.toLocaleString('de-DE')}`,
     priceNote: 'einmalig, kein Abo',
-    highlight: false,
-    desc: 'Eine vollständige Komplett-Analyse als Einmalkauf – ideal zum Ausprobieren.',
-    features: PLAN_CONFIG.single.features,
-    cta: 'Einzel-Analyse kaufen',
-    href: '/register?plan=single',
+    highlight: true,
+    desc: 'Die vollständige KI-Wirtschaftlichkeitsanalyse mit allen Kennzahlen, Sparpotenzialen in Euro und Handlungsempfehlungen.',
+    features: PLAN_CONFIG.premium.features,
+    cta: 'Komplettanalyse kaufen',
+    href: '/register?plan=premium',
   },
 ]
 
@@ -68,7 +46,7 @@ export default function PricingSection() {
           </div>
         </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
           {PLANS.map((plan, i) => (
             <ScrollReveal key={plan.name} delay={((i % 4) + 1) as 1 | 2 | 3 | 4}>
               <div

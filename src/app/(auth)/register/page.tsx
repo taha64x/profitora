@@ -7,7 +7,7 @@ import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
 import { PLANS as PLAN_CONFIG, type PlanId } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
 
-const PAID_PLANS: PlanId[] = ['starter', 'business', 'single']
+const PAID_PLANS: PlanId[] = ['premium']
 
 export default function RegisterPage() {
   const router = useRouter()

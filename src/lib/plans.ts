@@ -1,7 +1,10 @@
 // Zentrale Tarif-Konfiguration – einzige Quelle für Preise, Limits und KI-Modelle.
 // Wird von Landing-PricingSection, Subscription-Seite, /api/analyze und /api/assistant genutzt.
+//
+// Modell: kostenloser Teaser (Schnellcheck mit gesperrtem Vollbericht) +
+// kostenpflichtige Komplettanalyse als Premium-Einmalkauf.
 
-export type PlanId = 'free' | 'starter' | 'business' | 'single'
+export type PlanId = 'free' | 'premium'
 
 export interface PlanConfig {
   id: PlanId
@@ -14,6 +17,8 @@ export interface PlanConfig {
   analysisLimit: number | null
   /** maximale Analysetiefe */
   maxAccuracy: 'schnellcheck' | 'standard' | 'komplett'
+  /** true = nur Teaser-Vorschau, voller Bericht + Sparpotenziale gesperrt */
+  teaser: boolean
   /** KI-Assistent: Fragen pro Monat, null = unbegrenzt */
   assistantLimit: number | null
   /** Claude-Modell für Analysen und Assistent */
@@ -28,84 +33,44 @@ export interface PlanConfig {
 export const PLANS: Record<PlanId, PlanConfig> = {
   free: {
     id: 'free',
-    name: 'Free',
+    name: 'Gratis-Schnellcheck',
     priceMonthly: 0,
     priceOnce: null,
     analysisLimit: 1,
     maxAccuracy: 'schnellcheck',
-    assistantLimit: 10,
+    teaser: true,
+    assistantLimit: 5,
     aiModel: 'claude-haiku-4-5-20251001',
     aiModelLabel: 'Claude Haiku',
     stripePriceEnv: null,
     highlight: false,
     features: [
-      '1 Schnellcheck-Analyse pro Monat',
+      'Kostenlose Vorschau Ihrer Wirtschaftlichkeit',
+      'Wichtigste Kennzahl + Ergebnis-Einschätzung sichtbar',
       'Finanztracking (Kosten & Einnahmen) unbegrenzt',
-      'Monatsübersicht mit Gewinn-Berechnung',
-      'KI-Assistent: 10 Fragen pro Monat',
-      'KI-Modell: Claude Haiku',
+      'Voller Bericht & EUR-Sparpotenziale gesperrt – erst mit Komplettanalyse',
     ],
   },
-  starter: {
-    id: 'starter',
-    name: 'Starter',
-    priceMonthly: 19,
-    priceOnce: null,
-    analysisLimit: 5,
-    maxAccuracy: 'standard',
-    assistantLimit: 200,
-    aiModel: 'claude-sonnet-4-6',
-    aiModelLabel: 'Claude Sonnet',
-    stripePriceEnv: 'STRIPE_PRICE_STARTER',
-    highlight: true,
-    features: [
-      '5 Analysen pro Monat (bis Standard-Tiefe)',
-      'Alles aus Free',
-      'Monatsvergleiche & Trend-Auswertung',
-      'KI-Assistent: 200 Fragen pro Monat',
-      'Analyse direkt aus Ihren Finanzdaten',
-      'KI-Modell: Claude Sonnet',
-    ],
-  },
-  business: {
-    id: 'business',
-    name: 'Business',
-    priceMonthly: 49,
-    priceOnce: null,
+  premium: {
+    id: 'premium',
+    name: 'Komplettanalyse',
+    priceMonthly: null,
+    priceOnce: 1990,
     analysisLimit: null,
     maxAccuracy: 'komplett',
+    teaser: false,
     assistantLimit: null,
     aiModel: 'claude-opus-4-8',
     aiModelLabel: 'Claude Opus',
-    stripePriceEnv: 'STRIPE_PRICE_BUSINESS',
-    highlight: false,
+    stripePriceEnv: 'STRIPE_PRICE_PREMIUM',
+    highlight: true,
     features: [
-      'Unbegrenzte Analysen inkl. Komplett-Tiefenanalyse',
-      'Alles aus Starter',
-      'KI-Assistent unbegrenzt',
-      'PDF-Export der Berichte',
-      'Bestes KI-Modell: Claude Opus',
-      'Prioritäts-Support',
-    ],
-  },
-  single: {
-    id: 'single',
-    name: 'Einzel-Analyse',
-    priceMonthly: null,
-    priceOnce: 29,
-    analysisLimit: 1,
-    maxAccuracy: 'komplett',
-    assistantLimit: 30,
-    aiModel: 'claude-opus-4-8',
-    aiModelLabel: 'Claude Opus',
-    stripePriceEnv: 'STRIPE_PRICE_SINGLE',
-    highlight: false,
-    features: [
-      'Eine Komplett-Analyse ohne Abo',
-      'Volle Tiefenanalyse mit Claude Opus',
-      '30 Tage Zugriff auf den KI-Assistenten',
-      'PDF-Export des Berichts',
-      'Kein Abonnement, keine Folgekosten',
+      'Vollständige KI-Tiefenanalyse (10-Abschnitt-Bericht)',
+      'Alle Branchen-Kennzahlen mit Soll-Ist-Vergleich',
+      'Konkrete Sparpotenziale in Euro + Handlungsempfehlungen',
+      'Wesentlichkeits- & Plausibilitätsprüfung nach Prüfer-Methodik',
+      'Bestes KI-Modell: Claude Opus · PDF-Export',
+      'KI-Assistent unbegrenzt · einmalig, kein Abo',
     ],
   },
 }
