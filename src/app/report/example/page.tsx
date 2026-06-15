@@ -122,21 +122,27 @@ export default function ExampleReportPage() {
             Management-Zusammenfassung
           </h2>
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-5">
-            <p className="text-gray-700 leading-relaxed">
-              Im Berichtszeitraum <strong>{EXAMPLE.period}</strong> erzielte das Hotel bei einer Auslastung von{' '}
-              <strong>{fmtN(EXAMPLE.occupancyRate)}%</strong> einen Gesamtumsatz von{' '}
-              <strong>{fmt(EXAMPLE.totalRevenue)}</strong> bei Gesamtausgaben von{' '}
-              <strong>{fmt(EXAMPLE.totalExpenses)}</strong>. Das ergibt ein vorläufiges Betriebsergebnis von{' '}
-              <strong className="text-green-700">{fmt(EXAMPLE.netResult)}</strong> ({fmtN(EXAMPLE.netMargin)}% Marge).
-              Die KI hat <strong>4 Sparpotenziale</strong> mit einer Gesamteinsparung von geschätzt{' '}
-              <strong className="text-green-700">{fmt(totalSavings)}/Monat ({fmt(totalSavings * 12)}/Jahr)</strong> identifiziert.
+            <p className="text-gray-900 font-semibold leading-relaxed mb-3">
+              Der Betrieb ist mit {fmtN(EXAMPLE.netMargin)}% GOP-Marge solide profitabel – verliert aber geschätzt
+              rund <span className="text-green-700">{fmt(totalSavings)}/Monat</span> an drei klar benennbaren Stellen.
+            </p>
+            <p className="text-sm text-gray-600 mb-3">Die größten Werthebel (Euro/Monat · Konfidenz):</p>
+            <ol className="text-sm text-gray-700 space-y-1 mb-1">
+              <li>1. Direktbuchungen ausbauen — <strong className="text-green-700">~650–950 €</strong> (Basis ~800) · Konfidenz mittel</li>
+              <li>2. Personaleinsatz bei Schwachlast optimieren — <strong className="text-green-700">~450–800 €</strong> (Basis ~650) · Konfidenz mittel</li>
+              <li>3. Energieverbrauch senken — <strong className="text-green-700">~300–550 €</strong> (Basis ~400) · Konfidenz mittel</li>
+            </ol>
+            <p className="text-xs text-gray-500 mt-3">
+              Leitkennzahl GOPPAR (Gross Operating Profit je verfügbarer Zimmernacht): <strong>{fmtN(EXAMPLE.netResult / EXAMPLE.availableNights, 2)} EUR</strong>.
+              Auslastung {fmtN(EXAMPLE.occupancyRate)}%, Umsatz {fmt(EXAMPLE.totalRevenue)}, Betriebsergebnis (GOP) {fmt(EXAMPLE.netResult)}.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiBox label="Gesamtumsatz" value={fmt(EXAMPLE.totalRevenue)} good />
-            <KpiBox label="Gesamtausgaben" value={fmt(EXAMPLE.totalExpenses)} />
-            <KpiBox label="Betriebsergebnis" value={fmt(EXAMPLE.netResult)} good />
-            <KpiBox label="Nettomarge" value={`${fmtN(EXAMPLE.netMargin)}%`} good={EXAMPLE.netMargin > 15} />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <KpiBox label="Umsatz" value={fmt(EXAMPLE.totalRevenue)} good />
+            <KpiBox label="Kosten" value={fmt(EXAMPLE.totalExpenses)} />
+            <KpiBox label="GOP" value={fmt(EXAMPLE.netResult)} good />
+            <KpiBox label="GOP-Marge" value={`${fmtN(EXAMPLE.netMargin)} %`} good={EXAMPLE.netMargin > 15} />
+            <KpiBox label="GOPPAR" value={`${fmtN(EXAMPLE.netResult / EXAMPLE.availableNights, 2)} EUR`} sub="GOP / verf. Zimmernacht" />
           </div>
         </section>
 
@@ -144,10 +150,10 @@ export default function ExampleReportPage() {
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">2</span>
-            Prüfungsauftrag und Datengrundlage
+            Auftrag, Datengrundlage &amp; Datenqualität
           </h2>
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5 text-sm text-blue-900">
-            <strong>Art der Analyse:</strong> KI-gestützte betriebswirtschaftliche Wirtschaftlichkeitsanalyse (§2 WPO analog). Keine gesetzliche Abschlussprüfung nach §317 HGB. Methodik: Analytische Prüfungshandlungen nach IDW PS 312 (Soll-Ist-Vergleich, Kennzahlenanalyse, Branchenvergleich).
+            <strong>Art der Analyse:</strong> KI-gestützte betriebswirtschaftliche Wirtschaftlichkeitsanalyse, orientiert an anerkannten Controlling- und Kostenrechnungsmethoden (USALI-Kostengliederung, STR/HotStats-Kennzahlenlogik, DEHOGA-Betriebsvergleich). Methodik: Soll-Ist-Vergleich, Kennzahlenanalyse und Branchenvergleich. Es erfolgte keine Prüfung der Belege; die Auswertung basiert auf den bereitgestellten Daten und ersetzt keine Abschlussprüfung, Steuer- oder Rechtsberatung.
           </div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Datenqualität nach Kategorie</h3>
           <div className="overflow-x-auto mb-4">
@@ -190,22 +196,31 @@ export default function ExampleReportPage() {
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">3</span>
-            Einnahmenanalyse
+            Erlösanalyse
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <KpiBox label="Gesamtumsatz" value={fmt(EXAMPLE.totalRevenue)} />
+            <KpiBox label="ADR" value={`${fmtN(EXAMPLE.adr)} EUR`} sub="Ø Zimmerpreis (verkaufte Nächte)" />
+            <KpiBox label="RevPAR" value={`${fmtN(EXAMPLE.revpar)} EUR`} sub="Zimmerumsatz / verf. Nacht" />
+            <KpiBox label="TRevPAR" value={`${fmtN(EXAMPLE.totalRevenue / EXAMPLE.availableNights, 2)} EUR`} sub="Gesamtumsatz / verf. Nacht" />
             <KpiBox label="Umsatz / Tag" value={fmt(EXAMPLE.totalRevenue / 31)} />
-            <KpiBox label="Umsatz / belegte Nacht" value={fmt(EXAMPLE.totalRevenue / EXAMPLE.occupiedNights)} />
-            <KpiBox label="Umsatz / MA-Stunde" value={`${fmtN(EXAMPLE.revenuePerEmployeeHour)} EUR`} />
           </div>
+          <p className="text-xs text-gray-400 italic">
+            Annahme: Da keine getrennten Nebenerlöse (F&amp;B) erfasst sind, wird „Gesamtumsatz ≈ Zimmerumsatz" angenommen –
+            ADR und RevPAR sind entsprechend zu lesen. Direkt- vs. Portalbuchungsanteil siehe Werthebel.
+            Marktabhängige Größen (ADR, RevPAR) sind standortspezifisch.
+          </p>
         </section>
 
         {/* ─── 4. Ausgabenanalyse ──────────────────────────────────────── */}
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">4</span>
-            Ausgabenanalyse
+            Kostenanalyse (USALI-Gliederung)
           </h2>
+          <p className="text-xs text-gray-400 italic mb-4">
+            Gliederung nach USALI-Logik: direkte Abteilungskosten (Reinigung/Wäsche), nicht verteilte Betriebskosten
+            (Vertrieb/Portalprovisionen, Energie, Verwaltung, Software) und Fixkosten (Versicherungen). Anteile in % vom Umsatz.
+          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -247,11 +262,12 @@ export default function ExampleReportPage() {
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">5</span>
-            Mitarbeiterzeitenanalyse
+            Personal- &amp; Produktivitätsanalyse
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <KpiBox label="Gesamtstunden" value={`${EXAMPLE.employeeHours} h`} />
             <KpiBox label="Stunden / belegte Nacht" value={`${fmtN(EXAMPLE.employeeHours / EXAMPLE.occupiedNights)} h`} />
+            <KpiBox label="Personalkosten / belegte Nacht" value={`${fmtN(14500 / EXAMPLE.occupiedNights, 2)} EUR`} />
             <KpiBox label="Umsatz / MA-Stunde" value={`${fmtN(EXAMPLE.revenuePerEmployeeHour)} EUR`} good />
             <KpiBox label="Personalkostenquote" value={`${fmtN(EXAMPLE.laborCostRatio)}%`} good={EXAMPLE.laborCostRatio < 28} />
           </div>
@@ -265,13 +281,14 @@ export default function ExampleReportPage() {
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">6</span>
-            Hotel-Kennzahlen
+            Hotel-Kennzahlen (Leitkennzahl: GOPPAR)
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <KpiBox label="GOPPAR" value={`${fmtN(EXAMPLE.netResult / EXAMPLE.availableNights, 2)} EUR`} sub="Leitkennzahl: GOP / verf. Nacht" good />
             <KpiBox label="ADR" value={`${fmtN(EXAMPLE.adr)} EUR`} sub="Average Daily Rate" />
             <KpiBox label="RevPAR" value={`${fmtN(EXAMPLE.revpar)} EUR`} sub="Revenue per Available Room" />
-            <KpiBox label="Auslastung" value={`${fmtN(EXAMPLE.occupancyRate)}%`} sub={`${EXAMPLE.occupiedNights} von ${EXAMPLE.availableNights} Nächten`} good={EXAMPLE.occupancyRate > 60} />
-            <KpiBox label="Kosten / belegte Nacht" value={`${fmtN(EXAMPLE.costPerOccupiedNight)} EUR`} />
+            <KpiBox label="Auslastung" value={`${fmtN(EXAMPLE.occupancyRate)}%`} sub={`${EXAMPLE.occupiedNights} / ${EXAMPLE.availableNights} Nächte`} good={EXAMPLE.occupancyRate > 60} />
+            <KpiBox label="CPOR" value={`${fmtN(EXAMPLE.costPerOccupiedNight)} EUR`} sub="Kosten / belegte Nacht" />
           </div>
         </section>
 
@@ -279,10 +296,10 @@ export default function ExampleReportPage() {
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
             <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">7</span>
-            Auffälligkeiten und Abweichungsprotokoll
+            Kennzahlen-Cockpit &amp; Soll-Ist-Abweichungen
           </h2>
           <p className="text-sm text-gray-500 mb-5 italic">
-            Basierend auf den geprüften Daten ergaben die analytischen Prüfungshandlungen (IDW PS 312) folgende wesentliche Soll-Ist-Abweichungen:
+            Soll-Ist-Vergleich gegen Branchenrichtwerte, sortiert nach Handlungsbedarf:
           </p>
           <div className="overflow-x-auto mb-5">
             <table className="w-full text-sm">
@@ -324,16 +341,67 @@ export default function ExampleReportPage() {
             </table>
           </div>
           <p className="text-xs text-gray-400 italic">
-            Richtwerte basieren auf Branchendurchschnittswerten für kleine Hotelbetriebe (10–80 Zimmer). Marktabhängige Kennzahlen (ADR, RevPAR) sind standortspezifisch und werden individuell bewertet.
+            Quellen der Richtwerte: DEHOGA-Zahlenspiegel &amp; dwif-Betriebsvergleich (2025), Bezugsgröße kleine Hotelbetriebe
+            10–80 Zimmer, bundesweit (Median). Marktabhängige Kennzahlen (ADR, RevPAR) sind standortspezifisch und werden
+            nicht gegen den Bundesschnitt bewertet. Richtwerte ohne belastbare Quelle werden nicht ausgewiesen.
             (Entscheidungshilfe – keine rechtsverbindliche Prüfung)
           </p>
         </section>
 
-        {/* ─── 8. Sparpotenziale ───────────────────────────────────────── */}
+        {/* ─── Ergebnis-Brücke ──────────────────────────────────────────── */}
+        <section className="card p-8 mb-6">
+          <h2 className="text-xl font-bold text-hotel-navy mb-1 flex items-center gap-2">
+            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">8</span>
+            Ergebnis-Brücke (Ist-GOP → Ziel-GOP)
+          </h2>
+          <p className="text-sm text-gray-500 mb-5">
+            Vom heutigen Betriebsergebnis zum Zielergebnis – jeder Werthebel als eigener Beitrag. Summe der Hebel = Gesamtpotenzial (keine Doppelzählung).
+          </p>
+          {(() => {
+            const base = EXAMPLE.netResult
+            const target = base + totalSavings
+            const steps = [
+              { label: 'Ist-GOP', value: base, add: false },
+              { label: '+ Direktbuchungen ausbauen', value: 800, add: true },
+              { label: '+ Personaleinsatz optimieren', value: 650, add: true },
+              { label: '+ Energieverbrauch senken', value: 400, add: true },
+              { label: '+ Software-Abos bündeln', value: 150, add: true },
+              { label: 'Ziel-GOP', value: target, add: false },
+            ]
+            return (
+              <div className="space-y-2">
+                {steps.map((s) => {
+                  const display = s.add
+                    ? base + steps.filter((x) => x.add && steps.indexOf(x) <= steps.indexOf(s)).reduce((a, b) => a + b.value, 0)
+                    : s.value
+                  const pct = Math.min(100, (display / target) * 100)
+                  const isTotal = !s.add
+                  return (
+                    <div key={s.label} className="flex items-center gap-3">
+                      <span className={`text-sm w-52 shrink-0 ${isTotal ? 'font-bold text-hotel-navy' : 'text-gray-700'}`}>{s.label}</span>
+                      <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <div className={`h-full rounded-full ${isTotal ? 'bg-hotel-navy' : 'bg-green-500'}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className={`text-sm w-28 text-right ${isTotal ? 'font-bold text-hotel-navy' : 'text-green-700 font-medium'}`}>
+                        {s.add ? '+' : ''}{fmt(s.value)}
+                      </span>
+                    </div>
+                  )
+                })}
+                <p className="text-xs text-gray-400 pt-2">
+                  GOP-Marge steigt rechnerisch von {fmtN(EXAMPLE.netMargin)}% auf ~{fmtN((target / EXAMPLE.totalRevenue) * 100)}%
+                  (geschätztes Potenzial bei Umsetzung; Beträge gerundet).
+                </p>
+              </div>
+            )
+          })()}
+        </section>
+
+        {/* ─── 9. Sparpotenziale ───────────────────────────────────────── */}
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-2 flex items-center gap-2">
-            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">8</span>
-            Top-Sparpotenziale
+            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">9</span>
+            Werthebel / Sparpotenziale (priorisiert)
           </h2>
           <p className="text-sm text-gray-500 mb-6">
             Geschätzte Gesamteinsparung:{' '}
@@ -360,10 +428,14 @@ export default function ExampleReportPage() {
                       <h3 className="font-semibold text-gray-900 text-sm">{s.title}</h3>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">{s.desc}</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Geschätztes Potenzial: ~{Math.round((s.saving * 0.7) / 10) * 10}–{Math.round((s.saving * 1.3) / 10) * 10} EUR/Monat
+                      (Basis ~{s.saving} EUR) · Konfidenz: mittel · Umsetzbarkeit: {s.rank <= 2 ? 'mittel' : 'gering'}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xl font-bold text-green-700">~{fmt(s.saving)}</p>
-                    <p className="text-xs text-gray-400">pro Monat</p>
+                    <p className="text-xs text-gray-400">pro Monat (Basis)</p>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block ${
                         s.priority === 'HOCH'
@@ -382,39 +454,56 @@ export default function ExampleReportPage() {
           </div>
         </section>
 
-        {/* ─── 9. Handlungsempfehlungen ─────────────────────────────────── */}
+        {/* ─── 10. Maßnahmenplan 30/60/90 ───────────────────────────────── */}
         <section className="card p-8 mb-6">
           <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">9</span>
-            Konkrete Handlungsempfehlungen
+            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">10</span>
+            Maßnahmenplan 30 / 60 / 90 Tage
           </h2>
           <ol className="space-y-3">
             {[
-              'Direktbuchungsrate erhöhen: Website-Buchungsmodul (z.B. Little Hotelier) einrichten und Stammkundenprogramm mit Direktbucher-Rabatt (5%) starten.',
-              'Personalplanung überprüfen: Montag und Dienstag Schichtplanung an tatsächliche Auslastung anpassen. Bei unter 8 belegten Zimmern reduzierte Besetzung prüfen.',
-              'Energieaudit beauftragen: Monatliche Energieauswertung nach Auslastung starten. Thermostat-Zeitsteuerung für unbesetzte Zimmer einrichten.',
-              'Software konsolidieren: Liste aller aktiven Abos erstellen und auf Überschneidungen prüfen. Konsolidierung auf 1-2 Kerntools anstreben.',
-            ].map((rec, i) => (
+              { frist: '0–30 Tage', rec: 'Personalplanung anpassen: Montag/Dienstag-Schichten an die tatsächliche Auslastung koppeln; bei unter 8 belegten Zimmern reduzierte Besetzung prüfen. Aufwand gering.' },
+              { frist: '0–30 Tage', rec: 'Software-Abos sichten: Liste aller aktiven Tools erstellen, Überschneidungen identifizieren, auf 1–2 Kerntools konsolidieren. Aufwand gering.' },
+              { frist: '30–60 Tage', rec: 'Direktbuchungen ausbauen: eigenes Buchungsmodul einrichten und Stammkundenprogramm mit Direktbucher-Vorteil (z. B. 5 %) starten, um die Portalprovisionsquote zu senken. Aufwand mittel.' },
+              { frist: '60–90 Tage', rec: 'Energieauswertung & -optimierung: monatliche Verbrauchsauswertung nach Auslastung, Thermostat-Zeitsteuerung für unbelegte Zimmer, LED-Umrüstung prüfen. Aufwand mittel.' },
+            ].map((m, i) => (
               <li key={i} className="flex gap-3 py-2 border-b border-gray-50 last:border-0">
                 <span className="w-6 h-6 bg-hotel-navy text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                   {i + 1}
                 </span>
-                <p className="text-sm text-gray-700 leading-relaxed">{rec}</p>
+                <div>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-hotel-navy/10 text-hotel-navy mr-2">{m.frist}</span>
+                  <span className="text-sm text-gray-700 leading-relaxed">{m.rec}</span>
+                </div>
               </li>
             ))}
           </ol>
         </section>
 
+        {/* ─── 11. Annahmen & Einschränkungen ───────────────────────────── */}
+        <section className="card p-8 mb-6">
+          <h2 className="text-xl font-bold text-hotel-navy mb-4 flex items-center gap-2">
+            <span className="w-8 h-8 bg-hotel-navy text-white rounded-lg flex items-center justify-center text-sm font-bold">11</span>
+            Annahmen, offene Punkte &amp; Einschränkungen
+          </h2>
+          <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
+            <li>Gesamtumsatz ≈ Zimmerumsatz angenommen (keine getrennten Nebenerlöse erfasst) – ADR/RevPAR entsprechend zu lesen.</li>
+            <li>Sparpotenziale sind datenbasierte Schätzungen mit Spanne; Portalanteil ~40 % / Provision ~12 % als Annahme zugrunde gelegt.</li>
+            <li>Kein Vormonatsvergleich vorhanden → keine Trend-/Flow-Through-Aussage möglich. Zimmerkategorien (DIRS21) fehlen → keine ADR-Aufschlüsselung nach Zimmertyp.</li>
+            <li>Eine Folgeanalyse mit Vergleichszeitraum und getrennten Erlösarten erhöht die Präzision deutlich.</li>
+          </ul>
+        </section>
+
         {/* ─── 10. Disclaimer ───────────────────────────────────────────── */}
         <section className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
           <h2 className="text-base font-bold text-amber-900 mb-4 flex items-center gap-2">
-            <IconAlertTriangle className="w-5 h-5" /> 10. Rechtliche Abgrenzung und Warnhinweise
+            <IconAlertTriangle className="w-5 h-5" /> Rechtliche Abgrenzung und Warnhinweise
           </h2>
           <div className="text-sm text-amber-800 space-y-3 leading-relaxed">
             <p>
               <strong>Art der Analyse:</strong> Diese Analyse ist eine KI-gestützte betriebswirtschaftliche
-              Wirtschaftlichkeitsauswertung. Sie orientiert sich an den Grundsätzen betriebswirtschaftlicher
-              Prüfungen (§2 WPO) und ersetzt <strong>keine gesetzliche Abschlussprüfung (§317 HGB)</strong>,
+              Wirtschaftlichkeitsauswertung, orientiert an anerkannten Controlling- und Kostenrechnungsmethoden
+              (USALI, DEHOGA-Betriebsvergleich). Sie ersetzt <strong>keine gesetzliche Abschlussprüfung (§317 HGB)</strong>,
               keine Steuerberatung und keine Rechtsberatung.
             </p>
             <p>
@@ -424,10 +513,9 @@ export default function ExampleReportPage() {
               Daten – tatsächliche Einsparungen können abweichen.
             </p>
             <p>
-              <strong>Methodik:</strong> Die Analyse erfolgte mittels analytischer Prüfungshandlungen
-              (Soll-Ist-Vergleich, Kennzahlenanalyse, Branchenvergleich) nach IDW PS 312. Alle Aussagen
-              basieren auf den hochgeladenen Daten. Es wurden keine Zahlen erfunden oder Annahmen ohne
-              Datenbasis getroffen.
+              <strong>Methodik:</strong> Soll-Ist-Vergleich, Kennzahlenanalyse und Branchenvergleich
+              (USALI-Kostengliederung, GOPPAR-Logik). Alle Kennzahlen basieren auf den hochgeladenen Daten;
+              Sparpotenziale sind datenbasierte Schätzungen mit offengelegten Annahmen.
             </p>
             <div className="pt-2 border-t border-amber-200">
               <p className="text-xs text-amber-700 font-medium mb-1">Datenschutz (DSGVO)</p>
