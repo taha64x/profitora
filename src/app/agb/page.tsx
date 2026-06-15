@@ -57,7 +57,7 @@ export default function AgbPage() {
           <section>
             <h2 className="font-semibold text-gray-900 mb-3 text-base">§ 4 Preise und Zahlung</h2>
             <p className="leading-relaxed">
-              Profitora wird in verschiedenen Paketen angeboten (Free, Standard, Tiefenanalyse, Komplett). Die jeweils aktuellen Preise sind auf der Preisseite ersichtlich. Zahlungen werden über den Zahlungsdienstleister Stripe abgewickelt.
+              Profitora wird in folgenden Paketen angeboten: ein kostenloser Gratis-Schnellcheck sowie die kostenpflichtige Komplettanalyse (einmalige Zahlung von 1.990 EUR inkl. gesetzlicher MwSt.). Die jeweils aktuellen Preise und Leistungsumfänge sind auf der Preisseite ersichtlich. Zahlungen werden über den Zahlungsdienstleister Stripe abgewickelt.
             </p>
           </section>
 
