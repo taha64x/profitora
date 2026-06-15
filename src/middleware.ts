@@ -4,6 +4,11 @@ const PROTECTED_PATHS = ['/dashboard', '/upload', '/report', '/organization']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Öffentlicher Beispielbericht – muss ohne Login sichtbar sein (Vertrauens-/
+  // Conversion-Hebel). Sonst würde der '/report'-Schutz auch /report/example sperren.
+  if (pathname === '/report/example') return NextResponse.next()
+
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p))
 
   if (!isProtected) return NextResponse.next()

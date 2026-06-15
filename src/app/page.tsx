@@ -7,7 +7,7 @@ import WhatYouGetSection from '@/components/landing/WhatYouGetSection'
 import ForWhomSection from '@/components/landing/ForWhomSection'
 import PricingSection from '@/components/landing/PricingSection'
 import HeroSection from '@/components/landing/HeroSection'
-import AnalyseVideo from '@/components/landing/AnalyseVideo'
+import AnalyseShowcase from '@/components/landing/AnalyseShowcase'
 import MotionProvider from '@/components/landing/MotionProvider'
 import QuickNav from '@/components/landing/QuickNav'
 import ProfitChartSection from '@/components/landing/ProfitChartSection'
@@ -175,9 +175,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <ScrollReveal>
-            <AnalyseVideo />
-          </ScrollReveal>
+          <AnalyseShowcase />
         </div>
       </section>
 
