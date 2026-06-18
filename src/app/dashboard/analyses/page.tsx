@@ -58,8 +58,8 @@ export default async function AnalysesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Meine Analysen</h1>
             <p className="text-gray-500 text-sm mt-0.5">Alle gestarteten und abgeschlossenen Analysen</p>
@@ -73,8 +73,8 @@ export default async function AnalysesPage() {
         {reports.length > 0 && (
           <div className="mb-10">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Abgeschlossene Berichte</h2>
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="table-card">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
                     {['Datum', 'Bezeichnung', 'Branche', 'Status', 'Erstellt', ''].map((h) => (
@@ -119,8 +119,8 @@ export default async function AnalysesPage() {
         {requests.length > 0 && (
           <div className="mb-10">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Analyseanfragen</h2>
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="table-card">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
                     {['Datum', 'Analysearten', 'Methode', 'Genauigkeit', 'Status', 'Ref.'].map((h) => (

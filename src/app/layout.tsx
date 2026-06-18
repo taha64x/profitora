@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import HydrationFlag from '@/components/HydrationFlag'
@@ -30,6 +30,16 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Zoomen erlauben (Barrierefreiheit) – nicht sperren.
+  maximumScale: 5,
+  // Inhalt bis in die Notch-/Safe-Area ziehen; Abstände regelt CSS via env().
+  viewportFit: 'cover',
+  themeColor: '#06091A',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

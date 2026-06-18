@@ -81,8 +81,8 @@ export default function FinancePage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Finanzübersicht</h1>
             <p className="text-gray-500 text-sm mt-0.5">Kostenfluss, Einnahmestruktur und Gewinnentwicklung</p>

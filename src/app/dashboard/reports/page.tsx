@@ -75,8 +75,8 @@ export default async function ReportsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Berichte</h1>
             <p className="text-gray-500 text-sm mt-0.5">Alle abgeschlossenen Analyseberichte auf einen Blick</p>
@@ -87,7 +87,7 @@ export default async function ReportsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[
             { label: 'Berichte gesamt', value: reports.length },
             { label: 'Abgeschlossen', value: completed.length },

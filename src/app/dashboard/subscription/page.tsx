@@ -24,7 +24,7 @@ export default async function SubscriptionPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="dash-page">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Abo & Zahlung</h1>
         <p className="text-gray-500 text-sm mb-8">Ihr aktuelles Paket und Zahlungsoptionen verwalten</p>
 

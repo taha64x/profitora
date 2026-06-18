@@ -151,8 +151,8 @@ export default function CostsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Kosten</h1>
             <p className="text-gray-500 text-sm mt-0.5">Alle Ausgaben erfassen, verwalten und auswerten</p>
@@ -191,8 +191,8 @@ export default function CostsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="table-card">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 {['Datum', 'Kategorie', 'Beschreibung', 'Anbieter', 'Zahlungsart', 'Wiederh.', 'Betrag', ''].map((h) => (

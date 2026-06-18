@@ -216,11 +216,11 @@ export default function ZielePage() {
 
         {/* Existing targets */}
         {!loading && targets.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="table-card">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="font-semibold text-gray-900 text-sm">Gespeicherte Ziele</h2>
             </div>
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   <th className="text-left px-6 py-3">Monat</th>

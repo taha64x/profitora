@@ -53,8 +53,8 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-2xl">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page max-w-2xl">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>
             <p className="text-gray-500 text-sm mt-0.5">Sprache, Währung und Benachrichtigungen konfigurieren</p>

@@ -59,8 +59,8 @@ export default async function FilesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dateien</h1>
             <p className="text-gray-500 text-sm mt-0.5">Hochgeladene Dokumente und Datenexporte</p>
@@ -71,7 +71,7 @@ export default async function FilesPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[
             { label: 'Hochgeladene Dateien', value: String(uploads.length) },
             { label: 'Gesamtgröße', value: formatBytes(totalSize) },
@@ -100,8 +100,8 @@ export default async function FilesPage() {
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="table-card">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['', 'Dateiname', 'Kategorie', 'Größe', 'Hochgeladen', ''].map((h) => (

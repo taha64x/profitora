@@ -123,9 +123,9 @@ export default async function MeinWegPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="dash-page">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Mein Weg zur Profitabilität</h1>
             <p className="text-gray-500 text-sm mt-1">{org.name} · {monthLabel}</p>
@@ -143,7 +143,7 @@ export default async function MeinWegPage() {
         </div>
 
         {/* Current month KPIs */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Umsatz {monthLabel}</p>
             <p className="text-2xl font-bold text-gray-900">{formatEur(curRevTotal)}</p>
@@ -224,7 +224,7 @@ export default async function MeinWegPage() {
         )}
 
         {/* Monthly comparison table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+        <div className="table-card mb-6">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900 text-sm">Monatliche Übersicht</h2>
             <span className="text-xs text-gray-400">Letzte 12 Monate</span>

@@ -158,8 +158,8 @@ export default function RevenuesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Einnahmen</h1>
             <p className="text-gray-500 text-sm mt-0.5">Umsatz und Einnahmequellen verwalten</p>
@@ -193,8 +193,8 @@ export default function RevenuesPage() {
           <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suchen…" className="input flex-1 min-w-40 text-sm"/>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="table-card">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 {['Datum', 'Kategorie', 'Beschreibung', 'Kunde / Quelle', 'Status', 'Wiederh.', 'Betrag', ''].map((h) => (

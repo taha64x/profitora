@@ -62,7 +62,7 @@ export default function AssistantPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-3xl mx-auto flex flex-col h-[calc(100vh-2rem)] lg:h-screen">
+      <div className="dash-page max-w-3xl mx-auto flex flex-col h-[calc(100dvh-3.5rem)] lg:h-screen">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>

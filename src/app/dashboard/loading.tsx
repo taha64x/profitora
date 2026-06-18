@@ -7,8 +7,8 @@ function Skeleton({ className }: { className: string }) {
 export default function DashboardLoading() {
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="dash-page">
+        <div className="dash-head">
           <div>
             <Skeleton className="h-8 w-48 mb-2"/>
             <Skeleton className="h-4 w-64"/>
