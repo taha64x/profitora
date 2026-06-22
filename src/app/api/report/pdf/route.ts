@@ -6,6 +6,7 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import puppeteer from 'puppeteer-core'
 import chromium from '@sparticuz/chromium'
+import { resolveReportPlan } from '@/lib/report-teaser'
 
 /**
  * Browser-Start: auf Vercel das serverless-taugliche @sparticuz/chromium,
@@ -54,7 +55,7 @@ function buildHtmlDocument(orgName: string, title: string, createdAt: Date, body
 </head>
 <body class="p-8">
   <div class="page-header">
-    <div class="brand">Audit<span>are</span></div>
+    <div class="brand">Profit<span>ora</span></div>
     <div class="meta">
       <div class="font-semibold text-gray-800">${orgName}</div>
       <div>${title}</div>
@@ -80,7 +81,7 @@ export async function GET(req: Request) {
 
     const report = await db.analysisReport.findUnique({
       where: { id: reportId },
-      include: { organization: true },
+      include: { organization: { include: { subscription: true } } },
     })
 
     if (!report) return NextResponse.json({ error: 'Bericht nicht gefunden.' }, { status: 404 })
@@ -90,6 +91,15 @@ export async function GET(req: Request) {
       where: { userId: user.userId, organizationId: report.organizationId },
     })
     if (!member) return NextResponse.json({ error: 'Kein Zugriff.' }, { status: 403 })
+
+    // Teaser-Gating: Im Gratis-Tarif kein PDF-Export des Vollberichts.
+    const plan = resolveReportPlan(report.metadata, report.organization.subscription?.planName)
+    if (plan.teaser) {
+      return NextResponse.json(
+        { error: 'PDF-Export ist Teil der Komplettanalyse (1.990 €).', upgradeRequired: true },
+        { status: 402 },
+      )
+    }
 
     const html = buildHtmlDocument(
       report.organization.name,

@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import PdfDownloadButton from '@/components/report/PdfDownloadButton'
 import { IconXCircle } from '@/components/ui/icons'
+import { resolveReportPlan, buildTeaserHtml } from '@/lib/report-teaser'
 
 interface PageProps {
   params: { id: string }
@@ -17,7 +18,7 @@ export default async function ReportPage({ params }: PageProps) {
   const report = await db.analysisReport.findUnique({
     where: { id: params.id },
     include: {
-      organization: true,
+      organization: { include: { subscription: true } },
       createdBy: { select: { email: true, name: true } },
     },
   })
@@ -29,6 +30,12 @@ export default async function ReportPage({ params }: PageProps) {
     where: { userId: user.userId, organizationId: report.organizationId },
   })
   if (!member) notFound()
+
+  // Teaser-Gating: Im Gratis-Tarif nur Anriss zeigen, Vollbericht + EUR-
+  // Sparpotenziale hinter der Komplettanalyse (1.990 €) sperren.
+  const plan = resolveReportPlan(report.metadata, report.organization.subscription?.planName)
+  const isGated = plan.teaser
+  const displayHtml = isGated ? buildTeaserHtml(report.htmlContent || '') : (report.htmlContent || '')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,7 +65,7 @@ export default async function ReportPage({ params }: PageProps) {
               ? 'Fehler'
               : 'In Bearbeitung...'}
           </span>
-          {report.status === 'COMPLETED' && (
+          {report.status === 'COMPLETED' && !isGated && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.print()}
@@ -117,11 +124,46 @@ export default async function ReportPage({ params }: PageProps) {
               betriebswirtschaftliche Entscheidungshilfen.
             </div>
 
-            {/* KI-generierter Bericht */}
-            <div
-              className="card p-8 prose prose-sm max-w-none report-content"
-              dangerouslySetInnerHTML={{ __html: report.htmlContent || '' }}
-            />
+            {/* KI-generierter Bericht (im Gratis-Tarif nur Anriss) */}
+            <div className={isGated ? 'relative' : ''}>
+              <div
+                className="card p-8 prose prose-sm max-w-none report-content"
+                dangerouslySetInnerHTML={{ __html: displayHtml }}
+              />
+              {isGated && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-gray-50 to-transparent rounded-b-xl" />
+              )}
+            </div>
+
+            {/* Paywall: Vollbericht + EUR-Sparpotenziale freischalten */}
+            {isGated && (
+              <div className="mt-6 rounded-2xl border border-hotel-gold/40 bg-gradient-to-br from-hotel-navy to-[#0D1630] text-white p-8 text-center shadow-xl">
+                <div className="text-3xl mb-3">🔒</div>
+                <h2 className="text-xl font-bold mb-2">
+                  Vollständige Analyse freischalten
+                </h2>
+                <p className="text-white/70 text-sm max-w-lg mx-auto mb-5">
+                  Sie sehen eine kostenlose Vorschau. Der vollständige 10-Abschnitt-Bericht
+                  mit allen Kennzahlen, dem Soll-Ist-Vergleich und Ihren konkreten
+                  <strong className="text-hotel-gold"> Sparpotenzialen in Euro</strong> ist
+                  Teil der Komplettanalyse.
+                </p>
+                <ul className="text-left text-sm text-white/80 max-w-md mx-auto mb-6 space-y-1.5">
+                  <li>✓ Alle Branchen-Kennzahlen mit Benchmark-Vergleich</li>
+                  <li>✓ Konkrete Sparpotenziale in Euro + Handlungsempfehlungen</li>
+                  <li>✓ Bestes KI-Modell (Claude Opus) · PDF-Export</li>
+                </ul>
+                <Link
+                  href="/dashboard/subscription"
+                  className="inline-block bg-hotel-gold text-hotel-navy font-bold px-7 py-3 rounded-xl hover:brightness-110 transition"
+                >
+                  Komplettanalyse freischalten – 1.990 €
+                </Link>
+                <p className="text-white/40 text-xs mt-3">
+                  Einmalig, kein Abo · Entscheidungshilfe, keine rechtsverbindliche Prüfung
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -83,7 +83,7 @@ export default function DashboardPreviewSection() {
               <div className="w-3 h-3 rounded-full bg-yellow-500/60"/>
               <div className="w-3 h-3 rounded-full bg-green-500/60"/>
             </div>
-            <div className="text-white/20 text-xs font-mono">auditly.app/dashboard</div>
+            <div className="text-white/20 text-xs font-mono">profitora.de/dashboard</div>
             <div/>
           </div>
 

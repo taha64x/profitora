@@ -10,7 +10,9 @@ interface Props {
 }
 
 export default function AnimatedCounter({ target, prefix = '', suffix = '', duration = 1800 }: Props) {
-  const [value, setValue] = useState(0)
+  // Start bei target, damit SSR/Initialzustand nie „0" zeigt (Conversion-Schaden).
+  // Die Hochzähl-Animation startet erst, wenn das Element sichtbar wird.
+  const [value, setValue] = useState(target)
   const ref = useRef<HTMLSpanElement>(null)
   const started = useRef(false)
 
@@ -22,6 +24,7 @@ export default function AnimatedCounter({ target, prefix = '', suffix = '', dura
       ([entry]) => {
         if (entry.isIntersecting && !started.current) {
           started.current = true
+          setValue(0)
           const start = performance.now()
 
           const tick = (now: number) => {

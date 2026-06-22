@@ -86,7 +86,7 @@ export async function POST() {
       })
     }
 
-    const task = runAnalysis(report.id, uploads, org, plan.aiModel, financeData, user.email).catch(
+    const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, user.email).catch(
       async (err) => {
         console.error('[analyze] Fehler:', err)
         await db.analysisReport.update({
@@ -164,6 +164,7 @@ async function runAnalysis(
   reportId: string,
   uploads: Array<{ category: string; storagePath: string; columnMapping: unknown }>,
   org: { name: string; unitCount: number | null; businessType: string },
+  planId: string,
   aiModel: string,
   financeData: TrackedFinanceData | null,
   userEmail?: string,
@@ -212,6 +213,10 @@ async function runAnalysis(
   }
 
   const htmlContent = await generateBusinessReport(analysisResult, { model: aiModel })
+
+  // Tarif-Snapshot: bestimmt später das Teaser-Gating im Bericht (siehe report-teaser.ts).
+  // Erst nach der KI-Generierung gesetzt, damit es nicht in den Prompt gelangt.
+  ;(analysisResult as EnrichedResult & { planId?: string }).planId = planId
 
   const updatedReport = await db.analysisReport.update({
     where: { id: reportId },
