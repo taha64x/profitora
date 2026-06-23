@@ -1,0 +1,9 @@
+# Lokale Build-Artefakte & Schwergewichte – Vercel baut alles selbst neu.
+# Verhindert riesige Uploads und dass Cache/venv in Funktionen landen.
+.next
+.vercel
+node_modules
+uploads
+*.log
+.DS_Store
+Gesicherte Terminal-Ausgabe.txt

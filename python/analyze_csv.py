@@ -104,8 +104,10 @@ def resolve_column(
 
 
 # Erlaubter Host-Suffix für Remote-Downloads (Vercel Blob). Über env überschreibbar.
+# ".blob.vercel-storage.com" deckt private (<store>.blob…) UND öffentliche
+# (<store>.public.blob…) Hosts ab. Private Blobs werden über signierte URLs gelesen.
 _ALLOWED_HOST_SUFFIX = os.environ.get(
-    "BLOB_ALLOWED_HOST_SUFFIX", ".public.blob.vercel-storage.com"
+    "BLOB_ALLOWED_HOST_SUFFIX", ".blob.vercel-storage.com"
 ).lower()
 # Basis-Verzeichnis für lokale Dateien (nur lokale Entwicklung).
 _ALLOWED_LOCAL_DIR = os.path.realpath(

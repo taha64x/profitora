@@ -1,3 +1,6 @@
+# numpy < 2.4 gepinnt: numpy 2.4.x bricht den Vercel-Python-Build (uv, fehlende
+# dist-info/INSTALLER). Unter 2.4 läuft die Installation stabil.
+numpy>=2.0,<2.4
 pandas>=2.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.1

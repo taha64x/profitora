@@ -9,6 +9,7 @@ import { generateBusinessReport } from '@/lib/ai'
 import { getPlan } from '@/lib/plans'
 import { sendAnalysisCompletedEmail } from '@/lib/email'
 import { runEngineAnalysis } from '@/lib/analyze-engine'
+import { presignBlobGetUrl } from '@/lib/blob'
 import type { AnalysisResult } from '@/types'
 
 interface TrackedFinanceData {
@@ -177,7 +178,13 @@ async function runAnalysis(
 
     for (const u of uploads) {
       if (!filesByCategory[u.category]) filesByCategory[u.category] = []
-      filesByCategory[u.category].push(u.storagePath)
+
+      // Produktion: storagePath ist ein privater Blob-Pfad → kurzlebige signierte
+      // URL erzeugen, die die Python-Analyse einmalig lesen kann.
+      // Lokal: storagePath ist ein absoluter Dateipfad → unverändert weitergeben.
+      const isBlobPath = !!process.env.BLOB_READ_WRITE_TOKEN && !u.storagePath.startsWith('/')
+      const filePath = isBlobPath ? await presignBlobGetUrl(u.storagePath) : u.storagePath
+      filesByCategory[u.category].push(filePath)
 
       if (u.columnMapping && typeof u.columnMapping === 'object') {
         columnMappingByCategory[u.category] = u.columnMapping as Record<string, string>

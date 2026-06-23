@@ -2,6 +2,15 @@
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs', 'puppeteer'],
+    // Verhindert, dass Build-Cache & lokale Artefakte in die Serverless-Funktionen
+    // getraced werden (sonst > 250 MB → Deploy schlägt fehl bei Cache-Builds).
+    outputFileTracingExcludes: {
+      '*': [
+        '.next/cache/**',
+        'node_modules/.cache/**',
+        '.vercel/**',
+      ],
+    },
   },
   async headers() {
     return [

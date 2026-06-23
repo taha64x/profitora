@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getStripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
+import { getPlan } from '@/lib/plans'
+import { sendOrderConfirmationEmail } from '@/lib/email'
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 1,
@@ -70,6 +72,27 @@ export async function POST(req: Request) {
             currentPeriodEnd: period.end,
           },
         })
+
+        // Auftragsbestätigung + Rechnung automatisch versenden (no-op ohne RESEND_API_KEY)
+        try {
+          const customerEmail = session.customer_details?.email ?? session.customer_email
+          if (customerEmail) {
+            const org = await db.organization.findUnique({ where: { id: orgId }, select: { name: true } })
+            const now = new Date()
+            const invoiceNumber = `PA-${now.getFullYear()}-${String(session.id).slice(-6).toUpperCase()}`
+            await sendOrderConfirmationEmail({
+              to: customerEmail,
+              orgName: org?.name ?? 'Ihr Unternehmen',
+              productName: getPlan(plan).name,
+              amountCents: session.amount_total ?? 0,
+              invoiceNumber,
+              date: now,
+            })
+          }
+        } catch (mailErr) {
+          // Mailfehler darf den Webhook nicht fehlschlagen lassen (Stripe würde sonst retrien)
+          console.error('[webhook] Auftragsbestätigung konnte nicht versendet werden:', mailErr)
+        }
         break
       }
 

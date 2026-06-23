@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { COMPANY, companyOneLine } from './company'
 
 let _resend: Resend | null = null
 
@@ -108,6 +109,65 @@ export async function sendMonthlyReminderEmail(to: string, name: string, orgName
       </ul>
       <br>
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/mein-weg" class="btn">Fortschritt ansehen</a>
+    `),
+  })
+}
+
+/**
+ * Auftragsbestätigung + Rechnung (Kleinbetragsrechnung §33 UStDV, < 250 € brutto).
+ * Wird automatisch nach erfolgreichem Kauf aus dem Stripe-Webhook versendet.
+ * Kleinunternehmer §19 UStG → keine Umsatzsteuer ausgewiesen.
+ */
+export async function sendOrderConfirmationEmail(params: {
+  to: string
+  orgName: string
+  productName: string
+  amountCents: number
+  invoiceNumber: string
+  date: Date
+}) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const { to, orgName, productName, amountCents, invoiceNumber, date } = params
+  const amount = (amountCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+  const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${COMPANY.domain}`
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `Auftragsbestätigung & Rechnung ${invoiceNumber} – ${COMPANY.brand}`,
+    html: baseHtml(`
+      <h1>Vielen Dank für Ihren Kauf!</h1>
+      <p>Ihre Bestellung für <strong>${orgName}</strong> ist eingegangen und Ihr Zugang zur Komplettanalyse wurde freigeschaltet. Diese E-Mail ist zugleich Ihre Auftragsbestätigung und Rechnung.</p>
+
+      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;margin:8px 0 20px;">
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Rechnung</p>
+        <table style="width:100%;font-size:14px;color:#374151;border-collapse:collapse;">
+          <tr><td style="padding:4px 0;color:#6b7280;">Rechnungsnummer</td><td style="padding:4px 0;text-align:right;font-weight:600;">${invoiceNumber}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Datum</td><td style="padding:4px 0;text-align:right;">${dateStr}</td></tr>
+          <tr><td colspan="2" style="padding:12px 0 4px;border-top:1px solid #f3f4f6;"></td></tr>
+          <tr><td style="padding:4px 0;">${productName} (einmalig)</td><td style="padding:4px 0;text-align:right;font-weight:600;">${amount}</td></tr>
+          <tr><td style="padding:10px 0 0;border-top:1px solid #f3f4f6;font-weight:700;color:#111827;">Gesamtbetrag</td><td style="padding:10px 0 0;border-top:1px solid #f3f4f6;text-align:right;font-weight:700;color:#111827;">${amount}</td></tr>
+        </table>
+        <p style="margin:14px 0 0;font-size:12px;color:#9ca3af;">${COMPANY.vatNote}</p>
+      </div>
+
+      <p style="font-size:13px;color:#6b7280;margin-bottom:4px;"><strong>Anbieter / Rechnungssteller:</strong></p>
+      <p style="font-size:13px;color:#6b7280;margin-top:0;">
+        ${COMPANY.legalName}<br>${COMPANY.street}<br>${COMPANY.city}, ${COMPANY.country}<br>
+        Steuernr.: ${COMPANY.taxNumber} · ${COMPANY.email}
+      </p>
+
+      <a href="${appUrl}/dashboard" class="btn">Zur Komplettanalyse</a>
+
+      <div class="disclaimer">
+        <strong>Widerrufshinweis:</strong> Bei digitalen Inhalten, die sofort bereitgestellt werden, erlischt das Widerrufsrecht mit der von Ihnen beim Kauf erteilten Zustimmung zur sofortigen Ausführung.
+        Details: <a href="${appUrl}/widerruf" style="color:#92400e;">Widerrufsbelehrung</a> ·
+        <a href="${appUrl}/agb" style="color:#92400e;">AGB</a> ·
+        <a href="${appUrl}/datenschutz" style="color:#92400e;">Datenschutz</a>
+      </div>
+      <p style="font-size:11px;color:#9ca3af;margin-top:20px;">${companyOneLine()}</p>
     `),
   })
 }

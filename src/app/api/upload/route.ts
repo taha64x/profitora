@@ -53,15 +53,16 @@ export async function POST(request: NextRequest) {
     let storagePath: string
 
     if (process.env.BLOB_READ_WRITE_TOKEN) {
-      // Produktion / Vercel: Datei in Vercel Blob ablegen.
-      // Pfad ist durch die UUID nicht erratbar; die Python-Analyse liest die Datei
-      // anschließend über diese URL.
-      const blob = await put(`uploads/${safeFilename}`, file, {
-        access: 'public',
+      // Produktion / Vercel: Datei privat in Vercel Blob ablegen (nicht öffentlich
+      // abrufbar). Zugriff später nur über eine kurzlebige, signierte URL.
+      await put(`uploads/${safeFilename}`, file, {
+        access: 'private',
         addRandomSuffix: false,
         contentType: file.type || 'application/octet-stream',
       })
-      storagePath = blob.url
+      // Privater Blob: nur den Pfad speichern (NICHT die URL). Die kurzlebige,
+      // signierte Download-URL wird erst zur Analysezeit erzeugt (src/lib/blob.ts).
+      storagePath = `uploads/${safeFilename}`
     } else {
       // Lokale Entwicklung: ins lokale uploads/-Verzeichnis schreiben.
       const uploadDir = join(process.cwd(), process.env.UPLOAD_DIR || 'uploads')
