@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { COMPANY } from '@/lib/company'
 
 export const metadata = { title: 'Impressum – Profitora' }
 
@@ -8,7 +9,7 @@ export default function ImpressumPage() {
       <header className="bg-white border-b border-gray-200 py-4 px-8 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#0D1630] flex items-center justify-center">
-            <span className="text-[#C9A84C] font-black text-xs">A</span>
+            <span className="text-[#C9A84C] font-black text-xs">P</span>
           </div>
           <span className="font-bold text-[#0D1630]">Profitora</span>
         </Link>
@@ -20,31 +21,42 @@ export default function ImpressumPage() {
 
         <section className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-6">
           <div>
-            <h2 className="font-semibold text-gray-900 mb-2">Angaben gemäß § 5 TMG</h2>
+            <h2 className="font-semibold text-gray-900 mb-2">Angaben gemäß § 5 DDG</h2>
             <p className="text-gray-700 text-sm leading-relaxed">
-              Profitora<br/>
-              [Unternehmensname]<br/>
-              [Straße und Hausnummer]<br/>
-              [PLZ] [Stadt]<br/>
-              Deutschland
+              {COMPANY.legalName}<br/>
+              {COMPANY.brand} (Geschäftsbezeichnung)<br/>
+              {COMPANY.street}<br/>
+              {COMPANY.city}<br/>
+              {COMPANY.country}
             </p>
           </div>
 
           <div>
             <h2 className="font-semibold text-gray-900 mb-2">Kontakt</h2>
             <p className="text-gray-700 text-sm leading-relaxed">
-              E-Mail: <a href="mailto:kontakt@profitora.de" className="text-[#0D1630] hover:underline">kontakt@profitora.de</a>
+              E-Mail: <a href={`mailto:${COMPANY.email}`} className="text-[#0D1630] hover:underline">{COMPANY.email}</a>
             </p>
           </div>
 
           <div>
-            <h2 className="font-semibold text-gray-900 mb-2">Umsatzsteuer-ID</h2>
-            <p className="text-gray-700 text-sm">Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: [DE-Nummer]</p>
+            <h2 className="font-semibold text-gray-900 mb-2">Umsatzsteuer</h2>
+            <p className="text-gray-700 text-sm leading-relaxed">
+              Als Kleinunternehmer im Sinne von § 19 UStG wird keine Umsatzsteuer berechnet und ausgewiesen.
+              Eine Umsatzsteuer-Identifikationsnummer liegt daher nicht vor.
+            </p>
           </div>
 
           <div>
-            <h2 className="font-semibold text-gray-900 mb-2">Verantwortlich für den Inhalt</h2>
-            <p className="text-gray-700 text-sm">[Name des Verantwortlichen], [Anschrift wie oben]</p>
+            <h2 className="font-semibold text-gray-900 mb-2">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+            <p className="text-gray-700 text-sm">{COMPANY.legalName}, {COMPANY.street}, {COMPANY.city}</p>
+          </div>
+
+          <div>
+            <h2 className="font-semibold text-gray-900 mb-2">Verbraucherstreitbeilegung</h2>
+            <p className="text-gray-700 text-sm leading-relaxed">
+              Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer
+              Verbraucherschlichtungsstelle teilzunehmen.
+            </p>
           </div>
 
           <div>
@@ -68,6 +80,7 @@ export default function ImpressumPage() {
         <div className="flex gap-4 mt-8 text-xs text-gray-400">
           <Link href="/datenschutz" className="hover:text-gray-600">Datenschutzerklärung</Link>
           <Link href="/agb" className="hover:text-gray-600">AGB</Link>
+          <Link href="/widerruf" className="hover:text-gray-600">Widerruf</Link>
         </div>
       </div>
     </div>

@@ -485,6 +485,7 @@ export default function LandingPage() {
             <Link href="/impressum" className="text-white/25 hover:text-white/50 text-xs transition-colors">Impressum</Link>
             <Link href="/datenschutz" className="text-white/25 hover:text-white/50 text-xs transition-colors">Datenschutz</Link>
             <Link href="/agb" className="text-white/25 hover:text-white/50 text-xs transition-colors">AGB</Link>
+            <Link href="/widerruf" className="text-white/25 hover:text-white/50 text-xs transition-colors">Widerruf</Link>
           </div>
         </div>
       </footer>

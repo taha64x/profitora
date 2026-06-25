@@ -7,13 +7,13 @@
 
 export const COMPANY = {
   /** Rechtlicher Name des Anbieters (Vor- und Nachname bei Einzelunternehmen) */
-  legalName: '[BITTE AUSFÜLLEN: z. B. Taha Aslan]',
+  legalName: 'Taha Aslan',
   /** Marken-/Produktname */
   brand: 'Profitora',
   /** Straße + Hausnummer */
-  street: '[BITTE AUSFÜLLEN: Straße + Nr.]',
+  street: 'Haberstraße 15',
   /** PLZ + Ort */
-  city: '[BITTE AUSFÜLLEN: PLZ Ort]',
+  city: '69126 Heidelberg',
   country: 'Deutschland',
   /** Steuernummer (Finanzamt) – auf Kleinbetragsrechnung < 250 € nicht zwingend, aber empfohlen */
   taxNumber: '[BITTE AUSFÜLLEN: Steuernummer]',
