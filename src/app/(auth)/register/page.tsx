@@ -30,6 +30,7 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [consent, setConsent] = useState(false)
 
   const selectedBusiness = form.businessType ? getBusinessTypeConfig(form.businessType) : null
 
@@ -51,6 +52,10 @@ export default function RegisterPage() {
     }
     if (form.password.length < 8) {
       setError('Passwort muss mindestens 8 Zeichen haben.')
+      return
+    }
+    if (plan && PAID_PLANS.includes(plan) && !consent) {
+      setError('Bitte stimmen Sie der sofortigen Ausführung zu, um fortzufahren.')
       return
     }
 
@@ -81,7 +86,7 @@ export default function RegisterPage() {
           const checkoutRes = await fetch('/api/stripe/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan }),
+            body: JSON.stringify({ plan, consent }),
           })
           const checkoutData = await checkoutRes.json()
           if (checkoutRes.ok && checkoutData.url) {
@@ -306,6 +311,21 @@ export default function RegisterPage() {
                   onChange={(e) => update('passwordConfirm', e.target.value)}
                 />
               </div>
+
+              {plan && PAID_PLANS.includes(plan) && (
+                <label className="flex items-start gap-2 text-xs text-gray-500 leading-snug cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 shrink-0 accent-hotel-navy"
+                  />
+                  <span>
+                    Ich stimme ausdrücklich zu, dass mit der Ausführung sofort begonnen wird, und bestätige,
+                    dass ich mit Beginn der Ausführung mein Widerrufsrecht verliere.
+                  </span>
+                </label>
+              )}
 
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Wird registriert...' : 'Account erstellen'}

@@ -8,10 +8,20 @@ export async function POST(req: Request) {
     const user = getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
-    const { plan } = await req.json()
+    const { plan, consent } = await req.json()
     const planConfig = STRIPE_PLANS[plan]
     if (!planConfig) return NextResponse.json({ error: 'Ungültiger Plan.' }, { status: 400 })
     if (!planConfig.priceId) return NextResponse.json({ error: 'Stripe Price ID nicht konfiguriert.' }, { status: 500 })
+
+    // Pflicht (§356 Abs. 4/5 BGB): ausdrückliche Zustimmung zur sofortigen Ausführung,
+    // sonst kein Kauf. Wird unten als Nachweis in den Session-Metadaten gespeichert.
+    if (consent !== true) {
+      return NextResponse.json(
+        { error: 'Bitte stimmen Sie der sofortigen Ausführung zu, um fortzufahren.' },
+        { status: 400 },
+      )
+    }
+    const consentAt = new Date().toISOString()
 
     const membership = await db.organizationMember.findFirst({
       where: { userId: user.userId },
@@ -52,7 +62,7 @@ export async function POST(req: Request) {
       line_items: [{ price: planConfig.priceId, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`,
-      metadata: { organizationId: org.id, plan },
+      metadata: { organizationId: org.id, plan, consent_immediate_execution: 'true', consent_at: consentAt },
       ...(planConfig.mode === 'subscription'
         ? { subscription_data: { metadata: { organizationId: org.id, plan } } }
         : {}),
