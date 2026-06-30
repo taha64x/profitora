@@ -58,24 +58,24 @@ function UploadContent() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#06091A] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto mb-6">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+          <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
               <path d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-3">Analyse eingereicht</h1>
-          <p className="text-white/50 text-sm leading-relaxed mb-2">Referenz-ID:</p>
-          <code className="text-au-gold text-xs bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg block mb-6">
+          <h1 className="font-display text-2xl font-bold text-[#0E1A33] mb-3">Analyse eingereicht</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-2">Referenz-ID:</p>
+          <code className="text-[#B8923A] text-xs bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg block mb-6">
             {submitted}
           </code>
-          <p className="text-white/35 text-sm leading-relaxed mb-8">
+          <p className="text-gray-500 text-sm leading-relaxed mb-8">
             Ihre Analyse wurde vorbereitet. Ihre Daten werden ausgewertet und Sie erhalten
             einen strukturierten betriebswirtschaftlichen Bericht.
           </p>
           <Link href="/dashboard"
-            className="flex items-center justify-center bg-au-gold hover:bg-au-gold-light text-[#06091A] font-bold text-sm px-6 py-3 rounded-xl transition-all w-full">
+            className="flex items-center justify-center bg-[#0E1A33] hover:bg-[#1a2744] text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all w-full shadow-lg shadow-[#0E1A33]/15">
             Zum Dashboard
           </Link>
         </div>
@@ -84,54 +84,54 @@ function UploadContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06091A] text-white">
-      <header className="border-b border-white/6 px-6 py-4 flex items-center justify-between">
-        <Link href="/analyze" className="text-white/40 hover:text-white text-sm transition-colors">
+    <div className="min-h-screen bg-gray-50 text-[#0E1A33]">
+      <header className="border-b border-gray-200 bg-white px-6 py-4 flex items-center justify-between">
+        <Link href="/analyze" className="text-gray-500 hover:text-[#0E1A33] text-sm transition-colors">
           ← Zurück zur Konfiguration
         </Link>
         <Link href="/" className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-gradient-to-br from-au-gold to-au-gold-light flex items-center justify-center">
             <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5">
-              <path d="M8 2L14 13H2L8 2Z" fill="#06091A"/>
+              <path d="M8 2L14 13H2L8 2Z" fill="#0E1A33"/>
             </svg>
           </div>
-          <span className="text-white font-semibold tracking-tight">Profitora</span>
+          <span className="text-[#0E1A33] font-semibold tracking-tight">Profitora</span>
         </Link>
       </header>
 
       <div className="max-w-2xl mx-auto px-6 py-12">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-white mb-3">Dokumente hochladen</h1>
-          <p className="text-white/40 text-sm leading-relaxed max-w-md mx-auto">
+          <h1 className="font-display text-3xl font-extrabold text-[#0E1A33] mb-3">Dokumente hochladen</h1>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto">
             Laden Sie Ihre Unternehmensdaten hoch. Die KI erkennt Struktur, liest Tabellen
             aus, extrahiert Kennzahlen und markiert fehlende Informationen.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl border border-red-500/30 bg-red-950/30 text-red-400 text-sm">
+          <div className="mb-6 p-4 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm">
             {error}
           </div>
         )}
 
-        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
           <UploadZone
             onFilesChange={setFiles}
             consent={consent}
             onConsentChange={(key, val) => setConsent((c) => ({ ...c, [key]: val }))}
           />
 
-          <div className="mt-6 pt-6 border-t border-white/8">
+          <div className="mt-6 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={handleStart}
               disabled={!allConsented || loading}
-              className="w-full bg-au-gold hover:bg-au-gold-light disabled:opacity-40 disabled:cursor-not-allowed text-[#06091A] font-bold text-sm px-6 py-3.5 rounded-xl transition-all hover:scale-[1.01]"
+              className="w-full bg-[#0E1A33] hover:bg-[#1a2744] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0E1A33]/15"
             >
               {loading ? 'Wird eingereicht…' : 'Analyse einreichen →'}
             </button>
             {!allConsented && (
-              <p className="text-white/25 text-xs text-center mt-2">
+              <p className="text-gray-400 text-xs text-center mt-2">
                 Bitte bestätigen Sie alle drei Hinweise oben.
               </p>
             )}
@@ -140,21 +140,21 @@ function UploadContent() {
 
         {/* Optional: also fill questionnaire */}
         {method === 'hybrid' && (
-          <div className="mt-4 p-5 rounded-xl border border-white/8 bg-white/[0.02]">
-            <p className="text-white/50 text-sm mb-3">
-              Sie nutzen die <strong className="text-white/70">Hybrid-Option</strong> – ergänzen Sie auch den Fragebogen
+          <div className="mt-4 p-5 rounded-xl border border-gray-200 bg-white">
+            <p className="text-gray-500 text-sm mb-3">
+              Sie nutzen die <strong className="text-gray-700">Hybrid-Option</strong> – ergänzen Sie auch den Fragebogen
               für die genaueste Analyse.
             </p>
             <Link
               href={`/analyze/questionnaire?${params.toString()}`}
-              className="text-au-gold text-sm hover:underline"
+              className="text-[#B8923A] text-sm font-medium hover:underline"
             >
               Zum Fragebogen →
             </Link>
           </div>
         )}
 
-        <p className="text-white/20 text-xs text-center mt-6 leading-relaxed">
+        <p className="text-gray-400 text-xs text-center mt-6 leading-relaxed">
           Diese Analyse ersetzt keine Steuerberatung, Rechtsberatung oder gesetzliche Wirtschaftsprüfung.
           Alle Einsparpotenziale sind Schätzungen – abhängig von Umsetzung und Einzelfall.
         </p>
@@ -166,8 +166,8 @@ function UploadContent() {
 export default function UploadPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#06091A] flex items-center justify-center">
-        <div className="text-white/30 text-sm">Lädt…</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-sm">Lädt…</div>
       </div>
     }>
       <UploadContent />

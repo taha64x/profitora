@@ -37,22 +37,22 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
           <div
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
               i < current
-                ? 'bg-au-gold text-[#06091A]'
+                ? 'bg-au-gold text-[#0E1A33]'
                 : i === current
-                ? 'bg-white/15 text-white border border-white/30'
-                : 'bg-white/5 text-white/25'
+                ? 'bg-[#0E1A33] text-white'
+                : 'bg-gray-100 text-gray-400'
             }`}
           >
             {i < current ? (
               <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
-                <path d="M2 6l3 3 5-5" stroke="#06091A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 6l3 3 5-5" stroke="#0E1A33" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             ) : (
               i + 1
             )}
           </div>
           {i < total - 1 && (
-            <div className={`h-px w-8 md:w-12 transition-all ${i < current ? 'bg-au-gold/60' : 'bg-white/10'}`} />
+            <div className={`h-px w-8 md:w-12 transition-all ${i < current ? 'bg-au-gold/60' : 'bg-gray-200'}`} />
           )}
         </div>
       ))}
@@ -77,19 +77,19 @@ function OptionButton({
       onClick={onClick}
       className={`group relative text-left w-full p-4 rounded-xl border transition-all duration-150 ${
         selected
-          ? 'border-au-gold bg-au-gold/10 text-white'
-          : 'border-white/10 text-white/55 hover:border-white/25 hover:text-white/80 hover:bg-white/3'
+          ? 'border-au-gold bg-au-gold/10 text-[#0E1A33]'
+          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-[#0E1A33] hover:bg-gray-50'
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded-${multi ? 'md' : 'full'} border-2 flex items-center justify-center transition-all ${
-            selected ? 'border-au-gold bg-au-gold' : 'border-white/25'
+            selected ? 'border-au-gold bg-au-gold' : 'border-gray-300'
           }`}
         >
           {selected && (
             <svg viewBox="0 0 10 10" fill="none" className="w-2.5 h-2.5">
-              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#06091A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#0E1A33" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
         </div>
@@ -167,8 +167,8 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
       {/* Step 0: Branche */}
       {step === 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Ihre Branche</h2>
-          <p className="text-white/40 text-sm mb-6">
+          <h2 className="font-display text-2xl font-bold text-[#0E1A33] mb-2">Ihre Branche</h2>
+          <p className="text-gray-500 text-sm mb-6">
             Die KI lädt automatisch die passenden Branchenbenchmarks.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -179,14 +179,14 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
                 onClick={() => setConfig((c) => ({ ...c, industry: bt.value }))}
               >
                 <p className="font-semibold text-sm leading-snug">{bt.label}</p>
-                <p className="text-xs text-white/35 mt-0.5 leading-snug">{bt.description}</p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">{bt.description}</p>
               </OptionButton>
             ))}
           </div>
 
           {/* Eigene Branche als Freitext */}
           <div className="mt-5">
-            <p className="text-white/40 text-xs mb-2 uppercase tracking-wide font-medium">
+            <p className="text-gray-500 text-xs mb-2 uppercase tracking-wide font-medium">
               Oder eigene Branche eingeben
             </p>
             <input
@@ -194,9 +194,9 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
               placeholder='z.B. "Autowerkstatt", "Eventagentur", "Logistikunternehmen"…'
               value={BUSINESS_TYPES.some((bt) => bt.value === config.industry) ? '' : config.industry}
               onChange={(e) => setConfig((c) => ({ ...c, industry: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 focus:border-[#C9A84C]/60 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none transition-colors"
+              className="w-full bg-white border border-gray-300 focus:border-[#C9A84C] focus:ring-2 focus:ring-[#C9A84C]/20 rounded-xl px-4 py-3 text-[#0E1A33] text-sm placeholder:text-gray-400 outline-none transition-colors"
             />
-            <p className="text-white/25 text-xs mt-2">
+            <p className="text-gray-400 text-xs mt-2">
               Die KI erstellt dann eine universelle Analyse, zugeschnitten auf Ihre Beschreibung.
             </p>
           </div>
@@ -206,8 +206,8 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
       {/* Step 1: Analysearten */}
       {step === 1 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Analysearten</h2>
-          <p className="text-white/40 text-sm mb-6">
+          <h2 className="font-display text-2xl font-bold text-[#0E1A33] mb-2">Analysearten</h2>
+          <p className="text-gray-500 text-sm mb-6">
             Wählen Sie eine oder mehrere Analysearten. Bei Komplettanalyse werden alle Module kombiniert.
           </p>
           <div className="space-y-2">
@@ -234,7 +234,7 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
                 multi
               >
                 <p className="font-semibold text-sm">{at.label}</p>
-                <p className="text-xs text-white/35 mt-0.5">{at.description}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{at.description}</p>
               </OptionButton>
             ))}
           </div>
@@ -244,8 +244,8 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
       {/* Step 2: Datenquelle */}
       {step === 2 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Datenquelle</h2>
-          <p className="text-white/40 text-sm mb-6">
+          <h2 className="font-display text-2xl font-bold text-[#0E1A33] mb-2">Datenquelle</h2>
+          <p className="text-gray-500 text-sm mb-6">
             Wie möchten Sie Ihre Unternehmensdaten bereitstellen?
           </p>
           <div className="space-y-3">
@@ -277,9 +277,9 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold text-sm">{opt.label}</p>
-                    <p className="text-xs text-white/35 mt-1 leading-relaxed max-w-sm">{opt.desc}</p>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed max-w-sm">{opt.desc}</p>
                   </div>
-                  <span className="ml-3 flex-shrink-0 text-xs border border-au-gold/30 text-au-gold/70 px-2 py-0.5 rounded-full">
+                  <span className="ml-3 flex-shrink-0 text-xs border border-[#C9A84C]/40 text-[#B8923A] px-2 py-0.5 rounded-full">
                     {opt.badge}
                   </span>
                 </div>
@@ -292,8 +292,8 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
       {/* Step 3: Genauigkeit */}
       {step === 3 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Analysetiefe</h2>
-          <p className="text-white/40 text-sm mb-6">
+          <h2 className="font-display text-2xl font-bold text-[#0E1A33] mb-2">Analysetiefe</h2>
+          <p className="text-gray-500 text-sm mb-6">
             Wie detailliert soll die Analyse sein?
           </p>
           <div className="space-y-2">
@@ -306,12 +306,12 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
                 <div className="flex items-center justify-between w-full">
                   <div>
                     <p className="font-semibold text-sm">{al.label}</p>
-                    <p className="text-xs text-white/35 mt-0.5 leading-relaxed max-w-sm">{al.description}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed max-w-sm">{al.description}</p>
                   </div>
                   <span className={`ml-3 flex-shrink-0 text-xs px-2 py-0.5 rounded-full ${
                     al.tag === 'Empfohlen'
-                      ? 'bg-au-gold/20 text-au-gold border border-au-gold/30'
-                      : 'border border-white/15 text-white/30'
+                      ? 'bg-[#C9A84C]/15 text-[#B8923A] border border-[#C9A84C]/30'
+                      : 'border border-gray-200 text-gray-400'
                   }`}>
                     {al.tag}
                   </span>
@@ -325,8 +325,8 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
       {/* Step 4: Ziele */}
       {step === 4 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Ihre Ziele</h2>
-          <p className="text-white/40 text-sm mb-6">
+          <h2 className="font-display text-2xl font-bold text-[#0E1A33] mb-2">Ihre Ziele</h2>
+          <p className="text-gray-500 text-sm mb-6">
             Was soll die Analyse vorrangig prüfen? Mehrfachauswahl möglich.
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -343,32 +343,32 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
           </div>
 
           {/* Summary */}
-          <div className="mt-6 p-5 rounded-xl bg-white/[0.04] border border-white/8">
-            <p className="text-white/40 text-xs uppercase tracking-wide mb-3">Zusammenfassung</p>
+          <div className="mt-6 p-5 rounded-xl bg-gray-50 border border-gray-200">
+            <p className="text-gray-500 text-xs uppercase tracking-wide mb-3">Zusammenfassung</p>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-white/40">Branche</span>
-                <span className="text-white/80 font-medium">
+                <span className="text-gray-500">Branche</span>
+                <span className="text-[#0E1A33] font-medium">
                   {BUSINESS_TYPES.find((b) => b.value === config.industry)?.label ?? config.industry}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/40">Analysearten</span>
-                <span className="text-white/80 font-medium text-right">
+                <span className="text-gray-500">Analysearten</span>
+                <span className="text-[#0E1A33] font-medium text-right">
                   {config.analysisTypes.map((t) =>
                     ANALYSIS_TYPES.find((a) => a.value === t)?.label
                   ).join(', ')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/40">Datenquelle</span>
-                <span className="text-white/80 font-medium">
+                <span className="text-gray-500">Datenquelle</span>
+                <span className="text-[#0E1A33] font-medium">
                   {config.inputMethod === 'upload' ? 'Dokumente' : config.inputMethod === 'questionnaire' ? 'Fragebogen' : 'Kombiniert'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/40">Genauigkeit</span>
-                <span className="text-white/80 font-medium">
+                <span className="text-gray-500">Genauigkeit</span>
+                <span className="text-[#0E1A33] font-medium">
                   {ACCURACY_LEVELS.find((a) => a.value === config.accuracyLevel)?.label}
                 </span>
               </div>
@@ -383,12 +383,12 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
           type="button"
           onClick={() => setStep((s) => s - 1)}
           disabled={step === 0}
-          className="text-white/40 hover:text-white text-sm font-medium transition-colors disabled:opacity-0 disabled:cursor-default"
+          className="text-gray-500 hover:text-[#0E1A33] text-sm font-medium transition-colors disabled:opacity-0 disabled:cursor-default"
         >
           ← Zurück
         </button>
 
-        <div className="text-white/25 text-xs">
+        <div className="text-gray-400 text-xs">
           {step + 1} / {STEP_LABELS.length}
         </div>
 
@@ -396,7 +396,7 @@ export default function AnalysisConfigurator({ defaultLevel }: { defaultLevel?: 
           type="button"
           onClick={handleNext}
           disabled={!canProceed() || loading}
-          className="bg-au-gold hover:bg-au-gold-light disabled:opacity-40 disabled:cursor-not-allowed text-[#06091A] font-bold text-sm px-6 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="bg-[#0E1A33] hover:bg-[#1a2744] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#0E1A33]/15"
         >
           {loading ? 'Wird geladen…' : step === 4 ? 'Analyse starten →' : 'Weiter →'}
         </button>

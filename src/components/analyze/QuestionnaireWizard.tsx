@@ -29,18 +29,17 @@ const EMPLOYMENT_TYPES = [
   { value: 'freelance', label: 'Freelance / extern' },
 ]
 
+const FIELD = 'w-full bg-white border border-gray-300 text-[#0E1A33] placeholder-gray-400 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C9A84C] focus:ring-2 focus:ring-[#C9A84C]/20 transition-all'
+
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-white/60 text-sm font-medium mb-1.5">{children}</label>
+  return <label className="block text-gray-600 text-sm font-medium mb-1.5">{children}</label>
 }
 
 function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
       <Label>{label}</Label>
-      <input
-        {...props}
-        className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-au-gold/50 focus:bg-white/8 transition-all"
-      />
+      <input {...props} className={FIELD} />
     </div>
   )
 }
@@ -49,11 +48,7 @@ function TextArea({ label, ...props }: { label: string } & React.TextareaHTMLAtt
   return (
     <div>
       <Label>{label}</Label>
-      <textarea
-        {...props}
-        rows={3}
-        className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-au-gold/50 focus:bg-white/8 transition-all resize-none"
-      />
+      <textarea {...props} rows={3} className={`${FIELD} resize-none`} />
     </div>
   )
 }
@@ -113,8 +108,8 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
       <div className="flex gap-1">
         {STEP_TITLES.map((title, i) => (
           <div key={i} className="flex-1">
-            <div className={`h-1 rounded-full transition-all ${i <= step ? 'bg-au-gold' : 'bg-white/10'}`} />
-            <p className={`text-xs mt-1.5 transition-colors ${i === step ? 'text-au-gold' : 'text-white/20'}`}>
+            <div className={`h-1 rounded-full transition-all ${i <= step ? 'bg-au-gold' : 'bg-gray-200'}`} />
+            <p className={`text-xs mt-1.5 transition-colors ${i === step ? 'text-[#B8923A] font-semibold' : 'text-gray-400'}`}>
               {title}
             </p>
           </div>
@@ -124,14 +119,13 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
       {/* Steps */}
       {step === 0 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Unternehmensdaten</h3>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Unternehmensdaten</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <Input label="Firmenname (optional)" placeholder="Muster GmbH" value={data.companyName} onChange={(e) => set('companyName', e.target.value)} />
             <Input label="Standort / Region" placeholder="z.B. München, Bayern" value={data.location} onChange={(e) => set('location', e.target.value)} />
             <div>
               <Label>Unternehmensgröße</Label>
-              <select value={data.companySize} onChange={(e) => set('companySize', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-au-gold/50 transition-all">
+              <select value={data.companySize} onChange={(e) => set('companySize', e.target.value)} className={FIELD}>
                 <option value="">Bitte wählen…</option>
                 {COMPANY_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -148,33 +142,32 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
       {step === 1 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-white">Mitarbeiter</h3>
+            <h3 className="font-display text-xl font-bold text-[#0E1A33]">Mitarbeiter</h3>
             <button type="button" onClick={addEmployee}
-              className="text-au-gold text-sm font-semibold border border-au-gold/30 px-3 py-1.5 rounded-lg hover:bg-au-gold/10 transition-colors">
+              className="text-[#B8923A] text-sm font-semibold border border-[#C9A84C]/40 px-3 py-1.5 rounded-lg hover:bg-[#C9A84C]/10 transition-colors">
               + Mitarbeiter / Rolle hinzufügen
             </button>
           </div>
           {data.employees.length === 0 && (
-            <div className="text-center py-10 border border-dashed border-white/10 rounded-xl">
-              <p className="text-white/30 text-sm">Noch keine Mitarbeiter eingetragen.</p>
+            <div className="text-center py-10 border border-dashed border-gray-300 rounded-xl">
+              <p className="text-gray-400 text-sm">Noch keine Mitarbeiter eingetragen.</p>
               <button type="button" onClick={addEmployee}
-                className="mt-3 text-au-gold text-sm hover:underline">
+                className="mt-3 text-[#B8923A] text-sm hover:underline">
                 Ersten Mitarbeiter hinzufügen
               </button>
             </div>
           )}
           {data.employees.map((emp, i) => (
-            <div key={i} className="bg-white/[0.04] border border-white/8 rounded-xl p-5 space-y-3">
+            <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-white/60 text-xs uppercase tracking-wide">Mitarbeiter / Rolle {i + 1}</p>
-                <button type="button" onClick={() => removeEmployee(i)} className="text-white/25 hover:text-red-400 text-xs transition-colors">Entfernen</button>
+                <p className="text-gray-500 text-xs uppercase tracking-wide">Mitarbeiter / Rolle {i + 1}</p>
+                <button type="button" onClick={() => removeEmployee(i)} className="text-gray-400 hover:text-red-500 text-xs transition-colors">Entfernen</button>
               </div>
               <div className="grid md:grid-cols-2 gap-3">
                 <Input label="Rolle / Position" placeholder="z.B. Verkäuferin, Koch, Buchhalter" value={emp.role} onChange={(e) => setEmployee(i, 'role', e.target.value)} />
                 <div>
                   <Label>Beschäftigungsart</Label>
-                  <select value={emp.employmentType} onChange={(e) => setEmployee(i, 'employmentType', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-au-gold/50 transition-all">
+                  <select value={emp.employmentType} onChange={(e) => setEmployee(i, 'employmentType', e.target.value)} className={FIELD}>
                     {EMPLOYMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
@@ -190,8 +183,8 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
 
       {step === 2 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Monatliche Kosten</h3>
-          <p className="text-white/40 text-sm">Tragen Sie Ihre typischen monatlichen Kosten ein (Schätzungen sind in Ordnung).</p>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Monatliche Kosten</h3>
+          <p className="text-gray-500 text-sm">Tragen Sie Ihre typischen monatlichen Kosten ein (Schätzungen sind in Ordnung).</p>
           <div className="grid md:grid-cols-2 gap-4">
             {([
               ['rent',                 'Miete (€/Monat)'],
@@ -218,7 +211,7 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
 
       {step === 3 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Einnahmen</h3>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Einnahmen</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <Input label="Monatliche Einnahmen (€)" type="number" value={data.revenue.monthlyRevenue || ''} onChange={(e) => setRevenue('monthlyRevenue', Number(e.target.value))} />
             <Input label="Durchschnittlicher Auftragswert (€)" type="number" value={data.revenue.avgOrderValue || ''} onChange={(e) => setRevenue('avgOrderValue', Number(e.target.value))} />
@@ -234,8 +227,8 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
 
       {step === 4 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Prozesse & Abläufe</h3>
-          <p className="text-white/40 text-sm">Diese Angaben helfen der KI, Automatisierungs- und Effizienzpotenziale zu erkennen.</p>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Prozesse & Abläufe</h3>
+          <p className="text-gray-500 text-sm">Diese Angaben helfen der KI, Automatisierungs- und Effizienzpotenziale zu erkennen.</p>
           <TextArea label="Welche Aufgaben werden täglich manuell erledigt?" placeholder="z.B. Rechnungen schreiben, Bestellungen eingeben, Dienstplan erstellen…" value={data.processes.dailyManualTasks} onChange={(e) => setProcesses('dailyManualTasks', e.target.value)} />
           <TextArea label="Welche Aufgaben dauern besonders lange?" placeholder="z.B. Monatsabrechnung 3 Stunden, Angebote erstellen 2 Stunden…" value={data.processes.timeDrainingTasks} onChange={(e) => setProcesses('timeDrainingTasks', e.target.value)} />
           <TextArea label="Welche Software / Programme werden genutzt?" placeholder="z.B. Excel, DATEV, SAP, eigenes POS-System, Google Sheets…" value={data.processes.toolsUsed} onChange={(e) => setProcesses('toolsUsed', e.target.value)} />
@@ -247,17 +240,17 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
 
       {step === 5 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Ihre Ziele</h3>
-          <p className="text-white/40 text-sm">Was soll die Analyse vorrangig zeigen? Mehrfachauswahl möglich.</p>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Ihre Ziele</h3>
+          <p className="text-gray-500 text-sm">Was soll die Analyse vorrangig zeigen? Mehrfachauswahl möglich.</p>
           <div className="grid grid-cols-2 gap-2">
             {ANALYSIS_GOALS.map((g) => (
               <button key={g.value} type="button" onClick={() => toggleGoal(g.value)}
                 className={`p-4 rounded-xl border text-left text-sm font-medium transition-all ${
                   data.goals.includes(g.value)
-                    ? 'border-au-gold bg-au-gold/10 text-white'
-                    : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/70'
+                    ? 'border-au-gold bg-au-gold/10 text-[#0E1A33]'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-[#0E1A33]'
                 }`}>
-                <div className={`w-3 h-3 rounded-full mb-2 ${data.goals.includes(g.value) ? 'bg-au-gold' : 'bg-white/15'}`} />
+                <div className={`w-3 h-3 rounded-full mb-2 ${data.goals.includes(g.value) ? 'bg-au-gold' : 'bg-gray-300'}`} />
                 {g.label}
               </button>
             ))}
@@ -267,22 +260,22 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
 
       {step === 6 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Analysetiefe wählen</h3>
+          <h3 className="font-display text-xl font-bold text-[#0E1A33]">Analysetiefe wählen</h3>
           <div className="space-y-2">
             {ACCURACY_LEVELS.map((al) => (
               <button key={al.value} type="button" onClick={() => set('accuracyLevel', al.value)}
                 className={`w-full p-4 rounded-xl border text-left transition-all ${
                   data.accuracyLevel === al.value
-                    ? 'border-au-gold bg-au-gold/10 text-white'
-                    : 'border-white/10 text-white/50 hover:border-white/25'
+                    ? 'border-au-gold bg-au-gold/10 text-[#0E1A33]'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                 }`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-sm">{al.label}</p>
-                    <p className="text-xs text-white/35 mt-0.5 leading-relaxed">{al.description}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{al.description}</p>
                   </div>
                   {al.tag === 'Empfohlen' && (
-                    <span className="text-xs bg-au-gold/20 text-au-gold border border-au-gold/30 px-2 py-0.5 rounded-full ml-3">
+                    <span className="text-xs bg-[#C9A84C]/15 text-[#B8923A] border border-[#C9A84C]/30 px-2 py-0.5 rounded-full ml-3">
                       Empfohlen
                     </span>
                   )}
@@ -291,9 +284,9 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
             ))}
           </div>
 
-          <div className="p-5 rounded-xl bg-white/[0.03] border border-white/8">
-            <p className="text-white/50 text-xs leading-relaxed">
-              <strong className="text-white/70">Hinweis:</strong> Diese Analyse ist eine KI-gestützte
+          <div className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+            <p className="text-gray-500 text-xs leading-relaxed">
+              <strong className="text-gray-700">Hinweis:</strong> Diese Analyse ist eine KI-gestützte
               betriebswirtschaftliche Auswertung auf Basis Ihrer Angaben. Sie ersetzt keine
               Steuerberatung, Rechtsberatung oder gesetzliche Wirtschaftsprüfung. Alle
               Einsparpotenziale sind Schätzungen – abhängig von Umsetzung und Einzelfall.
@@ -305,18 +298,18 @@ export default function QuestionnaireWizard({ industry, onSubmit, loading }: Pro
       {/* Navigation */}
       <div className="flex items-center justify-between pt-2">
         <button type="button" onClick={() => setStep((s) => s - 1)} disabled={step === 0}
-          className="text-white/40 hover:text-white text-sm font-medium transition-colors disabled:opacity-0">
+          className="text-gray-500 hover:text-[#0E1A33] text-sm font-medium transition-colors disabled:opacity-0">
           ← Zurück
         </button>
-        <span className="text-white/25 text-xs">{step + 1} / {STEP_TITLES.length}</span>
+        <span className="text-gray-400 text-xs">{step + 1} / {STEP_TITLES.length}</span>
         {step < 6 ? (
           <button type="button" onClick={() => setStep((s) => s + 1)}
-            className="bg-au-gold hover:bg-au-gold-light text-[#06091A] font-bold text-sm px-6 py-2.5 rounded-xl transition-all hover:scale-[1.02]">
+            className="bg-[#0E1A33] hover:bg-[#1a2744] text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-[#0E1A33]/15">
             Weiter →
           </button>
         ) : (
           <button type="button" onClick={handleSubmit} disabled={loading}
-            className="bg-au-gold hover:bg-au-gold-light disabled:opacity-50 text-[#06091A] font-bold text-sm px-6 py-2.5 rounded-xl transition-all hover:scale-[1.02]">
+            className="bg-[#0E1A33] hover:bg-[#1a2744] disabled:opacity-50 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-[#0E1A33]/15">
             {loading ? 'Wird gesendet…' : 'Analyse einreichen →'}
           </button>
         )}

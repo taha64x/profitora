@@ -88,15 +88,15 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06091A] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
       <div className="w-full max-w-xl">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#C9A84C] flex items-center justify-center">
-              <span className="text-[#06091A] font-black text-sm">A</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-au-gold to-au-gold-light flex items-center justify-center">
+              <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><path d="M8 2L14 13H2L8 2Z" fill="#0E1A33"/></svg>
             </div>
-            <span className="text-white font-bold text-lg">Profitora</span>
+            <span className="text-[#0E1A33] font-bold text-lg">Profitora</span>
           </Link>
         </div>
 
@@ -104,8 +104,8 @@ export default function OnboardingPage() {
         <div className="flex items-center gap-2 mb-8">
           {STEPS.map((s, i) => (
             <div key={s} className="flex-1 flex flex-col items-center gap-1.5">
-              <div className={`w-full h-1 rounded-full transition-colors ${i <= step ? 'bg-[#C9A84C]' : 'bg-white/10'}`}/>
-              <span className={`text-xs ${i === step ? 'text-[#C9A84C] font-semibold' : 'text-white/30'}`}>{s}</span>
+              <div className={`w-full h-1 rounded-full transition-colors ${i <= step ? 'bg-au-gold' : 'bg-gray-200'}`}/>
+              <span className={`text-xs ${i === step ? 'text-[#B8923A] font-semibold' : 'text-gray-400'}`}>{s}</span>
             </div>
           ))}
         </div>
@@ -279,7 +279,7 @@ export default function OnboardingPage() {
           )}
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-6">
+        <p className="text-center text-gray-400 text-xs mt-6">
           Sie können alle Angaben später unter „Profil" ändern.
         </p>
       </div>
