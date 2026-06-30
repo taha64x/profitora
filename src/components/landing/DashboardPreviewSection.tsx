@@ -42,7 +42,7 @@ export default function DashboardPreviewSection() {
   const inView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="py-28 px-6 bg-gray-50 relative overflow-hidden">
+    <section ref={ref} className="py-28 px-6 bg-gradient-to-b from-white via-gray-100 to-white relative overflow-hidden">
       <div className="max-w-6xl mx-auto relative">
         {/* Heading */}
         <m.div

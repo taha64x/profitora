@@ -52,7 +52,7 @@ export default function PricingSection() {
               <div
                 className={`relative flex flex-col h-full rounded-2xl border p-7 transition-all ${
                   plan.highlight
-                    ? 'border-hotel-navy bg-hotel-navy text-white shadow-xl scale-[1.02]'
+                    ? 'border-hotel-navy bg-gradient-to-br from-[#0E1A33] to-[#243459] text-white shadow-xl scale-[1.02]'
                     : 'border-gray-200 bg-white text-gray-900 hover:border-hotel-navy/25 hover:shadow-md'
                 }`}
               >

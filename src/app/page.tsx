@@ -65,7 +65,7 @@ export default function LandingPage() {
       <HeroSection />
 
       {/* ── STATS (heller Trust-Streifen) ──────────────────────────────────── */}
-      <section className="border-y border-gray-200 bg-gray-50 py-12 px-6">
+      <section className="bg-gradient-to-b from-white via-gray-100 to-white py-14 px-6">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { target: 10,  prefix: '',  suffix: '',  label: 'unterstützte Branchen'   },
@@ -87,7 +87,7 @@ export default function LandingPage() {
       <AnalysisTypesSection />
 
       {/* ── BRANCHEN ───────────────────────────────────────────────────────── */}
-      <section id="branchen" className="bg-gray-50 py-28 px-6">
+      <section id="branchen" className="bg-gradient-to-b from-white via-gray-100 to-white py-28 px-6">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal>
             <div className="text-center mb-16">
@@ -362,9 +362,9 @@ export default function LandingPage() {
       <PricingSection />
 
       {/* ── CTA (Navy-Panel als bewusster Akzent) ──────────────────────────── */}
-      <section className="bg-white py-24 px-6">
+      <section className="bg-gradient-to-b from-white to-gray-50 py-24 px-6">
         <ScrollReveal className="relative max-w-5xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl bg-[#0E1A33] px-6 py-16 sm:px-12 text-center">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E1A33] via-[#16223f] to-[#0E1A33] px-6 py-16 sm:px-12 text-center shadow-[0_40px_90px_-30px_rgba(14,26,51,0.5)]">
             {/* dezenter Gold-Glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-[#C9A84C]/15 rounded-full blur-[100px] pointer-events-none" />
             <div className="relative z-10 max-w-2xl mx-auto">
@@ -400,7 +400,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── RECHTLICHER HINWEIS ────────────────────────────────────────────── */}
-      <section className="py-8 px-6 bg-gray-50 border-t border-gray-200">
+      <section className="py-8 px-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-4xl mx-auto">
           <p className="text-gray-400 text-xs text-center leading-relaxed">
             <strong className="text-gray-500">Rechtlicher Hinweis:</strong> Profitora ist ein KI-gestützter Wirtschaftlichkeitsassistent (§2 WPO analog).

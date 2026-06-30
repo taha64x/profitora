@@ -12,7 +12,7 @@ const REASONS = [
 
 export default function ForWhomSection() {
   return (
-    <section className="bg-gray-50 py-28 px-6">
+    <section className="bg-gradient-to-b from-white via-gray-100 to-white py-28 px-6">
       <div className="max-w-6xl mx-auto">
         <ScrollReveal>
           <div className="text-center mb-16">
