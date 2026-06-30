@@ -36,10 +36,10 @@ export default function WhatYouGetSection() {
       <div className="max-w-6xl mx-auto">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <p className="text-hotel-navy text-sm font-semibold tracking-widest uppercase mb-3">
+            <p className="text-[#B8923A] text-sm font-semibold tracking-widest uppercase mb-3">
               Der Analysebericht
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-[#0E1A33] tracking-tight mb-4">
               Was Sie am Ende erhalten
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">

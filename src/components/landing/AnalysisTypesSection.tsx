@@ -48,17 +48,17 @@ const TYPES = [
 
 export default function AnalysisTypesSection() {
   return (
-    <section id="analysearten" className="bg-[#06091A] py-28 px-6">
+    <section id="analysearten" className="bg-white py-28 px-6">
       <div className="max-w-6xl mx-auto">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <p className="text-au-gold text-sm font-semibold tracking-widest uppercase mb-3">
+            <p className="text-[#B8923A] text-sm font-semibold tracking-widest uppercase mb-3">
               Analysearten
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-[#0E1A33] tracking-tight mb-4">
               Welche Analysen sind möglich?
             </h2>
-            <p className="text-white/40 max-w-xl mx-auto text-base leading-relaxed">
+            <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
               Wählen Sie eine einzelne Analyse oder kombinieren Sie mehrere Module
               zur vollständigen betriebswirtschaftlichen Unternehmensanalyse.
             </p>
@@ -70,30 +70,26 @@ export default function AnalysisTypesSection() {
             <ScrollReveal key={t.num} delay={((i % 3) + 1) as 1 | 2 | 3}>
               <div className="bento-card p-7 h-full flex flex-col group">
                 <div className="flex items-start justify-between mb-4">
-                  <span
-                    className="text-3xl font-black leading-none select-none"
-                    style={{ color: t.accent + '30' }}
-                  >
+                  <span className="font-display text-3xl font-extrabold leading-none select-none text-gray-200">
                     {t.num}
                   </span>
                   <div
-                    className="w-1.5 h-1.5 rounded-full mt-2"
-                    style={{ backgroundColor: t.accent }}
-                  />
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: t.accent + '1A' }}
+                  >
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.accent }} />
+                  </div>
                 </div>
-                <h3
-                  className="text-lg font-bold mb-3 transition-colors"
-                  style={{ color: t.accent }}
-                >
+                <h3 className="text-lg font-bold mb-3 text-[#0E1A33]">
                   {t.title}
                 </h3>
-                <p className="text-white/40 text-sm leading-relaxed mb-5 flex-1">
+                <p className="text-gray-500 text-sm leading-relaxed mb-5 flex-1">
                   {t.desc}
                 </p>
                 <ul className="space-y-1.5">
                   {t.points.map((p) => (
-                    <li key={p} className="flex items-center gap-2 text-white/30 text-xs">
-                      <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 flex-shrink-0">
+                    <li key={p} className="flex items-center gap-2 text-gray-500 text-xs">
+                      <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 flex-shrink-0" style={{ color: t.accent }}>
                         <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       {p}
@@ -109,7 +105,7 @@ export default function AnalysisTypesSection() {
           <div className="text-center mt-10">
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 bg-au-gold hover:bg-au-gold-light text-[#06091A] font-bold text-sm px-8 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 bg-[#0E1A33] hover:bg-[#1a2744] text-white font-semibold text-sm px-8 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-[#0E1A33]/15"
             >
               Analyse konfigurieren
               <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

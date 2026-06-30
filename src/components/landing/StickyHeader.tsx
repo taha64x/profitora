@@ -27,7 +27,7 @@ export default function StickyHeader() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled || menuOpen
-          ? 'header-blur bg-[#06091A]/85 border-b border-white/8 py-3'
+          ? 'header-blur bg-white/85 border-b border-gray-200 py-3 shadow-sm'
           : 'bg-transparent py-5'
       }`}
     >
@@ -36,10 +36,10 @@ export default function StickyHeader() {
         <Link href="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-au-gold to-au-gold-light flex items-center justify-center">
             <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-              <path d="M8 2L14 13H2L8 2Z" fill="#06091A" stroke="none"/>
+              <path d="M8 2L14 13H2L8 2Z" fill="#0E1A33" stroke="none"/>
             </svg>
           </div>
-          <span className="text-white font-semibold tracking-tight text-[17px]">
+          <span className="text-[#0E1A33] font-semibold tracking-tight text-[17px]">
             Profitora
           </span>
         </Link>
@@ -51,7 +51,7 @@ export default function StickyHeader() {
               key={item.href}
               href={item.href}
               onClick={(e) => { e.preventDefault(); scrollToHash(item.href) }}
-              className="nav-underline text-white/55 hover:text-white text-sm font-medium transition-colors duration-200"
+              className="nav-underline text-gray-500 hover:text-[#0E1A33] text-sm font-medium transition-colors duration-200"
             >
               {item.label}
             </a>
@@ -62,13 +62,13 @@ export default function StickyHeader() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden sm:inline text-white/55 hover:text-white text-sm font-medium transition-colors"
+            className="hidden sm:inline text-gray-500 hover:text-[#0E1A33] text-sm font-medium transition-colors"
           >
             Anmelden
           </Link>
           <Link
             href="/analyze"
-            className="btn-shine bg-au-gold hover:bg-au-gold-light text-[#06091A] text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
+            className="bg-[#0E1A33] hover:bg-[#1a2744] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
           >
             Analyse starten
           </Link>
@@ -78,7 +78,7 @@ export default function StickyHeader() {
             aria-label={menuOpen ? 'Menü schließen' : 'Menü öffnen'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white/80 hover:bg-white/10 transition-colors"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.8">
               {menuOpen ? (
@@ -94,13 +94,13 @@ export default function StickyHeader() {
       {/* Mobile-Menü */}
       {menuOpen && (
         <nav className="md:hidden mt-3 px-6 pb-2">
-          <div className="flex flex-col gap-1 rounded-2xl bg-[#06091A]/95 border border-white/10 p-3">
+          <div className="flex flex-col gap-1 rounded-2xl bg-white border border-gray-200 shadow-lg p-3">
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollToHash(item.href) }}
-                className="text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium px-3 py-2.5 rounded-lg transition-colors"
+                className="text-gray-600 hover:text-[#0E1A33] hover:bg-gray-50 text-sm font-medium px-3 py-2.5 rounded-lg transition-colors"
               >
                 {item.label}
               </a>
@@ -108,7 +108,7 @@ export default function StickyHeader() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium px-3 py-2.5 rounded-lg transition-colors sm:hidden"
+              className="text-gray-600 hover:text-[#0E1A33] hover:bg-gray-50 text-sm font-medium px-3 py-2.5 rounded-lg transition-colors sm:hidden"
             >
               Anmelden
             </Link>

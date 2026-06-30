@@ -44,44 +44,42 @@ export default function ProfitChartSection() {
   const profit = revenue - costs
 
   return (
-    <section className="bg-[#06091A] relative py-28 px-6 overflow-hidden">
-      <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
-
+    <section className="bg-white relative py-28 px-6 overflow-hidden">
       <div ref={ref} className="max-w-5xl mx-auto w-full relative">
         <div className="text-center mb-10">
-          <p className="text-au-gold text-sm font-semibold tracking-widest uppercase mb-3">
+          <p className="text-[#B8923A] text-sm font-semibold tracking-widest uppercase mb-3">
             Das Ziel
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
+          <h2 className="font-display text-3xl md:text-4xl font-extrabold text-[#0E1A33] tracking-tight mb-3">
             Umsatz rauf. Kosten runter.
           </h2>
-          <p className="text-white/40 text-base max-w-lg mx-auto leading-relaxed">
+          <p className="text-gray-500 text-base max-w-lg mx-auto leading-relaxed">
             Das passiert, wenn Analyse-Empfehlungen konsequent umgesetzt werden.
           </p>
         </div>
 
         {/* Live-Zahlen */}
         <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mb-8">
-          <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4 text-center">
-            <p className="text-white/35 text-xs uppercase tracking-wide mb-1">Umsatz</p>
-            <p className="text-green-400 font-bold text-lg md:text-2xl tabular-nums">{formatEur(revenue)}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Umsatz</p>
+            <p className="text-emerald-600 font-bold text-lg md:text-2xl tabular-nums">{formatEur(revenue)}</p>
           </div>
-          <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4 text-center">
-            <p className="text-white/35 text-xs uppercase tracking-wide mb-1">Kosten</p>
-            <p className="text-red-400 font-bold text-lg md:text-2xl tabular-nums">{formatEur(costs)}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Kosten</p>
+            <p className="text-red-500 font-bold text-lg md:text-2xl tabular-nums">{formatEur(costs)}</p>
           </div>
-          <div className="bg-au-gold/8 border border-au-gold/25 rounded-xl p-4 text-center">
-            <p className="text-au-gold/70 text-xs uppercase tracking-wide mb-1">Gewinn / Monat</p>
-            <p className="text-au-gold font-bold text-lg md:text-2xl tabular-nums">{formatEur(profit)}</p>
+          <div className="bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-xl p-4 text-center">
+            <p className="text-[#B8923A] text-xs uppercase tracking-wide mb-1">Gewinn / Monat</p>
+            <p className="text-[#B8923A] font-bold text-lg md:text-2xl tabular-nums">{formatEur(profit)}</p>
           </div>
         </div>
 
         {/* Chart */}
-        <div className="relative bg-[#0A0E22]/80 border border-white/8 rounded-2xl p-6 md:p-8">
+        <div className="relative bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
           <svg viewBox="0 0 800 320" className="w-full h-auto" fill="none">
             {[0, 1, 2, 3].map((i) => (
               <line key={i} x1="40" x2="780" y1={50 + i * 70} y2={50 + i * 70}
-                stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                stroke="rgba(14,26,51,0.06)" strokeWidth="1" />
             ))}
 
             {/* Gewinn-Fläche zwischen den Kurven */}
@@ -97,7 +95,7 @@ export default function ProfitChartSection() {
             {/* Umsatz – steigend */}
             <m.path
               d="M40,200 C180,190 320,160 480,120 C600,90 700,70 780,60"
-              stroke="#4ade80"
+              stroke="#10b981"
               strokeWidth="3"
               strokeLinecap="round"
               initial={{ pathLength: 0 }}
@@ -107,7 +105,7 @@ export default function ProfitChartSection() {
             {/* Kosten – fallend */}
             <m.path
               d="M40,215 C180,235 320,245 480,242 C600,240 700,232 780,225"
-              stroke="#f87171"
+              stroke="#ef4444"
               strokeWidth="3"
               strokeLinecap="round"
               initial={{ pathLength: 0 }}
@@ -117,14 +115,14 @@ export default function ProfitChartSection() {
 
             <defs>
               <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(201,168,76,0.22)" />
+                <stop offset="0%" stopColor="rgba(201,168,76,0.25)" />
                 <stop offset="100%" stopColor="rgba(201,168,76,0.02)" />
               </linearGradient>
             </defs>
 
             {MONTHS.map((m, i) => (
               <text key={m} x={70 + i * 136} y="305"
-                fill="rgba(255,255,255,0.25)" fontSize="12" textAnchor="middle">
+                fill="rgba(14,26,51,0.4)" fontSize="12" textAnchor="middle">
                 {m}
               </text>
             ))}
@@ -132,11 +130,11 @@ export default function ProfitChartSection() {
 
           {/* Kurven-Labels */}
           <div className="absolute top-6 right-6 md:top-8 md:right-8 flex flex-col gap-1.5 text-xs">
-            <span className="inline-flex items-center gap-1.5 text-green-400/80">
-              <span className="w-3 h-[2px] bg-green-400 inline-block rounded-full" /> Umsatz
+            <span className="inline-flex items-center gap-1.5 text-emerald-600">
+              <span className="w-3 h-[2px] bg-emerald-500 inline-block rounded-full" /> Umsatz
             </span>
-            <span className="inline-flex items-center gap-1.5 text-red-400/80">
-              <span className="w-3 h-[2px] bg-red-400 inline-block rounded-full" /> Kosten
+            <span className="inline-flex items-center gap-1.5 text-red-500">
+              <span className="w-3 h-[2px] bg-red-500 inline-block rounded-full" /> Kosten
             </span>
           </div>
 
@@ -145,16 +143,16 @@ export default function ProfitChartSection() {
             initial={{ opacity: 0, y: 16, scale: 0.92 }}
             animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
             transition={{ delay: DRAW_DURATION * 0.85, duration: 0.6, type: 'spring', bounce: 0.35 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#06091A]/90 border border-au-gold/40 rounded-xl px-5 py-3 text-center shadow-2xl"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#C9A84C]/40 rounded-xl px-5 py-3 text-center shadow-xl"
           >
-            <p className="text-au-gold font-black text-xl md:text-2xl tabular-nums">
+            <p className="text-[#B8923A] font-extrabold text-xl md:text-2xl tabular-nums">
               +{formatEur(REVENUE_END - COSTS_END - (REVENUE_START - COSTS_START))}
             </p>
-            <p className="text-white/45 text-xs mt-0.5">mehr Gewinn pro Monat</p>
+            <p className="text-gray-500 text-xs mt-0.5">mehr Gewinn pro Monat</p>
           </m.div>
         </div>
 
-        <p className="text-white/20 text-xs text-center mt-5 leading-relaxed max-w-md mx-auto">
+        <p className="text-gray-400 text-xs text-center mt-5 leading-relaxed max-w-md mx-auto">
           Beispielhafte Darstellung. Tatsächliche Ergebnisse hängen von Ihrem Betrieb
           und der Umsetzung der Empfehlungen ab – keine Erfolgsgarantie.
         </p>

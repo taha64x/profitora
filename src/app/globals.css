@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+/* Display-/Headline-Schrift (Hell & Clean Redesign).
+   Plus Jakarta Sans: modern, klar, leicht geometrisch – hebt Headlines vom
+   Inter-Fließtext ab, ohne „Standard-Template" zu wirken. */
+.font-display {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */
 
@@ -174,17 +183,17 @@
 /* ─── Landing Page – Bento Grid Cards ──────────────────────────────────────── */
 
 .bento-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid rgb(229, 231, 235); /* gray-200 */
   border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(13, 22, 48, 0.04);
   transition: border-color 0.3s ease, background 0.3s ease,
               transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
 .bento-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(201, 168, 76, 0.25);
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.5);
+  border-color: rgba(14, 26, 51, 0.18);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -12px rgba(13, 22, 48, 0.15);
 }
 
 /* ─── Landing Page – Sticky Header blur ────────────────────────────────────── */
@@ -198,8 +207,8 @@
 
 /* Textauswahl in Markenfarbe */
 ::selection {
-  background: rgba(201, 168, 76, 0.35);
-  color: #fff;
+  background: rgba(201, 168, 76, 0.3);
+  color: #0E1A33;
 }
 
 /* Sichtbarer Fokus für Tastaturnutzer */

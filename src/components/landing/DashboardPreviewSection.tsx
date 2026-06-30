@@ -30,7 +30,7 @@ function MiniCard({ delay, children }: { delay: number; children: React.ReactNod
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: 'easeOut' }}
-      className="bg-white/5 border border-white/10 rounded-xl p-4"
+      className="bg-gray-50 border border-gray-200 rounded-xl p-4"
     >
       {children}
     </m.div>
@@ -42,12 +42,7 @@ export default function DashboardPreviewSection() {
   const inView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="py-28 px-6 bg-[#06091A] relative overflow-hidden">
-      {/* background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#C9A84C]/5 blur-[120px] rounded-full"/>
-      </div>
-
+    <section ref={ref} className="py-28 px-6 bg-gray-50 relative overflow-hidden">
       <div className="max-w-6xl mx-auto relative">
         {/* Heading */}
         <m.div
@@ -56,15 +51,15 @@ export default function DashboardPreviewSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-white/50 mb-5">
+          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-1.5 text-xs text-gray-600 mb-5 shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]"/>
             Ihr Dashboard
           </div>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-extrabold text-[#0E1A33] tracking-tight mb-4">
             Mehr als eine Analyse –<br/>
-            <span className="text-[#C9A84C]">Ihr Finanz- und Optimierungsdashboard</span>
+            <span className="text-[#B8923A]">Ihr Finanz- und Optimierungsdashboard</span>
           </h2>
-          <p className="text-white/40 text-base max-w-xl mx-auto leading-relaxed">
+          <p className="text-gray-500 text-base max-w-xl mx-auto leading-relaxed">
             Speichern Sie Kosten, Einnahmen und Ausgaben dauerhaft. Starten Sie Analysen auf echten Finanzdaten. Verwalten Sie alles an einem Ort.
           </p>
         </m.div>
@@ -74,28 +69,28 @@ export default function DashboardPreviewSection() {
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="bg-[#0A0E22] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+          className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xl shadow-[#0E1A33]/10"
         >
           {/* Top bar */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 bg-[#060912]">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/60"/>
-              <div className="w-3 h-3 rounded-full bg-yellow-500/60"/>
-              <div className="w-3 h-3 rounded-full bg-green-500/60"/>
+              <div className="w-3 h-3 rounded-full bg-red-400"/>
+              <div className="w-3 h-3 rounded-full bg-yellow-400"/>
+              <div className="w-3 h-3 rounded-full bg-green-400"/>
             </div>
-            <div className="text-white/20 text-xs font-mono">profitora.de/dashboard</div>
+            <div className="text-gray-400 text-xs font-mono">profitora.de/dashboard</div>
             <div/>
           </div>
 
           <div className="flex">
             {/* Sidebar */}
-            <div className="w-44 border-r border-white/5 p-4 flex-shrink-0 hidden md:block">
+            <div className="w-44 border-r border-gray-200 p-4 flex-shrink-0 hidden md:block bg-gray-50/50">
               {['Übersicht', 'Neue Analyse', 'Finanzübersicht', 'Kosten', 'Einnahmen', 'Berichte', 'Abo'].map((item, i) => (
                 <div
                   key={item}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-1 text-xs ${i === 0 ? 'bg-white/10 text-white' : 'text-white/30'}`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-1 text-xs ${i === 0 ? 'bg-white border border-gray-200 text-[#0E1A33] font-medium shadow-sm' : 'text-gray-400'}`}
                 >
-                  <div className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-[#C9A84C]' : 'bg-white/20'}`}/>
+                  <div className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-[#C9A84C]' : 'bg-gray-300'}`}/>
                   {item}
                 </div>
               ))}
@@ -112,9 +107,9 @@ export default function DashboardPreviewSection() {
                   { label: 'Gewinnmarge', value: '23.5 %', up: true },
                 ].map((card, i) => (
                   <MiniCard key={card.label} delay={0.3 + i * 0.08}>
-                    <p className="text-white/30 text-xs mb-1">{card.label}</p>
-                    <p className="text-white font-bold text-sm">{card.value}</p>
-                    <p className={`text-xs mt-0.5 ${card.up ? 'text-green-400' : 'text-red-400'}`}>
+                    <p className="text-gray-400 text-xs mb-1">{card.label}</p>
+                    <p className="text-[#0E1A33] font-bold text-sm">{card.value}</p>
+                    <p className={`text-xs mt-0.5 ${card.up ? 'text-emerald-600' : 'text-red-500'}`}>
                       {card.up ? '↑' : '↓'} ggü. Vormonat
                     </p>
                   </MiniCard>
@@ -125,15 +120,15 @@ export default function DashboardPreviewSection() {
               <div className="grid md:grid-cols-2 gap-3">
                 {/* Cost bars */}
                 <MiniCard delay={0.55}>
-                  <p className="text-white/50 text-xs mb-3">Kostenbereiche diesen Monat</p>
+                  <p className="text-gray-500 text-xs mb-3 font-medium">Kostenbereiche diesen Monat</p>
                   <div className="space-y-2">
                     {BARS.map((b, i) => (
                       <div key={b.label}>
-                        <div className="flex justify-between text-xs text-white/30 mb-1">
+                        <div className="flex justify-between text-xs text-gray-400 mb-1">
                           <span>{b.label}</span>
                           <span>{b.pct} %</span>
                         </div>
-                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                           <m.div
                             className="h-full rounded-full"
                             style={{ backgroundColor: b.color }}
@@ -150,23 +145,23 @@ export default function DashboardPreviewSection() {
                 {/* Revenue + hints */}
                 <div className="space-y-3">
                   <MiniCard delay={0.6}>
-                    <p className="text-white/50 text-xs mb-2">Einnahmen nach Quelle</p>
+                    <p className="text-gray-500 text-xs mb-2 font-medium">Einnahmen nach Quelle</p>
                     {REV_ITEMS.map((r) => (
-                      <div key={r.label} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
-                        <span className="text-white/50 text-xs">{r.label}</span>
-                        <span className={`text-xs font-semibold ${r.up ? 'text-green-400' : 'text-white/60'}`}>{r.amount}</span>
+                      <div key={r.label} className="flex justify-between items-center py-1.5 border-b border-gray-200 last:border-0">
+                        <span className="text-gray-500 text-xs">{r.label}</span>
+                        <span className={`text-xs font-semibold ${r.up ? 'text-emerald-600' : 'text-gray-600'}`}>{r.amount}</span>
                       </div>
                     ))}
                   </MiniCard>
                   <MiniCard delay={0.65}>
                     <div className="flex items-center gap-1.5 mb-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]"/>
-                      <p className="text-white/50 text-xs">KI-Hinweise</p>
+                      <p className="text-gray-500 text-xs font-medium">KI-Hinweise</p>
                     </div>
                     {HINT_ITEMS.map((h) => (
                       <div key={h.text} className="flex gap-2 mb-1.5">
                         <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: h.color }}/>
-                        <p className="text-white/40 text-xs leading-relaxed">{h.text}</p>
+                        <p className="text-gray-500 text-xs leading-relaxed">{h.text}</p>
                       </div>
                     ))}
                   </MiniCard>
@@ -183,13 +178,13 @@ export default function DashboardPreviewSection() {
           transition={{ delay: 0.8, duration: 0.5 }}
           className="text-center mt-10"
         >
-          <Link href="/register" className="inline-flex items-center gap-2 bg-[#C9A84C] text-[#06091A] font-bold text-sm px-8 py-3.5 rounded-xl hover:bg-[#d4b86a] transition-colors">
+          <Link href="/register" className="inline-flex items-center gap-2 bg-[#0E1A33] text-white font-semibold text-sm px-8 py-3.5 rounded-xl hover:bg-[#1a2744] transition-colors shadow-lg shadow-[#0E1A33]/15">
             Dashboard freischalten
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <path d="M3 8h10M9 4l4 4-4 4"/>
             </svg>
           </Link>
-          <p className="text-white/25 text-xs mt-3">Kostenlos starten · Kein Kreditkarte nötig</p>
+          <p className="text-gray-400 text-xs mt-3">Kostenlos starten · Keine Kreditkarte nötig</p>
         </m.div>
       </div>
     </section>
