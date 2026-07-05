@@ -5,12 +5,9 @@ import { db } from '@/lib/db'
 import { getPlan } from '@/lib/plans'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 
-const PLAN_LIMITS: Record<string, number> = {
-  free: 1,
-  schnellcheck: 2,
-  standard: 5,
-  tiefenanalyse: 15,
-  komplett: 9999,
+/** Analyse-Limit aus der zentralen Tarif-Konfiguration (null = unbegrenzt → 9999) */
+function limitFor(planName: string): number {
+  return getPlan(planName).analysisLimit ?? 9999
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,8 +44,10 @@ export async function POST(req: Request) {
         const plan = session.metadata?.plan
         if (!orgId || !plan) break
 
-        const sub = await getStripe().subscriptions.retrieve(session.subscription as string)
-        const period = getPeriod(sub)
+        // Einmalkauf (mode 'payment') hat keine Subscription – nur bei Abos abrufen
+        const subId = typeof session.subscription === 'string' ? session.subscription : null
+        const sub = subId ? await getStripe().subscriptions.retrieve(subId) : null
+        const period = sub ? getPeriod(sub) : { start: undefined, end: undefined }
 
         await db.subscription.upsert({
           where: { organizationId: orgId },
@@ -56,18 +55,18 @@ export async function POST(req: Request) {
             organizationId: orgId,
             planName: plan,
             status: 'active',
-            monthlyAnalysisLimit: PLAN_LIMITS[plan] ?? 5,
+            monthlyAnalysisLimit: limitFor(plan),
             stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: sub.id,
+            stripeSubscriptionId: subId,
             currentPeriodStart: period.start,
             currentPeriodEnd: period.end,
           },
           update: {
             planName: plan,
             status: 'active',
-            monthlyAnalysisLimit: PLAN_LIMITS[plan] ?? 5,
+            monthlyAnalysisLimit: limitFor(plan),
             stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: sub.id,
+            stripeSubscriptionId: subId,
             currentPeriodStart: period.start,
             currentPeriodEnd: period.end,
           },
@@ -106,7 +105,7 @@ export async function POST(req: Request) {
           data: {
             status: sub.status,
             planName: plan,
-            monthlyAnalysisLimit: PLAN_LIMITS[plan] ?? 5,
+            monthlyAnalysisLimit: limitFor(plan),
             currentPeriodStart: period.start,
             currentPeriodEnd: period.end,
           },
@@ -121,7 +120,7 @@ export async function POST(req: Request) {
           data: {
             status: 'cancelled',
             planName: 'free',
-            monthlyAnalysisLimit: PLAN_LIMITS['free'],
+            monthlyAnalysisLimit: limitFor('free'),
             stripeSubscriptionId: null,
           },
         })

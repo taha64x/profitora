@@ -65,7 +65,14 @@ export async function POST(req: Request) {
       metadata: { organizationId: org.id, plan, consent_immediate_execution: 'true', consent_at: consentAt },
       ...(planConfig.mode === 'subscription'
         ? { subscription_data: { metadata: { organizationId: org.id, plan } } }
-        : {}),
+        : {
+            // Verwendungszweck auf der Kartenabrechnung: Konto läuft auf ScopeTradeAI,
+            // Konto-Präfix PROFITORA + Suffix ergibt „PROFITORA* ANALYSE" (max. 22 Zeichen)
+            payment_intent_data: {
+              statement_descriptor_suffix: 'ANALYSE',
+              metadata: { organizationId: org.id, plan },
+            },
+          }),
     })
 
     return NextResponse.json({ url: session.url })
