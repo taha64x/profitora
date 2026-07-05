@@ -11,7 +11,7 @@ function getResend(): Resend {
   return _resend
 }
 
-const FROM = process.env.EMAIL_FROM ?? 'Profitora <noreply@profitora.app>'
+const FROM = process.env.EMAIL_FROM ?? 'Profitora <noreply@profitora.de>'
 
 // ─── Templates ───────────────────────────────────────────────────────────────
 
