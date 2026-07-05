@@ -15,11 +15,13 @@ export const COMPANY = {
   /** PLZ + Ort */
   city: '69126 Heidelberg',
   country: 'Deutschland',
-  /** Steuernummer (Finanzamt) – auf Kleinbetragsrechnung < 250 € nicht zwingend, aber empfohlen */
-  taxNumber: '[BITTE AUSFÜLLEN: Steuernummer]',
+  /** Steuernummer (Finanzamt) – leer = wird auf Rechnung weggelassen.
+   *  Achtung: Bei Rechnungen über 250 € ist die Steuernummer nach §14 Abs. 4 UStG
+   *  Pflichtangabe (gilt auch für Kleinunternehmer) – bei Gelegenheit nachtragen. */
+  taxNumber: '',
   /** Kontakt */
   email: 'kontakt@profitora.de',
-  phone: '[BITTE AUSFÜLLEN: Telefon]',
+  phone: '0170 7877462',
   domain: 'profitora.de',
   /** Kleinunternehmer-Pflichthinweis nach §19 UStG */
   vatNote: 'Gemäß §19 UStG wird keine Umsatzsteuer berechnet.',

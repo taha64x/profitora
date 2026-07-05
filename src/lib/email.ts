@@ -156,7 +156,7 @@ export async function sendOrderConfirmationEmail(params: {
       <p style="font-size:13px;color:#6b7280;margin-bottom:4px;"><strong>Anbieter / Rechnungssteller:</strong></p>
       <p style="font-size:13px;color:#6b7280;margin-top:0;">
         ${COMPANY.legalName}<br>${COMPANY.street}<br>${COMPANY.city}, ${COMPANY.country}<br>
-        Steuernr.: ${COMPANY.taxNumber} · ${COMPANY.email}
+        ${COMPANY.taxNumber ? `Steuernr.: ${COMPANY.taxNumber} · ` : ''}${COMPANY.email}
       </p>
 
       <a href="${appUrl}/dashboard" class="btn">Zur Komplettanalyse</a>
