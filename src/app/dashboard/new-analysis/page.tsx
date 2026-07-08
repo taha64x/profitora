@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import QuestionnaireWizard from '@/components/analyze/QuestionnaireWizard'
 import { IconChartBar, IconUpload, IconLoader, IconTrendingUp } from '@/components/ui/icons'
+import type { QuestionnaireData } from '@/types'
 
 const CAT_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'REVENUE',         label: 'Einnahmen / Umsatz' },
@@ -42,13 +44,16 @@ function NewAnalysisContent() {
   const [error, setError] = useState('')
   const [needCredits, setNeedCredits] = useState(false)
   const [uploadMsg, setUploadMsg] = useState('')
+  const [mode, setMode] = useState<'files' | 'questionnaire'>('files')
+  const [businessType, setBusinessType] = useState('other')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const loadState = useCallback(async () => {
     try {
-      const [creditsRes, uploadsRes] = await Promise.all([
+      const [creditsRes, uploadsRes, orgRes] = await Promise.all([
         fetch('/api/credits'),
         fetch('/api/upload'),
+        fetch('/api/organization'),
       ])
       if (creditsRes.ok) {
         const c = await creditsRes.json()
@@ -57,6 +62,10 @@ function NewAnalysisContent() {
       if (uploadsRes.ok) {
         const u = await uploadsRes.json()
         setUploads(u.uploads ?? [])
+      }
+      if (orgRes.ok) {
+        const o = await orgRes.json()
+        if (o.businessType) setBusinessType(o.businessType)
       }
     } catch {
       // Anzeige-Daten – Fehler hier blockieren die Seite nicht
@@ -103,16 +112,21 @@ function NewAnalysisContent() {
     loadState()
   }
 
-  async function startAnalysis() {
+  async function startAnalysis(questionnaireData?: QuestionnaireData) {
     setStarting(true)
     setError('')
     setNeedCredits(false)
     try {
-      const res = await fetch('/api/analyze', { method: 'POST' })
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(questionnaireData ? { questionnaireData } : {}),
+      })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Analyse konnte nicht gestartet werden.')
         if (data.needCredits) setNeedCredits(true)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
       router.push(`/report/${data.reportId}`)
@@ -121,6 +135,16 @@ function NewAnalysisContent() {
     } finally {
       setStarting(false)
     }
+  }
+
+  function handleQuestionnaireSubmit(data: QuestionnaireData) {
+    if (!hasCredits) {
+      setError('Kein Analyse-Guthaben verfügbar. Kaufen Sie zuerst eine Analyse – Ihre Fragebogen-Angaben bleiben erhalten, solange Sie die Seite nicht verlassen.')
+      setNeedCredits(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    startAnalysis(data)
   }
 
   const hasCredits = (credits ?? 0) > 0
@@ -173,6 +197,57 @@ function NewAnalysisContent() {
           </div>
         )}
 
+        {/* Datenquelle wählen */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <button
+            onClick={() => setMode('files')}
+            className={`text-left rounded-2xl border-2 p-4 transition-all ${
+              mode === 'files' ? 'border-[#0D1630] bg-[#0D1630]/[0.03]' : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <IconUpload className={`w-4 h-4 ${mode === 'files' ? 'text-[#0D1630]' : 'text-gray-400'}`} />
+              <span className={`font-bold text-sm ${mode === 'files' ? 'text-[#0D1630]' : 'text-gray-600'}`}>
+                Mit Dateien & Finanzdaten
+              </span>
+            </div>
+            <p className="text-gray-500 text-xs leading-relaxed">
+              CSV-/Excel-Dateien hochladen oder eingetragene Zahlen nutzen – am präzisesten.
+            </p>
+          </button>
+          <button
+            onClick={() => setMode('questionnaire')}
+            className={`text-left rounded-2xl border-2 p-4 transition-all ${
+              mode === 'questionnaire' ? 'border-[#0D1630] bg-[#0D1630]/[0.03]' : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <IconChartBar className={`w-4 h-4 ${mode === 'questionnaire' ? 'text-[#0D1630]' : 'text-gray-400'}`} />
+              <span className={`font-bold text-sm ${mode === 'questionnaire' ? 'text-[#0D1630]' : 'text-gray-600'}`}>
+                Mit Fragebogen
+              </span>
+            </div>
+            <p className="text-gray-500 text-xs leading-relaxed">
+              Ohne Dateien: 7 Schritte zu Kosten, Mitarbeitern, Einnahmen und Prozessen ausfüllen.
+            </p>
+          </button>
+        </div>
+
+        {mode === 'questionnaire' && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-4">
+            <QuestionnaireWizard
+              industry={businessType}
+              onSubmit={handleQuestionnaireSubmit}
+              loading={starting}
+            />
+            <p className="text-gray-400 text-xs mt-4">
+              Mit „Analyse einreichen" wird 1 Analyse-Guthaben verbraucht und der vollständige Bericht erstellt.
+            </p>
+          </div>
+        )}
+
+        {mode === 'files' && (
+        <>
         {/* Schritt 1: Dateien */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-4">
           <div className="flex items-center gap-2 mb-1">
@@ -246,7 +321,7 @@ function NewAnalysisContent() {
           </p>
           <div className="ml-8 flex items-center gap-4">
             <button
-              onClick={startAnalysis}
+              onClick={() => startAnalysis()}
               disabled={starting || !hasCredits}
               className="flex items-center gap-2 bg-au-gold text-[#0D1630] font-bold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -258,6 +333,8 @@ function NewAnalysisContent() {
             )}
           </div>
         </div>
+        </>
+        )}
 
         {/* Konfigurator-Hinweis */}
         <div className="mt-6 flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4">

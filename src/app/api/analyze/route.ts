@@ -22,10 +22,25 @@ interface TrackedFinanceData {
 
 type EnrichedResult = AnalysisResult & { trackedFinanceData?: TrackedFinanceData }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const user = getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+    // Optionaler Fragebogen (zweite Datenquelle neben Dateien/Finanztracking).
+    // Größe begrenzen, damit kein überlanger Prompt entsteht.
+    let questionnaireData: Record<string, unknown> | null = null
+    try {
+      const body = await req.json()
+      if (body?.questionnaireData && typeof body.questionnaireData === 'object') {
+        if (JSON.stringify(body.questionnaireData).length > 60_000) {
+          return NextResponse.json({ error: 'Fragebogen-Daten zu umfangreich.' }, { status: 400 })
+        }
+        questionnaireData = body.questionnaireData
+      }
+    } catch {
+      // Kein/ungültiger Body = Analyse ohne Fragebogen (bisheriges Verhalten)
+    }
 
     const membership = await db.organizationMember.findFirst({
       where: { userId: user.userId },
@@ -50,9 +65,9 @@ export async function POST() {
 
     const financeData = await loadTrackedFinanceData(org.id)
 
-    if (uploads.length === 0 && !financeData) {
+    if (uploads.length === 0 && !financeData && !questionnaireData) {
       return NextResponse.json(
-        { error: 'Bitte laden Sie zuerst Dateien hoch oder tragen Sie Einnahmen und Ausgaben im Finanztracking ein.' },
+        { error: 'Bitte laden Sie Dateien hoch, füllen Sie den Fragebogen aus oder tragen Sie Einnahmen und Ausgaben im Finanztracking ein.' },
         { status: 400 }
       )
     }
@@ -89,7 +104,7 @@ export async function POST() {
       },
     })
 
-    const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, user.email).catch(
+    const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, questionnaireData, user.email).catch(
       async (err) => {
         console.error('[analyze] Fehler:', err)
         await db.analysisReport.update({
@@ -175,6 +190,7 @@ async function runAnalysis(
   planId: string,
   aiModel: string,
   financeData: TrackedFinanceData | null,
+  questionnaireData: Record<string, unknown> | null,
   userEmail?: string,
 ) {
   let analysisResult: EnrichedResult
@@ -213,17 +229,21 @@ async function runAnalysis(
       throw new Error('Python-Analyse fehlgeschlagen')
     }
   } else {
-    // Analyse rein aus dem Finanztracking – ohne Datei-Uploads
+    // Analyse ohne Datei-Uploads – Basis ist Fragebogen und/oder Finanztracking
     analysisResult = {
       businessType: org.businessType,
       businessName: org.name,
       unitCount: org.unitCount,
-      dataBasis: 'finanztracking',
+      dataBasis: questionnaireData ? 'fragebogen' : 'finanztracking',
     } as unknown as EnrichedResult
   }
 
   if (financeData) {
     analysisResult.trackedFinanceData = financeData
+  }
+  if (questionnaireData) {
+    // Vom Nutzer ausgefüllter Strukturfragebogen – geht 1:1 als Datenquelle in den Prompt
+    ;(analysisResult as EnrichedResult & { questionnaireData?: unknown }).questionnaireData = questionnaireData
   }
 
   const htmlContent = await generateBusinessReport(analysisResult, { model: aiModel })
