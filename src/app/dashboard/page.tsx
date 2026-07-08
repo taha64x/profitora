@@ -85,10 +85,8 @@ export default async function DashboardPage() {
   const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
   const maxCat = topCats[0]?.[1] ?? 1
 
-  const planLabel: Record<string, string> = { free: 'Free', schnellcheck: 'Schnellcheck', standard: 'Standard', tiefenanalyse: 'Tiefenanalyse', komplett: 'Komplett' }
-  const plan = subscription?.planName ?? 'free'
+  const credits = subscription?.analysisCredits ?? 0
   const usedAnalyses = subscription?.usedAnalysesThisMonth ?? 0
-  const limitAnalyses = subscription?.monthlyAnalysisLimit ?? 1
 
   return (
     <DashboardLayout>
@@ -119,7 +117,7 @@ export default async function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Paket" value={planLabel[plan] ?? plan} sub={`${usedAnalyses} / ${limitAnalyses} Analysen`} color="gold"
+          <StatCard label="Analyse-Guthaben" value={`${credits} Analyse${credits === 1 ? '' : 'n'}`} sub={`${usedAnalyses} gestartet diesen Monat`} color="gold"
             icon="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
           <StatCard label="Einnahmen (Monat)" value={formatEur(totalRevenues)} sub="aktueller Monat" color="green"
             icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

@@ -1,8 +1,10 @@
 // Zentrale Tarif-Konfiguration – einzige Quelle für Preise, Limits und KI-Modelle.
 // Wird von Landing-PricingSection, Subscription-Seite, /api/analyze und /api/assistant genutzt.
 //
-// Modell: kostenloser Teaser (Schnellcheck mit gesperrtem Vollbericht) +
-// kostenpflichtige Komplettanalyse als Premium-Einmalkauf.
+// Bezahlmodell: JEDE Analyse kostet – 1 Analyse = 1 Credit. Credits werden als
+// Einzelanalyse oder rabattiertes Paket gekauft (Einmalzahlung, kein Abo) und
+// verfallen nicht. Ein kostenloser Analyse-Lauf existiert nicht mehr; der
+// Gratis-Account bietet Finanztracking, Beispielbericht und begrenzten Assistent.
 
 export type PlanId = 'free' | 'premium'
 
@@ -13,7 +15,7 @@ export interface PlanConfig {
   priceMonthly: number | null
   /** Einmalpreis in EUR, nur für Einzelkauf */
   priceOnce: number | null
-  /** Analysen pro Monat, null = unbegrenzt */
+  /** Analysen pro Monat, null = unbegrenzt (Credits regeln die Menge) */
   analysisLimit: number | null
   /** maximale Analysetiefe */
   maxAccuracy: 'schnellcheck' | 'standard' | 'komplett'
@@ -33,10 +35,10 @@ export interface PlanConfig {
 export const PLANS: Record<PlanId, PlanConfig> = {
   free: {
     id: 'free',
-    name: 'Gratis-Schnellcheck',
+    name: 'Gratis-Account',
     priceMonthly: 0,
     priceOnce: null,
-    analysisLimit: 1,
+    analysisLimit: 0,
     maxAccuracy: 'schnellcheck',
     teaser: true,
     assistantLimit: 5,
@@ -45,10 +47,10 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     stripePriceEnv: null,
     highlight: false,
     features: [
-      'Kostenlose Vorschau Ihrer Wirtschaftlichkeit',
-      'Wichtigste Kennzahl + Ergebnis-Einschätzung sichtbar',
       'Finanztracking (Kosten & Einnahmen) unbegrenzt',
-      'Voller Bericht & EUR-Sparpotenziale gesperrt – erst mit Komplettanalyse',
+      'Beispielbericht ansehen',
+      'KI-Assistent zum Kennenlernen (5 Fragen/Monat)',
+      'Analysen einzeln oder im Paket freischalten',
     ],
   },
   premium: {
@@ -73,6 +75,75 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       'KI-Assistent unbegrenzt · einmalig, kein Abo',
     ],
   },
+}
+
+// ─── Analyse-Pakete (Credits) ─────────────────────────────────────────────────
+
+export type CreditPackId = 'single' | 'triple' | 'five'
+
+export interface CreditPack {
+  id: CreditPackId
+  name: string
+  /** Anzahl Analysen (Credits), die der Kauf gutschreibt */
+  credits: number
+  /** Gesamtpreis in EUR (einmalig) */
+  priceOnce: number
+  /** Env-Variable mit der Stripe-Price-ID */
+  stripePriceEnv: string
+  highlight: boolean
+  tag: string
+  features: string[]
+}
+
+export const CREDIT_PACKS: Record<CreditPackId, CreditPack> = {
+  single: {
+    id: 'single',
+    name: 'Einzelanalyse',
+    credits: 1,
+    priceOnce: 1990,
+    stripePriceEnv: 'STRIPE_PRICE_PREMIUM',
+    highlight: false,
+    tag: '1 Analyse',
+    features: PLANS.premium.features,
+  },
+  triple: {
+    id: 'triple',
+    name: '3er-Paket',
+    credits: 3,
+    priceOnce: 4990,
+    stripePriceEnv: 'STRIPE_PRICE_PACK3',
+    highlight: true,
+    tag: '3 Analysen · 980 € sparen',
+    features: [
+      'Alles aus der Komplettanalyse',
+      '3 vollständige Analysen (z. B. Quartalsvergleich)',
+      'Nur 1.663 € statt 1.990 € pro Analyse',
+      'Credits verfallen nicht',
+    ],
+  },
+  five: {
+    id: 'five',
+    name: '5er-Paket',
+    credits: 5,
+    priceOnce: 6990,
+    stripePriceEnv: 'STRIPE_PRICE_PACK5',
+    highlight: false,
+    tag: '5 Analysen · 2.960 € sparen',
+    features: [
+      'Alles aus der Komplettanalyse',
+      '5 vollständige Analysen (z. B. Monats-Tracking)',
+      'Nur 1.398 € statt 1.990 € pro Analyse',
+      'Credits verfallen nicht',
+    ],
+  },
+}
+
+/** Pack anhand des Checkout-Parameters auflösen; 'premium' bleibt als Alias für die Einzelanalyse gültig (alte Links/Register-Flow). */
+export function getCreditPack(packId: string | null | undefined): CreditPack | null {
+  if (!packId) return null
+  if (packId === 'premium') return CREDIT_PACKS.single
+  if (packId in CREDIT_PACKS) return CREDIT_PACKS[packId as CreditPackId]
+  return null
 }
 
 /** Plan anhand des in Subscription.planName gespeicherten Werts auflösen (Altwerte fallen auf free zurück) */

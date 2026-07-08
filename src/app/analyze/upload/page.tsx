@@ -11,7 +11,6 @@ function UploadContent() {
   const [files, setFiles] = useState<File[]>([])
   const [consent, setConsent] = useState({ upload: false, noLegal: false, privacy: false })
   const [loading, setLoading] = useState(false)
-  const [submitted, setSubmitted] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const industry = params.get('industry') ?? 'other'
@@ -24,11 +23,37 @@ function UploadContent() {
 
   const handleStart = async () => {
     if (!allConsented) return
+    if (files.length === 0) {
+      setError('Bitte wählen Sie mindestens eine Datei aus.')
+      return
+    }
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch('/api/analysis-request', {
+      // Dateien wirklich hochladen (Konto erforderlich). Danach geht es im
+      // Dashboard weiter, wo die Analyse mit Guthaben gestartet wird.
+      let uploadedCount = 0
+      for (const file of files) {
+        const form = new FormData()
+        form.append('file', file)
+        form.append('category', 'OTHER')
+        const res = await fetch('/api/upload', { method: 'POST', body: form })
+        if (res.status === 401) {
+          // Nicht eingeloggt: erst Account anlegen, Konfiguration bleibt in der URL
+          window.location.href = `/register?plan=premium`
+          return
+        }
+        const json = await res.json()
+        if (!res.ok) {
+          setError(json.error ?? `Upload von ${file.name} fehlgeschlagen. Hinweis: Es werden CSV- und Excel-Dateien unterstützt.`)
+          return
+        }
+        uploadedCount++
+      }
+
+      // Konfigurations-Metadaten zusätzlich speichern (für spätere Auswertung)
+      fetch('/api/analysis-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -42,45 +67,16 @@ function UploadContent() {
           privacyConfirmed:    consent.privacy,
           uploadAuthConfirmed: consent.upload,
         }),
-      })
-      const json = await res.json()
-      if (!res.ok || !json.success) {
-        setError(json.error ?? 'Fehler beim Speichern. Bitte erneut versuchen.')
-        return
+      }).catch(() => {})
+
+      if (uploadedCount > 0) {
+        window.location.href = '/dashboard/new-analysis'
       }
-      setSubmitted(json.data.id)
     } catch {
       setError('Verbindungsfehler. Bitte prüfen Sie Ihre Internetverbindung.')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-6">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
-              <path d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <h1 className="font-display text-2xl font-bold text-[#0E1A33] mb-3">Analyse eingereicht</h1>
-          <p className="text-gray-500 text-sm leading-relaxed mb-2">Referenz-ID:</p>
-          <code className="text-[#B8923A] text-xs bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg block mb-6">
-            {submitted}
-          </code>
-          <p className="text-gray-500 text-sm leading-relaxed mb-8">
-            Ihre Analyse wurde vorbereitet. Ihre Daten werden ausgewertet und Sie erhalten
-            einen strukturierten betriebswirtschaftlichen Bericht.
-          </p>
-          <Link href="/dashboard"
-            className="flex items-center justify-center bg-[#0E1A33] hover:bg-[#1a2744] text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all w-full shadow-lg shadow-[#0E1A33]/15">
-            Zum Dashboard
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -128,7 +124,7 @@ function UploadContent() {
               disabled={!allConsented || loading}
               className="w-full bg-[#0E1A33] hover:bg-[#1a2744] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0E1A33]/15"
             >
-              {loading ? 'Wird eingereicht…' : 'Analyse einreichen →'}
+              {loading ? 'Dateien werden hochgeladen…' : 'Dateien hochladen & weiter →'}
             </button>
             {!allConsented && (
               <p className="text-gray-400 text-xs text-center mt-2">

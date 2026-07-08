@@ -6,7 +6,7 @@ import { waitUntil } from '@vercel/functions'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { generateBusinessReport } from '@/lib/ai'
-import { getPlan } from '@/lib/plans'
+import { PLANS } from '@/lib/plans'
 import { sendAnalysisCompletedEmail } from '@/lib/email'
 import { runEngineAnalysis } from '@/lib/analyze-engine'
 import { presignBlobGetUrl } from '@/lib/blob'
@@ -34,19 +34,8 @@ export async function POST() {
     if (!membership) return NextResponse.json({ error: 'Kein Unternehmen gefunden.' }, { status: 400 })
 
     const org = membership.organization
-    const plan = getPlan(org.subscription?.planName)
-
-    // Analyse-Limit des Tarifs prüfen
-    if (plan.analysisLimit !== null && org.subscription &&
-        org.subscription.usedAnalysesThisMonth >= plan.analysisLimit) {
-      return NextResponse.json(
-        {
-          error: `Ihr Monatslimit von ${plan.analysisLimit} Analyse${plan.analysisLimit === 1 ? '' : 'n'} ist erreicht. Upgraden Sie für weitere Analysen.`,
-          limitReached: true,
-        },
-        { status: 402 }
-      )
-    }
+    // Bezahlte Analysen laufen immer in voller Qualität (Opus, kein Teaser).
+    const plan = PLANS.premium
 
     const uploads = await db.upload.findMany({
       where: { organizationId: org.id },
@@ -68,6 +57,26 @@ export async function POST() {
       )
     }
 
+    // Bezahlmodell: jede Analyse verbraucht genau 1 Credit. Der Abzug ist atomar
+    // (nur wenn noch mindestens 1 Credit da ist) und damit race-sicher; ohne
+    // Subscription-Zeile oder ohne Guthaben wird nichts gestartet.
+    const charged = await db.subscription.updateMany({
+      where: { organizationId: org.id, analysisCredits: { gte: 1 } },
+      data: {
+        analysisCredits: { decrement: 1 },
+        usedAnalysesThisMonth: { increment: 1 },
+      },
+    })
+    if (charged.count === 0) {
+      return NextResponse.json(
+        {
+          error: 'Kein Analyse-Guthaben verfügbar. Kaufen Sie eine Einzelanalyse oder sparen Sie mit dem 3er-/5er-Paket.',
+          needCredits: true,
+        },
+        { status: 402 }
+      )
+    }
+
     const report = await db.analysisReport.create({
       data: {
         title: `Analyse ${new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}`,
@@ -80,13 +89,6 @@ export async function POST() {
       },
     })
 
-    if (org.subscription) {
-      await db.subscription.update({
-        where: { id: org.subscription.id },
-        data: { usedAnalysesThisMonth: { increment: 1 } },
-      })
-    }
-
     const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, user.email).catch(
       async (err) => {
         console.error('[analyze] Fehler:', err)
@@ -94,6 +96,11 @@ export async function POST() {
           where: { id: report.id },
           data: { status: 'FAILED' },
         })
+        // Fehlgeschlagene Analyse darf kein Guthaben kosten – Credit zurückgeben.
+        await db.subscription.updateMany({
+          where: { organizationId: org.id },
+          data: { analysisCredits: { increment: 1 } },
+        }).catch((refundErr) => console.error('[analyze] Credit-Rückgabe fehlgeschlagen:', refundErr))
       },
     )
 

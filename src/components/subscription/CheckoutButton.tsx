@@ -6,9 +6,11 @@ interface Props {
   plan: string
   label: string
   disabled?: boolean
+  /** true = helle Variante für dunkle Karten */
+  light?: boolean
 }
 
-export default function CheckoutButton({ plan, label, disabled }: Props) {
+export default function CheckoutButton({ plan, label, disabled, light }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [consent, setConsent] = useState(false)
@@ -43,7 +45,7 @@ export default function CheckoutButton({ plan, label, disabled }: Props) {
 
   return (
     <div>
-      <label className="flex items-start gap-2 text-[11px] text-gray-500 leading-snug mb-2 cursor-pointer">
+      <label className={`flex items-start gap-2 text-[11px] leading-snug mb-2 cursor-pointer ${light ? 'text-white/60' : 'text-gray-500'}`}>
         <input
           type="checkbox"
           checked={consent}
@@ -58,7 +60,11 @@ export default function CheckoutButton({ plan, label, disabled }: Props) {
       <button
         onClick={handleCheckout}
         disabled={loading || !consent}
-        className="w-full text-xs font-semibold py-2.5 rounded-lg bg-[#0D1630] text-white hover:bg-[#152040] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className={`w-full text-xs font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+          light
+            ? 'bg-au-gold text-[#0D1630] hover:opacity-90'
+            : 'bg-[#0D1630] text-white hover:bg-[#152040]'
+        }`}
       >
         {loading ? 'Weiterleitung...' : label}
       </button>

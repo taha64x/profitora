@@ -65,7 +65,7 @@ export default async function FilesPage() {
             <h1 className="text-2xl font-bold text-gray-900">Dateien</h1>
             <p className="text-gray-500 text-sm mt-0.5">Hochgeladene Dokumente und Datenexporte</p>
           </div>
-          <Link href="/analyze/upload" className="flex items-center gap-2 bg-[#0D1630] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#152040] transition-colors">
+          <Link href="/dashboard/new-analysis" className="flex items-center gap-2 bg-[#0D1630] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#152040] transition-colors">
             + Datei hochladen
           </Link>
         </div>
@@ -95,7 +95,7 @@ export default async function FilesPage() {
             <p className="text-gray-500 text-sm mb-5 text-center max-w-xs">
               Laden Sie CSV-, Excel- oder PDF-Dateien hoch, um eine Analyse zu starten.
             </p>
-            <Link href="/analyze/upload" className="btn-primary text-sm px-5 py-2.5">
+            <Link href="/dashboard/new-analysis" className="btn-primary text-sm px-5 py-2.5">
               Erste Datei hochladen
             </Link>
           </div>

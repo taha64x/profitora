@@ -3,10 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  // Laufzeit: gepoolte Verbindung. Schema-Push/Migrationen: direkte Verbindung.
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider = "postgresql"
+  // Verbindungs-URLs: siehe prisma.config.ts (Prisma 7).
+  // Laufzeit: gepoolte DATABASE_URL. Schema-Push/Migrationen: direkte Verbindung.
 }
 
 // ─── Nutzer ───────────────────────────────────────────────────────────────────
@@ -184,8 +183,11 @@ model Revenue {
 model Subscription {
   id                     String    @id @default(cuid())
   organizationId         String    @unique
-  planName               String    @default("free") // free | schnellcheck | standard | tiefenanalyse | komplett
+  planName               String    @default("free") // free | premium (premium = hat mind. 1 Analyse gekauft)
   status                 String    @default("active") // active | cancelled | past_due | trialing
+  // Bezahlmodell: jede Analyse verbraucht 1 Credit; Credits werden als
+  // Einzelanalyse oder Paket (3er/5er) gekauft und verfallen nicht.
+  analysisCredits        Int       @default(0)
   monthlyAnalysisLimit   Int       @default(1)
   usedAnalysesThisMonth  Int       @default(0)
   assistantMsgsThisMonth Int       @default(0)
@@ -197,6 +199,20 @@ model Subscription {
   updatedAt              DateTime  @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Stripe-Käufe (Idempotenz-Schutz) ─────────────────────────────────────────
+// Stripe stellt Webhooks mehrfach zu; die unique Session-ID stellt sicher,
+// dass Credits pro Checkout genau einmal gutgeschrieben werden.
+
+model StripePurchase {
+  id              String   @id @default(cuid())
+  organizationId  String
+  stripeSessionId String   @unique
+  pack            String   // single | triple | five
+  credits         Int
+  amountCents     Int
+  createdAt       DateTime @default(now())
 }
 
 // ─── Einstellungen ────────────────────────────────────────────────────────────

@@ -13,17 +13,11 @@ export function getStripe(): Stripe {
   return _stripe
 }
 
-export const STRIPE_PLANS: Record<string, {
-  priceId: string
-  limit: number
-  label: string
-  /** 'subscription' für Abos, 'payment' für Einmalkauf */
-  mode: 'subscription' | 'payment'
-}> = {
-  premium: {
-    priceId: process.env.STRIPE_PRICE_PREMIUM ?? '',
-    limit: 9999,
-    label: 'Komplettanalyse',
-    mode: 'payment',
-  },
+import { CREDIT_PACKS, getCreditPack, type CreditPack } from '@/lib/plans'
+
+export { CREDIT_PACKS, getCreditPack }
+
+/** Stripe-Price-ID eines Packs aus der Env auflösen ('' wenn nicht konfiguriert) */
+export function priceIdForPack(pack: CreditPack): string {
+  return process.env[pack.stripePriceEnv] ?? ''
 }

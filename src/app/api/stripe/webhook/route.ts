@@ -2,12 +2,17 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getStripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
-import { getPlan } from '@/lib/plans'
+import { getPlan, getCreditPack } from '@/lib/plans'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 
 /** Analyse-Limit aus der zentralen Tarif-Konfiguration (null = unbegrenzt → 9999) */
 function limitFor(planName: string): number {
   return getPlan(planName).analysisLimit ?? 9999
+}
+
+/** Anzeigename eines Packs für die Auftragsbestätigung */
+function creditPackName(packId: string): string {
+  return getCreditPack(packId)?.name ?? 'Komplettanalyse'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,36 +46,50 @@ export async function POST(req: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object
         const orgId = session.metadata?.organizationId
-        const plan = session.metadata?.plan
-        if (!orgId || !plan) break
+        // Neues Modell: Credits aus den Session-Metadaten. Alte Sessions (plan=premium)
+        // ohne credits-Feld werden als Einzelanalyse (1 Credit) gewertet.
+        const pack = session.metadata?.pack ?? session.metadata?.plan ?? 'single'
+        const credits = Math.max(1, parseInt(session.metadata?.credits ?? '1', 10) || 1)
+        if (!orgId) break
 
-        // Einmalkauf (mode 'payment') hat keine Subscription – nur bei Abos abrufen
-        const subId = typeof session.subscription === 'string' ? session.subscription : null
-        const sub = subId ? await getStripe().subscriptions.retrieve(subId) : null
-        const period = sub ? getPeriod(sub) : { start: undefined, end: undefined }
+        // Idempotenz: Stripe stellt Events mehrfach zu. Die unique Session-ID
+        // sorgt dafür, dass pro Checkout genau einmal gutgeschrieben wird.
+        const granted = await db.$transaction(async (tx) => {
+          const existing = await tx.stripePurchase.findUnique({
+            where: { stripeSessionId: String(session.id) },
+          })
+          if (existing) return false
 
-        await db.subscription.upsert({
-          where: { organizationId: orgId },
-          create: {
-            organizationId: orgId,
-            planName: plan,
-            status: 'active',
-            monthlyAnalysisLimit: limitFor(plan),
-            stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: subId,
-            currentPeriodStart: period.start,
-            currentPeriodEnd: period.end,
-          },
-          update: {
-            planName: plan,
-            status: 'active',
-            monthlyAnalysisLimit: limitFor(plan),
-            stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: subId,
-            currentPeriodStart: period.start,
-            currentPeriodEnd: period.end,
-          },
+          await tx.stripePurchase.create({
+            data: {
+              organizationId: orgId,
+              stripeSessionId: String(session.id),
+              pack,
+              credits,
+              amountCents: session.amount_total ?? 0,
+            },
+          })
+
+          await tx.subscription.upsert({
+            where: { organizationId: orgId },
+            create: {
+              organizationId: orgId,
+              planName: 'premium',
+              status: 'active',
+              analysisCredits: credits,
+              stripeCustomerId: session.customer as string,
+            },
+            update: {
+              planName: 'premium',
+              status: 'active',
+              analysisCredits: { increment: credits },
+              stripeCustomerId: session.customer as string,
+            },
+          })
+          return true
         })
+
+        if (!granted) break
 
         // Auftragsbestätigung + Rechnung automatisch versenden (no-op ohne RESEND_API_KEY)
         try {
@@ -82,7 +101,7 @@ export async function POST(req: Request) {
             await sendOrderConfirmationEmail({
               to: customerEmail,
               orgName: org?.name ?? 'Ihr Unternehmen',
-              productName: getPlan(plan).name,
+              productName: `Profitora ${creditPackName(pack)} (${credits} Analyse${credits === 1 ? '' : 'n'})`,
               amountCents: session.amount_total ?? 0,
               invoiceNumber,
               date: now,

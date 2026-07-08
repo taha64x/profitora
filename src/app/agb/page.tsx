@@ -58,7 +58,7 @@ export default function AgbPage() {
           <section>
             <h2 className="font-semibold text-gray-900 mb-3 text-base">§ 4 Preise und Zahlung</h2>
             <p className="leading-relaxed">
-              Profitora wird in folgenden Paketen angeboten: ein kostenloser Gratis-Schnellcheck sowie die kostenpflichtige Komplettanalyse (einmalige Zahlung von 1.990 EUR). Als Kleinunternehmer im Sinne von § 19 UStG wird keine Umsatzsteuer ausgewiesen. Die jeweils aktuellen Preise und Leistungsumfänge sind auf der Preisseite ersichtlich. Zahlungen werden über den Zahlungsdienstleister Stripe abgewickelt.
+              Profitora wird in folgenden Paketen angeboten: ein kostenloser Account (Finanztracking, Beispielbericht, eingeschränkter KI-Assistent) sowie kostenpflichtiges Analyse-Guthaben als Einzelanalyse (einmalige Zahlung von 1.990 EUR), 3er-Paket (einmalige Zahlung von 4.990 EUR, entspricht 3 Analysen) oder 5er-Paket (einmalige Zahlung von 6.990 EUR, entspricht 5 Analysen). Jede durchgeführte Analyse verbraucht ein Analyse-Guthaben; erworbenes Guthaben verfällt nicht. Als Kleinunternehmer im Sinne von § 19 UStG wird keine Umsatzsteuer ausgewiesen. Die jeweils aktuellen Preise und Leistungsumfänge sind auf der Preisseite ersichtlich. Zahlungen werden über den Zahlungsdienstleister Stripe abgewickelt.
             </p>
           </section>
 
@@ -66,8 +66,8 @@ export default function AgbPage() {
             <h2 className="font-semibold text-gray-900 mb-3 text-base">§ 5 Laufzeit, Kündigung, Widerruf und Erstattung</h2>
             <ul className="list-disc pl-5 space-y-2 leading-relaxed">
               <li><strong>Abonnements</strong> können jederzeit zum Ende des laufenden Abrechnungszeitraums gekündigt werden. Der Zugang bleibt bis zum Ende des bereits bezahlten Zeitraums aktiv. Bereits gezahlte Beträge werden nicht (auch nicht anteilig) erstattet.</li>
-              <li>Die <strong>Komplettanalyse</strong> ist ein einmaliger Kauf einer digitalen Dienstleistung. Nach Bereitstellung bzw. Ausführung der Leistung ist eine Erstattung ausgeschlossen.</li>
-              <li>Der <strong>Gratis-Schnellcheck</strong> kann jederzeit ohne Kündigung beendet werden.</li>
+              <li><strong>Analyse-Guthaben</strong> (Einzelanalyse, 3er- oder 5er-Paket) ist ein einmaliger Kauf einer digitalen Dienstleistung. Nach Bereitstellung bzw. Ausführung der Leistung ist eine Erstattung ausgeschlossen; erworbenes, noch nicht verbrauchtes Guthaben verfällt nicht.</li>
+              <li>Der <strong>kostenlose Account</strong> kann jederzeit ohne Kündigung beendet werden.</li>
               <li><strong>Verbraucher</strong> im Sinne des § 13 BGB haben ein gesetzliches Widerrufsrecht nach Maßgabe der <Link href="/widerruf" className="text-[#0D1630] hover:underline">Widerrufsbelehrung</Link>. Dieses erlischt bei digitalen Inhalten und Dienstleistungen, wenn der Verbraucher der sofortigen Ausführung ausdrücklich zustimmt und seine Kenntnis vom Erlöschen des Widerrufsrechts bestätigt (§ 356 Abs. 4 und 5 BGB).</li>
               <li>Gegenüber <strong>Unternehmern</strong> (§ 14 BGB) besteht kein gesetzliches Widerrufsrecht; eine Erstattung ist ausgeschlossen.</li>
             </ul>

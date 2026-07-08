@@ -4,20 +4,19 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
-import { PLANS as PLAN_CONFIG, type PlanId } from '@/lib/plans'
+import { getCreditPack, type CreditPack } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
-
-const PAID_PLANS: PlanId[] = ['premium']
 
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2>(1)
-  // Tarif aus ?plan= (von der Preis-Sektion der Landing-Page) merken,
+  // Analyse-Paket aus ?plan= (von der Preis-Sektion der Landing-Page) merken,
   // damit wir nach der Anmeldung direkt zur Zahlung weiterleiten können.
-  const [plan, setPlan] = useState<PlanId | null>(null)
+  // 'premium' bleibt als Alias für die Einzelanalyse gültig (alte Links).
+  const [pack, setPack] = useState<CreditPack | null>(null)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('plan')
-    if (p && p in PLAN_CONFIG) setPlan(p as PlanId)
+    setPack(getCreditPack(p))
   }, [])
   const [form, setForm] = useState({
     name: '',
@@ -54,7 +53,7 @@ export default function RegisterPage() {
       setError('Passwort muss mindestens 8 Zeichen haben.')
       return
     }
-    if (plan && PAID_PLANS.includes(plan) && !consent) {
+    if (pack && !consent) {
       setError('Bitte stimmen Sie der sofortigen Ausführung zu, um fortzufahren.')
       return
     }
@@ -79,14 +78,14 @@ export default function RegisterPage() {
         return
       }
 
-      // Direkt-Kauf: bei kostenpflichtigem Tarif sofort zum Stripe-Checkout,
+      // Direkt-Kauf: bei gewähltem Analyse-Paket sofort zum Stripe-Checkout,
       // ohne Umweg über das Dashboard (weniger Reibung = mehr Abschlüsse).
-      if (plan && PAID_PLANS.includes(plan)) {
+      if (pack) {
         try {
           const checkoutRes = await fetch('/api/stripe/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan, consent }),
+            body: JSON.stringify({ plan: pack.id, consent }),
           })
           const checkoutData = await checkoutRes.json()
           if (checkoutRes.ok && checkoutData.url) {
@@ -117,23 +116,19 @@ export default function RegisterPage() {
             <span className="text-2xl font-bold text-hotel-navy">Profitora</span>
           </Link>
           <p className="mt-2 text-gray-500 text-sm">
-            {plan && PAID_PLANS.includes(plan)
+            {pack
               ? 'Account erstellen – danach geht es direkt zur Zahlung'
               : 'Kostenlosen Account erstellen'}
           </p>
         </div>
 
         <div className="card p-8">
-          {plan && PAID_PLANS.includes(plan) && (
+          {pack && (
             <div className="mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
-              <span className="text-sm text-gray-600">Gewählter Tarif</span>
+              <span className="text-sm text-gray-600">Gewähltes Paket</span>
               <span className="text-sm font-semibold text-hotel-navy">
-                {PLAN_CONFIG[plan].name}
-                {PLAN_CONFIG[plan].priceMonthly != null
-                  ? ` · ${PLAN_CONFIG[plan].priceMonthly} €/Monat`
-                  : PLAN_CONFIG[plan].priceOnce != null
-                  ? ` · ${PLAN_CONFIG[plan].priceOnce} € einmalig`
-                  : ''}
+                {pack.name} ({pack.credits} Analyse{pack.credits === 1 ? '' : 'n'})
+                {` · ${pack.priceOnce.toLocaleString('de-DE')} € einmalig`}
               </span>
             </div>
           )}
@@ -312,7 +307,7 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {plan && PAID_PLANS.includes(plan) && (
+              {pack && (
                 <label className="flex items-start gap-2 text-xs text-gray-500 leading-snug cursor-pointer">
                   <input
                     type="checkbox"

@@ -1,29 +1,40 @@
 import Link from 'next/link'
 import ScrollReveal from './ScrollReveal'
-import { PLANS as PLAN_CONFIG } from '@/lib/plans'
+import { CREDIT_PACKS } from '@/lib/plans'
 
 const PLANS = [
   {
-    name: PLAN_CONFIG.free.name,
-    tag: 'Gratis-Vorschau',
-    price: 'Kostenlos',
-    priceNote: 'Keine Kreditkarte erforderlich',
+    name: CREDIT_PACKS.single.name,
+    tag: CREDIT_PACKS.single.tag,
+    price: `€ ${CREDIT_PACKS.single.priceOnce.toLocaleString('de-DE')}`,
+    priceNote: 'einmalig, kein Abo',
     highlight: false,
-    desc: 'Sehen Sie kostenlos, wie Ihr Betrieb steht – die Vollauswertung schalten Sie bei Bedarf frei.',
-    features: PLAN_CONFIG.free.features,
-    cta: 'Gratis-Schnellcheck starten',
-    href: '/register',
+    desc: 'Die vollständige KI-Wirtschaftlichkeitsanalyse mit allen Kennzahlen, Sparpotenzialen in Euro und Handlungsempfehlungen.',
+    features: CREDIT_PACKS.single.features,
+    cta: 'Einzelanalyse kaufen',
+    href: '/register?plan=single',
   },
   {
-    name: PLAN_CONFIG.premium.name,
-    tag: 'Komplett',
-    price: `€ ${PLAN_CONFIG.premium.priceOnce?.toLocaleString('de-DE')}`,
-    priceNote: 'einmalig, kein Abo',
+    name: CREDIT_PACKS.triple.name,
+    tag: CREDIT_PACKS.triple.tag,
+    price: `€ ${CREDIT_PACKS.triple.priceOnce.toLocaleString('de-DE')}`,
+    priceNote: `einmalig · ${Math.round(CREDIT_PACKS.triple.priceOnce / CREDIT_PACKS.triple.credits).toLocaleString('de-DE')} € pro Analyse`,
     highlight: true,
-    desc: 'Die vollständige KI-Wirtschaftlichkeitsanalyse mit allen Kennzahlen, Sparpotenzialen in Euro und Handlungsempfehlungen.',
-    features: PLAN_CONFIG.premium.features,
-    cta: 'Komplettanalyse kaufen',
-    href: '/register?plan=premium',
+    desc: 'Drei vollständige Analysen – ideal, um Maßnahmen im Quartalsvergleich zu überprüfen und dranzubleiben.',
+    features: CREDIT_PACKS.triple.features,
+    cta: '3er-Paket kaufen',
+    href: '/register?plan=triple',
+  },
+  {
+    name: CREDIT_PACKS.five.name,
+    tag: CREDIT_PACKS.five.tag,
+    price: `€ ${CREDIT_PACKS.five.priceOnce.toLocaleString('de-DE')}`,
+    priceNote: `einmalig · ${Math.round(CREDIT_PACKS.five.priceOnce / CREDIT_PACKS.five.credits).toLocaleString('de-DE')} € pro Analyse`,
+    highlight: false,
+    desc: 'Fünf vollständige Analysen für kontinuierliches Controlling – Monat für Monat den Erfolg messen.',
+    features: CREDIT_PACKS.five.features,
+    cta: '5er-Paket kaufen',
+    href: '/register?plan=five',
   },
 ]
 
@@ -37,16 +48,16 @@ export default function PricingSection() {
               Pakete
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-extrabold text-[#0E1A33] tracking-tight mb-4">
-              Abo oder Einmalkauf – Sie entscheiden
+              Pro Analyse zahlen – kein Abo
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
-              Jeder Tarif enthält Finanztracking und KI-Assistent.
-              Höhere Tarife nutzen leistungsstärkere KI-Modelle und bieten mehr Analysen.
+              Jede Analyse ist ein vollständiger 10-Abschnitt-Bericht mit Sparpotenzialen in Euro.
+              Im Paket wird jede Analyse günstiger – das Guthaben verfällt nicht.
             </p>
           </div>
         </ScrollReveal>
 
-        <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
           {PLANS.map((plan, i) => (
             <ScrollReveal key={plan.name} delay={((i % 4) + 1) as 1 | 2 | 3 | 4}>
               <div
@@ -123,7 +134,9 @@ export default function PricingSection() {
 
         <ScrollReveal>
           <p className="text-center text-gray-400 text-xs mt-8 max-w-lg mx-auto leading-relaxed">
-            Alle Preise inkl. MwSt. Abos sind monatlich kündbar.
+            Kostenloser Account inklusive: Finanztracking, Beispielbericht und KI-Assistent zum Kennenlernen –{' '}
+            <Link href="/register" className="underline hover:text-gray-600">jetzt kostenlos registrieren</Link>.
+            Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
             Alle Analysen sind betriebswirtschaftliche Entscheidungshilfen –
             kein Ersatz für Steuerberater, Rechtsanwalt oder gesetzlichen Wirtschaftsprüfer.
           </p>
