@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
 import { getCreditPack, type CreditPack } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -220,6 +221,8 @@ export default function RegisterPage() {
               </div>
 
               <h1 className="text-xl font-semibold text-gray-900">Account erstellen</h1>
+
+              <GoogleLoginButton plan={pack?.id} />
 
               <div>
                 <label className="label">Ihr Name</label>

@@ -1,14 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton'
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  'google-config': 'Google-Login ist derzeit nicht verfügbar.',
+  'google-state': 'Google-Anmeldung abgelaufen. Bitte erneut versuchen.',
+  'google-token': 'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
+  'google-email': 'Ihre Google-E-Mail ist nicht bestätigt.',
+  google: 'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
+}
 
 export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('error')
+    if (code && GOOGLE_ERRORS[code]) setError(GOOGLE_ERRORS[code])
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,6 +68,8 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+
+          <GoogleLoginButton />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
