@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { COMPANY } from '@/lib/company'
+import { CookieSettingsLink } from '@/components/consent/CookieBanner'
 
 export const metadata = { title: 'Datenschutzerklärung – Profitora' }
 
@@ -18,7 +19,7 @@ export default function DatenschutzPage() {
 
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Datenschutzerklärung</h1>
-        <p className="text-gray-500 text-sm mb-8">Stand: Juni 2026</p>
+        <p className="text-gray-500 text-sm mb-8">Stand: Juli 2026</p>
 
         <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-8 text-sm text-gray-700">
 
@@ -62,6 +63,7 @@ export default function DatenschutzPage() {
               <li><strong>Stripe</strong> – Abwicklung von Zahlungen</li>
               <li><strong>Resend</strong> – Versand von Transaktions-E-Mails (z. B. Bestätigungen)</li>
               <li><strong>Anthropic</strong> – KI-Analyse (siehe Ziffer 3)</li>
+              <li><strong>Google, Meta</strong> – nur mit Ihrer Einwilligung für Analyse/Werbung (siehe Ziffer 7)</li>
             </ul>
           </section>
 
@@ -73,14 +75,37 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">6. Cookies und Sitzungsdaten</h2>
+            <h2 className="font-semibold text-gray-900 mb-3 text-base">6. Cookies und Einwilligung</h2>
+            <p className="leading-relaxed mb-3">
+              Profitora verwendet technisch notwendige HTTP-only Cookies für die Authentifizierung. Diese Cookies enthalten keine personenbezogenen Daten außer einer sicheren Sitzungs-ID und sind für den Betrieb der Plattform erforderlich (Art. 6 Abs. 1 lit. b DSGVO, § 25 Abs. 2 TDDDG).
+            </p>
             <p className="leading-relaxed">
-              Profitora verwendet technisch notwendige HTTP-only Cookies für die Authentifizierung. Diese Cookies enthalten keine personenbezogenen Daten außer einer sicheren Sitzungs-ID und sind für den Betrieb der Plattform erforderlich (Art. 6 Abs. 1 lit. b DSGVO).
+              Darüber hinausgehende Analyse- und Marketing-Technologien (Ziffer 7) setzen wir <strong>ausschließlich mit Ihrer ausdrücklichen Einwilligung</strong> über unseren Cookie-Banner ein (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG). Ohne Einwilligung werden keine entsprechenden Skripte geladen und keine Daten an Dritte übertragen. Ihre Entscheidung können Sie jederzeit hier widerrufen oder ändern:{' '}
+              <CookieSettingsLink className="text-[#0D1630] font-medium underline hover:no-underline" />.
             </p>
           </section>
 
           <section>
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">7. Ihre Rechte</h2>
+            <h2 className="font-semibold text-gray-900 mb-3 text-base">7. Analyse- und Werbe-Tools (nur mit Einwilligung)</h2>
+            <p className="leading-relaxed mb-3">
+              Sofern Sie über den Cookie-Banner eingewilligt haben, setzen wir folgende Dienste ein:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 leading-relaxed mb-3">
+              <li><strong>Google Analytics 4</strong> (Google Ireland Ltd.) – Reichweiten- und Nutzungsanalyse. IP-Adressen werden gekürzt verarbeitet.</li>
+              <li><strong>Google Ads Conversion-Tracking</strong> (Google Ireland Ltd.) – Messung, ob Werbeanzeigen zu Käufen führen.</li>
+              <li><strong>Meta Pixel</strong> (Meta Platforms Ireland Ltd.) – Messung und Optimierung von Werbekampagnen auf Facebook/Instagram.</li>
+            </ul>
+            <p className="leading-relaxed mb-3">
+              Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Dabei können Daten in die USA übertragen werden; Google LLC und Meta Platforms Inc. sind unter dem <strong>EU-U.S. Data Privacy Framework</strong> zertifiziert (Art. 45 DSGVO), ergänzend bestehen Standardvertragsklauseln. Wir nutzen den Google Consent Mode v2; ohne Ihre Einwilligung werden keine Tracking-Skripte geladen.
+            </p>
+            <p className="leading-relaxed">
+              Widerruf jederzeit mit Wirkung für die Zukunft:{' '}
+              <CookieSettingsLink className="text-[#0D1630] font-medium underline hover:no-underline" />
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-semibold text-gray-900 mb-3 text-base">8. Ihre Rechte</h2>
             <p className="leading-relaxed mb-3">Sie haben nach DSGVO folgende Rechte:</p>
             <ul className="list-disc pl-5 space-y-1 leading-relaxed">
               <li>Auskunftsrecht (Art. 15 DSGVO)</li>
@@ -97,7 +122,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">8. Datensicherheit</h2>
+            <h2 className="font-semibold text-gray-900 mb-3 text-base">9. Datensicherheit</h2>
             <p className="leading-relaxed">
               Alle Verbindungen sind SSL/TLS-verschlüsselt. Authentifizierungstoken werden in HTTP-only Cookies gespeichert (kein Zugriff via JavaScript). Hochgeladene Dateien werden privat und nicht öffentlich zugänglich gespeichert; der Zugriff erfolgt ausschließlich über kurzlebige, signierte URLs.
             </p>

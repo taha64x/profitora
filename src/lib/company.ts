@@ -17,8 +17,9 @@ export const COMPANY = {
   country: 'Deutschland',
   /** Steuernummer (Finanzamt) – leer = wird auf Rechnung weggelassen.
    *  Achtung: Bei Rechnungen über 250 € ist die Steuernummer nach §14 Abs. 4 UStG
-   *  Pflichtangabe (gilt auch für Kleinunternehmer) – bei Gelegenheit nachtragen. */
-  taxNumber: '',
+   *  Pflichtangabe (gilt auch für Kleinunternehmer). Sobald vom Finanzamt vergeben:
+   *  COMPANY_TAX_NUMBER in Vercel setzen – erscheint dann automatisch auf Rechnungen. */
+  taxNumber: process.env.COMPANY_TAX_NUMBER ?? '',
   /** Kontakt */
   email: 'kontakt@profitora.de',
   phone: '0170 7877462',

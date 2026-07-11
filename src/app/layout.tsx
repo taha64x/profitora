@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import HydrationFlag from '@/components/HydrationFlag'
+import { CookieBanner } from '@/components/consent/CookieBanner'
+import { TrackingScripts } from '@/components/consent/TrackingScripts'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
@@ -48,6 +50,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <HydrationFlag />
         {children}
+        <CookieBanner />
+        <TrackingScripts />
         <Toaster
           position="top-right"
           richColors

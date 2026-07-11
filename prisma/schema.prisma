@@ -213,6 +213,28 @@ model StripePurchase {
   credits         Int
   amountCents     Int
   createdAt       DateTime @default(now())
+
+  // Rechnungsdaten (§ 14 Abs. 4 UStG): fortlaufende Nummer + Snapshot des
+  // Rechnungsempfängers aus Stripe customer_details zum Kaufzeitpunkt.
+  // Nullable, damit Alt-Käufe ohne diese Daten gültig bleiben.
+  invoiceNumber String? @unique // z. B. PA-2026-0001
+  buyerName     String? // Vor- und Nachname (Karteninhaber / Rechnungsadresse)
+  buyerCompany  String? // Unternehmensname (Organization zum Kaufzeitpunkt)
+  addressLine1  String?
+  addressLine2  String?
+  postalCode    String?
+  city          String?
+  country       String? // ISO-Code aus Stripe, z. B. "DE"
+  customerEmail String?
+}
+
+// ─── Rechnungsnummernkreis ────────────────────────────────────────────────────
+// § 14 Abs. 4 Nr. 4 UStG verlangt eine fortlaufende, einmalige Rechnungsnummer.
+// Pro Jahr ein Zähler; Vergabe atomar in der Webhook-Transaktion.
+
+model InvoiceCounter {
+  year       Int @id
+  lastNumber Int @default(0)
 }
 
 // ─── Einstellungen ────────────────────────────────────────────────────────────

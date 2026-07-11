@@ -52,13 +52,29 @@ export async function POST(req: Request) {
         const credits = Math.max(1, parseInt(session.metadata?.credits ?? '1', 10) || 1)
         if (!orgId) break
 
+        // Käufer-Snapshot für die Rechnung (§ 14 UStG: Name + Anschrift des
+        // Leistungsempfängers). Kommt aus der Stripe-Rechnungsadresse.
+        const details = session.customer_details ?? {}
+        const addr = details.address ?? {}
+        const org = await db.organization.findUnique({ where: { id: orgId }, select: { name: true } })
+
         // Idempotenz: Stripe stellt Events mehrfach zu. Die unique Session-ID
         // sorgt dafür, dass pro Checkout genau einmal gutgeschrieben wird.
-        const granted = await db.$transaction(async (tx) => {
+        // Rückgabe: vergebene Rechnungsnummer, null = bereits verarbeitet.
+        const invoiceNumber = await db.$transaction(async (tx) => {
           const existing = await tx.stripePurchase.findUnique({
             where: { stripeSessionId: String(session.id) },
           })
-          if (existing) return false
+          if (existing) return null
+
+          // Fortlaufende Rechnungsnummer (§ 14 Abs. 4 Nr. 4 UStG), Zähler pro Jahr.
+          const year = new Date().getFullYear()
+          const counter = await tx.invoiceCounter.upsert({
+            where: { year },
+            create: { year, lastNumber: 1 },
+            update: { lastNumber: { increment: 1 } },
+          })
+          const number = `PA-${year}-${String(counter.lastNumber).padStart(4, '0')}`
 
           await tx.stripePurchase.create({
             data: {
@@ -67,6 +83,15 @@ export async function POST(req: Request) {
               pack,
               credits,
               amountCents: session.amount_total ?? 0,
+              invoiceNumber: number,
+              buyerName: details.name ?? null,
+              buyerCompany: org?.name ?? null,
+              addressLine1: addr.line1 ?? null,
+              addressLine2: addr.line2 ?? null,
+              postalCode: addr.postal_code ?? null,
+              city: addr.city ?? null,
+              country: addr.country ?? null,
+              customerEmail: details.email ?? session.customer_email ?? null,
             },
           })
 
@@ -86,25 +111,29 @@ export async function POST(req: Request) {
               stripeCustomerId: session.customer as string,
             },
           })
-          return true
+          return number
         })
 
-        if (!granted) break
+        if (!invoiceNumber) break
 
         // Auftragsbestätigung + Rechnung automatisch versenden (no-op ohne RESEND_API_KEY)
         try {
-          const customerEmail = session.customer_details?.email ?? session.customer_email
+          const customerEmail = details.email ?? session.customer_email
           if (customerEmail) {
-            const org = await db.organization.findUnique({ where: { id: orgId }, select: { name: true } })
-            const now = new Date()
-            const invoiceNumber = `PA-${now.getFullYear()}-${String(session.id).slice(-6).toUpperCase()}`
             await sendOrderConfirmationEmail({
               to: customerEmail,
               orgName: org?.name ?? 'Ihr Unternehmen',
               productName: `Profitora ${creditPackName(pack)} (${credits} Analyse${credits === 1 ? '' : 'n'})`,
               amountCents: session.amount_total ?? 0,
               invoiceNumber,
-              date: now,
+              date: new Date(),
+              buyerName: details.name ?? undefined,
+              addressLines: [
+                addr.line1,
+                addr.line2,
+                [addr.postal_code, addr.city].filter(Boolean).join(' '),
+              ].filter((l: unknown): l is string => typeof l === 'string' && l.length > 0),
+              invoiceUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/purchase/success?session_id=${session.id}`,
             })
           }
         } catch (mailErr) {

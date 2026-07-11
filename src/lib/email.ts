@@ -114,8 +114,9 @@ export async function sendMonthlyReminderEmail(to: string, name: string, orgName
 }
 
 /**
- * Auftragsbestätigung + Rechnung (Kleinbetragsrechnung §33 UStDV, < 250 € brutto).
- * Wird automatisch nach erfolgreichem Kauf aus dem Stripe-Webhook versendet.
+ * Auftragsbestätigung nach erfolgreichem Kauf (aus dem Stripe-Webhook).
+ * Enthält eine Rechnungsübersicht; die formelle PDF-Rechnung (§ 14 UStG,
+ * Beträge > 250 €) lädt der Kunde über den Link auf der Bestätigungsseite.
  * Kleinunternehmer §19 UStG → keine Umsatzsteuer ausgewiesen.
  */
 export async function sendOrderConfirmationEmail(params: {
@@ -125,13 +126,26 @@ export async function sendOrderConfirmationEmail(params: {
   amountCents: number
   invoiceNumber: string
   date: Date
+  /** Name des Rechnungsempfängers (aus der Stripe-Rechnungsadresse) */
+  buyerName?: string
+  /** Adresszeilen des Rechnungsempfängers, bereits formatiert */
+  addressLines?: string[]
+  /** Link zur Bestätigungsseite mit PDF-Download */
+  invoiceUrl?: string
 }) {
   if (!process.env.RESEND_API_KEY) return
 
-  const { to, orgName, productName, amountCents, invoiceNumber, date } = params
+  const { to, orgName, productName, amountCents, invoiceNumber, date, buyerName, addressLines, invoiceUrl } = params
   const amount = (amountCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
   const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${COMPANY.domain}`
+
+  const buyerBlock = buyerName || orgName
+    ? `<p style="font-size:13px;color:#6b7280;margin-bottom:4px;"><strong>Rechnungsempfänger:</strong></p>
+       <p style="font-size:13px;color:#6b7280;margin-top:0;">
+         ${[orgName, buyerName, ...(addressLines ?? [])].filter(Boolean).join('<br>')}
+       </p>`
+    : ''
 
   await getResend().emails.send({
     from: FROM,
@@ -153,13 +167,16 @@ export async function sendOrderConfirmationEmail(params: {
         <p style="margin:14px 0 0;font-size:12px;color:#9ca3af;">${COMPANY.vatNote}</p>
       </div>
 
+      ${buyerBlock}
+
       <p style="font-size:13px;color:#6b7280;margin-bottom:4px;"><strong>Anbieter / Rechnungssteller:</strong></p>
       <p style="font-size:13px;color:#6b7280;margin-top:0;">
         ${COMPANY.legalName}<br>${COMPANY.street}<br>${COMPANY.city}, ${COMPANY.country}<br>
         ${COMPANY.taxNumber ? `Steuernr.: ${COMPANY.taxNumber} · ` : ''}${COMPANY.email}
       </p>
 
-      <a href="${appUrl}/dashboard" class="btn">Zur Komplettanalyse</a>
+      ${invoiceUrl ? `<a href="${invoiceUrl}" class="btn" style="margin-right:10px;">Rechnung (PDF) herunterladen</a>` : ''}
+      <a href="${appUrl}/dashboard" class="btn" style="background:#374151;">Zur Komplettanalyse</a>
 
       <div class="disclaimer">
         <strong>Widerrufshinweis:</strong> Bei digitalen Inhalten, die sofort bereitgestellt werden, erlischt das Widerrufsrecht mit der von Ihnen beim Kauf erteilten Zustimmung zur sofortigen Ausführung.

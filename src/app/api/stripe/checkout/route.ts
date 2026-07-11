@@ -61,7 +61,10 @@ export async function POST(req: Request) {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/new-analysis?purchase=success`,
+      // Rechnungsadresse ist Pflicht: § 14 Abs. 4 UStG verlangt Name + Anschrift
+      // des Leistungsempfängers auf Rechnungen über 250 €.
+      billing_address_collection: 'required',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`,
       metadata: {
         organizationId: org.id,
