@@ -183,7 +183,7 @@ model Revenue {
 model Subscription {
   id                     String    @id @default(cuid())
   organizationId         String    @unique
-  planName               String    @default("free") // free | premium (premium = hat mind. 1 Analyse gekauft)
+  planName               String    @default("free") // free | starter | business | premium; Altbestand: 'premium' OHNE stripeSubscriptionId = Legacy-Credit-Käufer (zählt als free)
   status                 String    @default("active") // active | cancelled | past_due | trialing
   // Bezahlmodell: jede Analyse verbraucht 1 Credit; Credits werden als
   // Einzelanalyse oder Paket (3er/5er) gekauft und verfallen nicht.
@@ -193,6 +193,8 @@ model Subscription {
   assistantMsgsThisMonth Int       @default(0)
   stripeCustomerId       String?
   stripeSubscriptionId   String?
+  billingInterval        String?   // 'month' | 'year' – nur bei aktivem Abo gesetzt
+  lastIncludedAnalysisAt DateTime? // Premium: letzte genutzte Quartals-Inklusivanalyse
   currentPeriodStart     DateTime?
   currentPeriodEnd       DateTime?
   createdAt              DateTime  @default(now())
