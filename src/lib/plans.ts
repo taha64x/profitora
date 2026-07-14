@@ -78,6 +78,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 }
 
 // ─── Analyse-Pakete (Credits) ─────────────────────────────────────────────────
+// LEGACY: Wird zum Abo-Launch (NEXT_PUBLIC_SUBSCRIPTIONS_LIVE=true) von
+// SUBSCRIPTION_PLANS + Einzelanalyse abgelöst. Definitionen bleiben erhalten,
+// damit Webhook-Replays, alte Checkout-Links und Kauf-Historie funktionieren.
 
 export type CreditPackId = 'single' | 'triple' | 'five'
 
@@ -154,4 +157,106 @@ export function getPlan(planName: string | null | undefined): PlanConfig {
 
 export function getModelForPlan(planName: string | null | undefined): string {
   return getPlan(planName).aiModel
+}
+
+// ─── Abo-Tarife (Unternehmens-Cockpit) ───────────────────────────────────────
+// Preise in Cent. priceYearlyPerMonthCents = Monatsäquivalent bei Jahreszahlung
+// (−20 %). Feature-Strings mit "(in Kürze)" markieren Module späterer Phasen.
+
+export type SubscriptionPlanId = 'starter' | 'business' | 'premium'
+export type BillingInterval = 'month' | 'year'
+
+export interface SubscriptionPlan {
+  id: SubscriptionPlanId
+  name: string
+  tagline: string
+  priceMonthlyCents: number
+  priceYearlyPerMonthCents: number
+  stripePriceEnvMonthly: string
+  stripePriceEnvYearly: string
+  /** Analyse-Einmalpreis für Kunden dieses Tiers (Cent) */
+  analysisPriceCents: number
+  highlight: boolean
+  features: string[]
+}
+
+export const SUBSCRIPTION_PLANS: Record<SubscriptionPlanId, SubscriptionPlan> = {
+  starter: {
+    id: 'starter',
+    name: 'Starter',
+    tagline: 'Die Finanzen im Griff',
+    priceMonthlyCents: 14900,
+    priceYearlyPerMonthCents: 11900,
+    stripePriceEnvMonthly: 'STRIPE_PRICE_STARTER_MONTHLY',
+    stripePriceEnvYearly: 'STRIPE_PRICE_STARTER_YEARLY',
+    analysisPriceCents: 49900,
+    highlight: false,
+    features: [
+      'Finanz-Cockpit: alle Einnahmen & Ausgaben je Bereich',
+      'CSV-Bankimport & wiederkehrende Posten',
+      'KPI-Ampeln mit Branchen-Benchmarks',
+      'Automatischer Monats-Kurzreport',
+      'Bis 10 Mitarbeiter (Stammdaten) · 2 Nutzer',
+      'KI-Assistent (50 Fragen/Monat)',
+      'Analysen für 499 € statt 2.490 €',
+    ],
+  },
+  business: {
+    id: 'business',
+    name: 'Business',
+    tagline: 'Der komplette Betrieb an einem Ort',
+    priceMonthlyCents: 29900,
+    priceYearlyPerMonthCents: 23900,
+    stripePriceEnvMonthly: 'STRIPE_PRICE_BUSINESS_MONTHLY',
+    stripePriceEnvYearly: 'STRIPE_PRICE_BUSINESS_YEARLY',
+    analysisPriceCents: 29900,
+    highlight: true,
+    features: [
+      'Alles aus Starter',
+      'Schichtplan & Live-Ansicht „Wer arbeitet gerade" (in Kürze)',
+      'Urlaubs- & Abwesenheitsverwaltung (in Kürze)',
+      'Voller Auto-Monatsreport + KPI-Alerts',
+      'DATEV-/Steuerberater-Export',
+      'Maßnahmen-Tracker mit Wirkungs-Messung',
+      'Bis 30 Mitarbeiter · 5 Nutzer',
+      'KI-Assistent (200 Fragen/Monat)',
+      'Analysen für 299 € statt 2.490 €',
+    ],
+  },
+  premium: {
+    id: 'premium',
+    name: 'Premium',
+    tagline: 'Mehr Standorte, volle Tiefe',
+    priceMonthlyCents: 59900,
+    priceYearlyPerMonthCents: 47900,
+    stripePriceEnvMonthly: 'STRIPE_PRICE_PREMIUM_MONTHLY',
+    stripePriceEnvYearly: 'STRIPE_PRICE_PREMIUM_YEARLY',
+    analysisPriceCents: 19900,
+    highlight: false,
+    features: [
+      'Alles aus Business',
+      '1 Vollanalyse pro Quartal inklusive',
+      'Forecast & Cashflow-Prognose (in Kürze)',
+      'Bis 5 Standorte (in Kürze) · unbegrenzt Mitarbeiter · 15 Nutzer',
+      'KI-Assistent unbegrenzt (Fair Use)',
+      'Prioritäts-Support',
+      'Weitere Analysen für 199 € statt 2.490 €',
+    ],
+  },
+}
+
+/** Einzelanalyse ohne Abo — ersetzt zum Launch die alten 3er/5er-Pakete */
+export const ANALYSIS_SOLO_PRICE_CENTS = 249000
+
+/** Env-Var der Stripe-Price-ID für den Analyse-Einmalkauf je effektivem Plan */
+export const ANALYSIS_PRICE_ENVS: Record<'free' | SubscriptionPlanId, string> = {
+  free: 'STRIPE_PRICE_ANALYSIS_SOLO',
+  starter: 'STRIPE_PRICE_ANALYSIS_STARTER',
+  business: 'STRIPE_PRICE_ANALYSIS_BUSINESS',
+  premium: 'STRIPE_PRICE_ANALYSIS_PREMIUM',
+}
+
+export function getSubscriptionPlan(id: string | null | undefined): SubscriptionPlan | null {
+  if (id && id in SUBSCRIPTION_PLANS) return SUBSCRIPTION_PLANS[id as SubscriptionPlanId]
+  return null
 }
