@@ -19,6 +19,17 @@ function safeVatRate(vatRate: unknown): number | null {
   return [0, 7, 19].includes(Number(vatRate)) ? Number(vatRate) : null
 }
 
+/**
+ * receiptPath darf NUR auf einen Beleg der eigenen Org zeigen (Format aus
+ * /api/finance/receipt POST). Alles andere → null; verhindert IDOR auf fremde
+ * Belege und Path-Traversal im lokalen Datei-Fallback.
+ */
+function safeReceiptPath(path: unknown, orgId: string): string | null {
+  if (typeof path !== 'string' || !path) return null
+  const pattern = new RegExp(`^receipts/${orgId}/[a-f0-9-]{36}\\.(jpg|jpeg|png|webp|pdf)$`)
+  return pattern.test(path) ? path : null
+}
+
 export async function GET(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
@@ -69,8 +80,8 @@ export async function POST(req: NextRequest) {
       notes:              body.notes ?? null,
       areaId:             await safeAreaId(body.areaId, orgId),
       vatRate:            safeVatRate(body.vatRate),
-      receiptPath:        typeof body.receiptPath === 'string' && body.receiptPath ? body.receiptPath : null,
-      receiptName:        typeof body.receiptName === 'string' && body.receiptName ? body.receiptName : null,
+      receiptPath:        safeReceiptPath(body.receiptPath, orgId),
+      receiptName:        typeof body.receiptName === 'string' && body.receiptName ? body.receiptName.slice(0, 200) : null,
     },
   })
   return NextResponse.json({ success: true, data: revenue })
@@ -100,8 +111,8 @@ export async function PUT(req: NextRequest) {
       notes:              body.notes,
       areaId:             body.areaId !== undefined ? await safeAreaId(body.areaId, orgId ?? '') : undefined,
       vatRate:            body.vatRate !== undefined ? safeVatRate(body.vatRate) : undefined,
-      receiptPath:        typeof body.receiptPath === 'string' ? (body.receiptPath || null) : undefined,
-      receiptName:        typeof body.receiptName === 'string' ? (body.receiptName || null) : undefined,
+      receiptPath:        body.receiptPath !== undefined ? safeReceiptPath(body.receiptPath, orgId ?? '') : undefined,
+      receiptName:        typeof body.receiptName === 'string' ? (body.receiptName.slice(0, 200) || null) : undefined,
     },
   })
   return NextResponse.json({ success: true, data: updated })

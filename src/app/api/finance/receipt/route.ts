@@ -65,13 +65,24 @@ export async function GET(req: NextRequest) {
         : null
   if (!entry?.receiptPath) return NextResponse.json({ error: 'Kein Beleg vorhanden.' }, { status: 404 })
 
+  // Defense-in-depth: Pfad muss exakt dem eigenen Org-Prefix + UUID-Format
+  // entsprechen — auch falls ein DB-Wert je anders zustande kam (IDOR/Traversal).
+  const validPath = new RegExp(`^receipts/${orgId}/[a-f0-9-]{36}\\.(jpg|jpeg|png|webp|pdf)$`)
+  if (!validPath.test(entry.receiptPath)) {
+    return NextResponse.json({ error: 'Kein Beleg vorhanden.' }, { status: 404 })
+  }
+
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     const signed = await presignBlobGetUrl(entry.receiptPath, 5 * 60 * 1000)
     return NextResponse.redirect(signed)
   }
   const path = await import('path')
   const { readFile } = await import('fs/promises')
-  const filePath = path.join(process.env.UPLOAD_DIR ?? './uploads', entry.receiptPath)
+  const baseDir = path.resolve(process.env.UPLOAD_DIR ?? './uploads')
+  const filePath = path.resolve(baseDir, entry.receiptPath)
+  if (!filePath.startsWith(baseDir + path.sep)) {
+    return NextResponse.json({ error: 'Kein Beleg vorhanden.' }, { status: 404 })
+  }
   const buf = await readFile(filePath).catch(() => null)
   if (!buf) return NextResponse.json({ error: 'Beleg nicht gefunden.' }, { status: 404 })
   const mime = entry.receiptPath.endsWith('.pdf') ? 'application/pdf' : 'image/*'
