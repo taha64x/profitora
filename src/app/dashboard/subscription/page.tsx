@@ -1,10 +1,13 @@
+import { Suspense } from 'react'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import CheckoutButton from '@/components/subscription/CheckoutButton'
 import PortalButton from '@/components/subscription/PortalButton'
+import PlanManager from '@/components/subscription/PlanManager'
 import { CREDIT_PACKS } from '@/lib/plans'
+import { getEntitlements, subscriptionsLive } from '@/lib/entitlements'
 
 const PACKS = Object.values(CREDIT_PACKS)
 
@@ -24,6 +27,49 @@ export default async function SubscriptionPage() {
       })
     : []
 
+  // ── Neues Abo-Modell (Launch-Flag) ──────────────────────────────────────────
+  if (subscriptionsLive()) {
+    const ent = getEntitlements(sub)
+    return (
+      <DashboardLayout>
+        <div className="dash-page">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Abo & Analysen</h1>
+          <p className="text-gray-500 text-sm mb-8">
+            Ihr Tarif, Ihre Analysen und Ihre Rechnungen — alles an einem Ort.
+          </p>
+          <Suspense>
+            <PlanManager
+              planId={ent.planId}
+              status={sub?.status ?? 'active'}
+              billingInterval={sub?.billingInterval ?? null}
+              periodEnd={sub?.currentPeriodEnd ? sub.currentPeriodEnd.toISOString() : null}
+              analysisPriceCents={ent.analysisPriceCents}
+              credits={credits}
+              hasStripeCustomer={Boolean(sub?.stripeCustomerId)}
+            />
+          </Suspense>
+
+          {purchases.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mt-6">
+              <p className="font-semibold text-gray-900 text-sm mb-3">Ihre Einmalkäufe</p>
+              <div className="space-y-2">
+                {purchases.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+                    <span className="text-gray-700">{p.credits} Analyse{p.credits === 1 ? '' : 'n'} ({p.pack})</span>
+                    <span className="text-gray-400 text-xs">
+                      {new Date(p.createdAt).toLocaleDateString('de-DE')} · {(p.amountCents / 100).toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // ── Legacy-Ansicht (Credit-Pakete), unverändert bis zum Launch ──────────────
   return (
     <DashboardLayout>
       <div className="dash-page">

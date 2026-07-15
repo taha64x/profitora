@@ -8,9 +8,13 @@ interface Props {
   disabled?: boolean
   /** true = helle Variante für dunkle Karten */
   light?: boolean
+  /** Kaufart: Legacy-Pack (default), Abo oder Einzelanalyse zum Plan-Preis */
+  kind?: 'pack' | 'subscription' | 'analysis'
+  /** nur für kind='subscription' */
+  interval?: 'month' | 'year'
 }
 
-export default function CheckoutButton({ plan, label, disabled, light }: Props) {
+export default function CheckoutButton({ plan, label, disabled, light, kind = 'pack', interval }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [consent, setConsent] = useState(false)
@@ -26,7 +30,7 @@ export default function CheckoutButton({ plan, label, disabled, light }: Props) 
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, consent }),
+        body: JSON.stringify(kind === 'pack' ? { plan, consent } : { kind, plan, interval, consent }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Unbekannter Fehler')
@@ -53,8 +57,9 @@ export default function CheckoutButton({ plan, label, disabled, light }: Props) 
           className="mt-0.5 shrink-0 accent-[#0D1630]"
         />
         <span>
-          Ich stimme ausdrücklich zu, dass mit der Ausführung sofort begonnen wird, und bestätige, dass
-          ich mit Beginn der Ausführung mein Widerrufsrecht verliere.
+          {kind === 'subscription'
+            ? 'Ich verlange ausdrücklich, dass mit der Bereitstellung des Dienstes vor Ablauf der Widerrufsfrist begonnen wird. Bei Widerruf zahle ich Wertersatz für bereits erbrachte Leistungen.'
+            : 'Ich stimme ausdrücklich zu, dass mit der Ausführung sofort begonnen wird, und bestätige, dass ich mit Beginn der Ausführung mein Widerrufsrecht verliere.'}
         </span>
       </label>
       <button
