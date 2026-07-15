@@ -3,11 +3,21 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
-
-const EXPENSE_CATEGORIES = ['Personal', 'Miete', 'Energie', 'Software', 'Marketing', 'Einkauf', 'Fahrzeuge', 'Versicherungen', 'Steuern/Buchh.', 'Sonstiges']
+import KpiLight from '@/components/dashboard/KpiLight'
+import TrendSparkline from '@/components/dashboard/TrendSparkline'
+import { benchmarksFor, computeFinanceKpis, METRIC_LABELS, type MetricKey } from '@/lib/benchmarks'
+import { getEntitlements, subscriptionsLive } from '@/lib/entitlements'
 
 function formatEur(n: number) {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
+}
+
+/** ±%-Vergleich zum Vormonat als Untertitel */
+function trendSub(current: number, previous: number): string {
+  if (previous <= 0) return 'aktueller Monat'
+  const pct = Math.round(((current - previous) / previous) * 100)
+  if (pct === 0) return 'wie im Vormonat'
+  return `${pct > 0 ? '+' : ''}${pct} % vs. Vormonat`
 }
 
 function StatCard({
@@ -38,7 +48,7 @@ function StatCard({
   )
 }
 
-function MiniBar({ label, amount, max, color }: { label: string; amount: number; max: number; color: string }) {
+function MiniBar({ label, amount, max }: { label: string; amount: number; max: number }) {
   const pct = max > 0 ? Math.round((amount / max) * 100) : 0
   return (
     <div>
@@ -47,7 +57,29 @@ function MiniBar({ label, amount, max, color }: { label: string; amount: number;
         <span className="text-gray-900 text-xs font-semibold">{formatEur(amount)}</span>
       </div>
       <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-red-400" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function Progress({ label, current, target, invert = false }: { label: string; current: number; target: number; invert?: boolean }) {
+  const pct = target > 0 ? Math.min(150, Math.round((current / target) * 100)) : 0
+  // invert = Ausgaben: über Ziel ist schlecht
+  const good = invert ? pct <= 100 : pct >= 100
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-gray-600 text-xs">{label}</span>
+        <span className={`text-xs font-semibold ${good ? 'text-green-600' : 'text-gray-900'}`}>
+          {formatEur(current)} / {formatEur(target)}
+        </span>
+      </div>
+      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full ${invert ? (pct > 100 ? 'bg-red-400' : 'bg-green-400') : pct >= 100 ? 'bg-green-400' : 'bg-[#0E1A33]'}`}
+          style={{ width: `${Math.min(100, pct)}%` }}
+        />
       </div>
     </div>
   )
@@ -66,27 +98,57 @@ export default async function DashboardPage() {
   const org = membership.organization
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
-  const [expenses, revenues, reports, subscription] = await Promise.all([
-    db.expense.findMany({ where: { organizationId: org.id, date: { gte: monthStart, lte: monthEnd } }, orderBy: { date: 'desc' }, take: 5 }),
-    db.revenue.findMany({ where: { organizationId: org.id, date: { gte: monthStart, lte: monthEnd } }, orderBy: { date: 'desc' }, take: 5 }),
-    db.analysisReport.findMany({ where: { organizationId: org.id }, orderBy: { createdAt: 'desc' }, take: 4 }),
-    db.subscription.findUnique({ where: { organizationId: org.id } }),
-  ])
+  const [expenseGroups, revenueAgg, prevExpenseAgg, prevRevenueAgg, target, alertEvents, reports, subscription] =
+    await Promise.all([
+      db.expense.groupBy({
+        by: ['category'],
+        where: { organizationId: org.id, date: { gte: monthStart } },
+        _sum: { amount: true },
+      }),
+      db.revenue.aggregate({ where: { organizationId: org.id, date: { gte: monthStart } }, _sum: { amount: true } }),
+      db.expense.aggregate({
+        where: { organizationId: org.id, date: { gte: prevStart, lt: monthStart } },
+        _sum: { amount: true },
+      }),
+      db.revenue.aggregate({
+        where: { organizationId: org.id, date: { gte: prevStart, lt: monthStart } },
+        _sum: { amount: true },
+      }),
+      db.monthlyTarget.findUnique({
+        where: { organizationId_year_month: { organizationId: org.id, year: now.getFullYear(), month: now.getMonth() + 1 } },
+      }),
+      db.alertEvent.findMany({ where: { organizationId: org.id }, orderBy: { createdAt: 'desc' }, take: 5 }),
+      db.analysisReport.findMany({ where: { organizationId: org.id }, orderBy: { createdAt: 'desc' }, take: 4 }),
+      db.subscription.findUnique({ where: { organizationId: org.id } }),
+    ])
 
-  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
-  const totalRevenues = revenues.reduce((s, r) => s + r.amount, 0)
+  const expensesByCategory = Object.fromEntries(expenseGroups.map((g) => [g.category, g._sum.amount ?? 0]))
+  const totalExpenses = Object.values(expensesByCategory).reduce((a, b) => a + b, 0)
+  const totalRevenues = revenueAgg._sum.amount ?? 0
+  const prevExpenses = prevExpenseAgg._sum.amount ?? 0
+  const prevRevenues = prevRevenueAgg._sum.amount ?? 0
   const profit = totalRevenues - totalExpenses
+  const prevProfit = prevRevenues - prevExpenses
 
-  // Category breakdown
-  const catMap: Record<string, number> = {}
-  expenses.forEach((e) => { catMap[e.category] = (catMap[e.category] || 0) + e.amount })
-  const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
+  const topCats = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]).slice(0, 5)
   const maxCat = topCats[0]?.[1] ?? 1
 
   const credits = subscription?.analysisCredits ?? 0
   const usedAnalyses = subscription?.usedAnalysesThisMonth ?? 0
+
+  const ent = getEntitlements(subscription)
+  const cockpitLocked = subscriptionsLive() && !ent.cockpit
+
+  const kpis = computeFinanceKpis({ revenueTotal: totalRevenues, expenseTotal: totalExpenses, expensesByCategory })
+  const benchmarks = benchmarksFor(org.businessType)
+  const kpiCards = (Object.keys(benchmarks) as MetricKey[]).map((metric) => ({
+    metric,
+    label: METRIC_LABELS[metric],
+    value: kpis[metric],
+    benchmark: benchmarks[metric]!,
+  }))
 
   return (
     <DashboardLayout>
@@ -115,180 +177,167 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard label="Analyse-Guthaben" value={`${credits} Analyse${credits === 1 ? '' : 'n'}`} sub={`${usedAnalyses} gestartet diesen Monat`} color="gold"
             icon="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-          <StatCard label="Einnahmen (Monat)" value={formatEur(totalRevenues)} sub="aktueller Monat" color="green"
+          <StatCard label="Einnahmen (Monat)" value={formatEur(totalRevenues)} sub={trendSub(totalRevenues, prevRevenues)} color="green"
             icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          <StatCard label="Ausgaben (Monat)" value={formatEur(totalExpenses)} sub="aktueller Monat" color="red"
+          <StatCard label="Ausgaben (Monat)" value={formatEur(totalExpenses)} sub={trendSub(totalExpenses, prevExpenses)} color="red"
             icon="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-          <StatCard label="Geschätzter Gewinn" value={formatEur(profit)} sub="Einnahmen − Ausgaben" color={profit >= 0 ? 'green' : 'red'}
+          <StatCard label="Ergebnis (Monat)" value={formatEur(profit)} sub={trendSub(profit, prevProfit)} color={profit >= 0 ? 'green' : 'red'}
             icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </div>
 
-        {/* Two-column layout */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Cost breakdown */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-gray-900 text-sm">Top Kostenbereiche</h2>
-              <Link href="/dashboard/costs" className="text-xs text-[#0D1630] hover:underline">Alle →</Link>
-            </div>
-            {topCats.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-gray-400 text-sm">Noch keine Kosten eingetragen.</p>
-                <Link href="/dashboard/costs" className="text-xs text-[#0D1630] hover:underline mt-2 block">Kosten hinzufügen</Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {topCats.map(([cat, amt]) => (
-                  <MiniBar key={cat} label={cat} amount={amt} max={maxCat}
-                    color="bg-red-400"/>
-                ))}
-              </div>
-            )}
+        {cockpitLocked ? (
+          /* Paywall-Teaser: Cockpit ist Teil des Abos */
+          <div className="rounded-2xl border border-au-gold/30 bg-gradient-to-br from-[#0E1A33] to-[#243459] p-8 text-white mb-6">
+            <h2 className="text-xl font-bold mb-2">Ihr Unternehmens-Cockpit wartet</h2>
+            <p className="text-white/60 text-sm max-w-xl mb-5">
+              Finanzen je Bereich, Branchen-Ampeln, 12-Monats-Trend, wiederkehrende Posten, KPI-Alerts und
+              deutlich günstigere Analysen — alles im Profitora-Abo. 14 Tage kostenlos testen.
+            </p>
+            <Link href="/dashboard/subscription?upgrade=1"
+              className="inline-flex items-center gap-2 bg-au-gold text-[#06091A] font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-au-gold-light transition-colors">
+              Tarife ansehen
+            </Link>
           </div>
-
-          {/* Revenue breakdown */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-gray-900 text-sm">Einnahmequellen</h2>
-              <Link href="/dashboard/revenues" className="text-xs text-[#0D1630] hover:underline">Alle →</Link>
-            </div>
-            {revenues.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-gray-400 text-sm">Noch keine Einnahmen eingetragen.</p>
-                <Link href="/dashboard/revenues" className="text-xs text-[#0D1630] hover:underline mt-2 block">Einnahmen hinzufügen</Link>
+        ) : (
+          <>
+            {/* Kennzahlen vs. Branche + Ziele */}
+            <div className="grid lg:grid-cols-3 gap-6 mb-6">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-gray-900 text-sm">Ihre Kennzahlen vs. Branche</h2>
+                  <span className="text-[11px] text-gray-400">Basis: aktueller Monat</span>
+                </div>
+                <div className={`grid gap-3 ${kpiCards.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                  {kpiCards.map((k) => (
+                    <KpiLight key={k.metric} label={k.label} value={k.value} benchmark={k.benchmark} />
+                  ))}
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {(() => {
-                  const revCats: Record<string, number> = {}
-                  revenues.forEach((r) => { revCats[r.category] = (revCats[r.category] || 0) + r.amount })
-                  const top = Object.entries(revCats).sort((a, b) => b[1] - a[1]).slice(0, 5)
-                  const max = top[0]?.[1] ?? 1
-                  return top.map(([cat, amt]) => (
-                    <MiniBar key={cat} label={cat} amount={amt} max={max} color="bg-green-400"/>
-                  ))
-                })()}
-              </div>
-            )}
-          </div>
-
-          {/* KI Hinweise */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-5 h-5 rounded-full bg-au-gold/15 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-au-gold" />
-              </div>
-              <h2 className="font-semibold text-gray-900 text-sm">KI-Hinweise</h2>
-            </div>
-            <div className="space-y-3">
-              {totalExpenses === 0 && totalRevenues === 0 ? (
-                <p className="text-gray-400 text-sm">Tragen Sie Kosten und Einnahmen ein, um automatische Hinweise zu erhalten.</p>
-              ) : (
-                <>
-                  {totalExpenses > 0 && totalRevenues > 0 && (
-                    <div className="flex gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-100">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
-                      <p className="text-amber-800 text-xs leading-relaxed">
-                        Personalkosten machen{' '}
-                        <strong>{totalRevenues > 0 ? Math.round((totalExpenses / totalRevenues) * 100) : 0} %</strong>{' '}
-                        des Umsatzes aus. Starten Sie eine Analyse für Details.
-                      </p>
-                    </div>
-                  )}
-                  {profit < 0 && (
-                    <div className="flex gap-2.5 p-3 rounded-lg bg-red-50 border border-red-100">
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
-                      <p className="text-red-800 text-xs leading-relaxed">
-                        Ausgaben übersteigen Einnahmen. Eine Kostenanalyse könnte helfen.
-                      </p>
-                    </div>
-                  )}
-                  <div className="flex gap-2.5 p-3 rounded-lg bg-blue-50 border border-blue-100">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-                    <p className="text-blue-800 text-xs leading-relaxed">
-                      Für tiefere Einblicke starten Sie eine KI-Analyse auf Basis Ihrer gespeicherten Daten.
-                    </p>
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-gray-900 text-sm">Monatsziele</h2>
+                  <Link href="/dashboard/mein-weg/ziele" className="text-xs text-[#0D1630] hover:underline">Bearbeiten →</Link>
+                </div>
+                {target?.revenueTarget || target?.expenseTarget ? (
+                  <div className="space-y-4">
+                    {target.revenueTarget ? <Progress label="Einnahmen" current={totalRevenues} target={target.revenueTarget} /> : null}
+                    {target.expenseTarget ? <Progress label="Ausgaben (Limit)" current={totalExpenses} target={target.expenseTarget} invert /> : null}
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom row: Recent reports + Recent expenses */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent reports */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-gray-900 text-sm">Letzte Analysen</h2>
-              <Link href="/dashboard/analyses" className="text-xs text-[#0D1630] hover:underline">Alle →</Link>
-            </div>
-            {reports.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-gray-400 text-sm mb-3">Noch keine Analysen gestartet.</p>
-                <Link href="/dashboard/new-analysis"
-                  className="inline-flex items-center gap-1.5 bg-[#0D1630] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-[#152040] transition-colors">
-                  Erste Analyse starten
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {reports.map((r) => (
-                  <Link key={r.id} href={`/report/${r.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{r.title}</p>
-                      <p className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('de-DE')}</p>
-                    </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      r.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                      r.status === 'FAILED'    ? 'bg-red-100 text-red-700' :
-                                                 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {r.status === 'COMPLETED' ? 'Fertig' : r.status === 'FAILED' ? 'Fehler' : 'In Arbeit'}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Next steps */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="font-semibold text-gray-900 text-sm mb-5">Empfohlene nächste Schritte</h2>
-            <div className="space-y-3">
-              {[
-                { href: '/dashboard/costs',    label: 'Kosten diesen Monat eintragen', done: expenses.length > 0,
-                  desc: 'Fixkosten, variable Kosten und Ausgaben erfassen' },
-                { href: '/dashboard/revenues', label: 'Einnahmen diesen Monat eintragen', done: revenues.length > 0,
-                  desc: 'Umsatz und Einnahmequellen dokumentieren' },
-                { href: '/dashboard/new-analysis', label: 'Erste Analyse starten', done: reports.length > 0,
-                  desc: 'KI analysiert Kosten, Einnahmen und Prozesse' },
-                { href: '/dashboard/finance',  label: 'Finanzübersicht ansehen', done: false,
-                  desc: 'Überblick über Kostenfluss und Gewinn' },
-              ].map((step) => (
-                <Link key={step.href} href={step.href}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.done ? 'bg-green-100' : 'bg-gray-100 group-hover:bg-[#0D1630]/10'}`}>
-                    {step.done ? (
-                      <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 6l3 3 5-5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    ) : (
-                      <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M5 2l4 4-4 4" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    )}
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-gray-400 text-sm mb-2">Noch keine Ziele für diesen Monat.</p>
+                    <Link href="/dashboard/mein-weg/ziele" className="text-xs text-[#0D1630] hover:underline">Ziele setzen</Link>
                   </div>
-                  <div className="min-w-0">
-                    <p className={`text-sm font-medium ${step.done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{step.label}</p>
-                    <p className="text-xs text-gray-400 truncate">{step.desc}</p>
-                  </div>
-                </Link>
-              ))}
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+
+            {/* Trend + Hinweise */}
+            <div className="grid lg:grid-cols-3 gap-6 mb-6">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-gray-900 text-sm">12-Monats-Trend</h2>
+                  <Link href="/dashboard/finance" className="text-xs text-[#0D1630] hover:underline">Finanzübersicht →</Link>
+                </div>
+                <TrendSparkline />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-5 h-5 rounded-full bg-au-gold/15 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-au-gold" />
+                  </div>
+                  <h2 className="font-semibold text-gray-900 text-sm">Hinweise</h2>
+                </div>
+                {alertEvents.length === 0 ? (
+                  <p className="text-gray-400 text-sm">Keine Auffälligkeiten — gut so. Hinweise erscheinen hier automatisch, sobald eine Kennzahl vom Branchen-Richtwert abweicht.</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {alertEvents.map((a) => (
+                      <div key={a.id} className="flex gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-100">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-amber-800 text-xs leading-relaxed">{a.message}</p>
+                          <p className="text-amber-600/60 text-[10px] mt-0.5">{new Date(a.createdAt).toLocaleDateString('de-DE')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Kosten + Analysen + Team-Teaser */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="font-semibold text-gray-900 text-sm">Top Kostenbereiche</h2>
+                  <Link href="/dashboard/costs" className="text-xs text-[#0D1630] hover:underline">Alle →</Link>
+                </div>
+                {topCats.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-400 text-sm">Noch keine Kosten eingetragen.</p>
+                    <Link href="/dashboard/costs" className="text-xs text-[#0D1630] hover:underline mt-2 block">Kosten hinzufügen</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {topCats.map(([cat, amt]) => (
+                      <MiniBar key={cat} label={cat} amount={amt} max={maxCat} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="font-semibold text-gray-900 text-sm">Letzte Analysen</h2>
+                  <Link href="/dashboard/analyses" className="text-xs text-[#0D1630] hover:underline">Alle →</Link>
+                </div>
+                {reports.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-400 text-sm mb-3">Noch keine Analysen gestartet.</p>
+                    <Link href="/dashboard/new-analysis"
+                      className="inline-flex items-center gap-1.5 bg-[#0D1630] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-[#152040] transition-colors">
+                      Erste Analyse starten
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {reports.map((r) => (
+                      <Link key={r.id} href={`/report/${r.id}`}
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{r.title}</p>
+                          <p className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('de-DE')}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          r.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                          r.status === 'FAILED'    ? 'bg-red-100 text-red-700' :
+                                                     'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {r.status === 'COMPLETED' ? 'Fertig' : r.status === 'FAILED' ? 'Fehler' : 'In Arbeit'}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Team-Teaser (Phase 3) */}
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 flex flex-col justify-center">
+                <p className="text-xs font-semibold text-[#B8923A] uppercase tracking-widest mb-2">In Kürze</p>
+                <h2 className="font-semibold text-gray-900 text-sm mb-1.5">Team & Schichtplan</h2>
+                <p className="text-gray-500 text-xs leading-relaxed">
+                  Mitarbeiter verwalten, Wochenpläne erstellen und live sehen, wer gerade arbeitet —
+                  direkt hier im Cockpit.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </DashboardLayout>
   )
