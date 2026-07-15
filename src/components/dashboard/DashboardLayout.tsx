@@ -108,6 +108,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             label="Ausgaben" active={active('/dashboard/costs')} collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/finance" icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             label="Finanzübersicht" active={active('/dashboard/finance')} collapsed={collapsed && !mobile}/>
+          <NavLink href="/dashboard/recurring" icon="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            label="Wiederkehrend" active={active('/dashboard/recurring')} collapsed={collapsed && !mobile}/>
           <SectionLabel label="Mein Weg" collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/mein-weg" icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
             label="Fortschritt" active={active('/dashboard/mein-weg', true)} collapsed={collapsed && !mobile}/>
