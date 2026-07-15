@@ -8,6 +8,17 @@ async function getOrgId(userId: string) {
   return m?.organizationId ?? null
 }
 
+/** areaId nur übernehmen, wenn der Bereich zur Org gehört */
+async function safeAreaId(areaId: unknown, orgId: string): Promise<string | null> {
+  if (typeof areaId !== 'string' || !areaId) return null
+  const area = await db.area.findFirst({ where: { id: areaId, organizationId: orgId } })
+  return area ? areaId : null
+}
+
+function safeVatRate(vatRate: unknown): number | null {
+  return [0, 7, 19].includes(Number(vatRate)) ? Number(vatRate) : null
+}
+
 export async function GET(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
@@ -29,6 +40,7 @@ export async function GET(req: NextRequest) {
   const expenses = await db.expense.findMany({
     where,
     orderBy: { date: 'desc' },
+    include: { area: { select: { id: true, name: true } } },
   })
   return NextResponse.json({ success: true, data: expenses })
 }
@@ -55,6 +67,10 @@ export async function POST(req: NextRequest) {
       isRecurring:        body.isRecurring ?? false,
       recurrenceInterval: body.recurrenceInterval ?? null,
       notes:              body.notes ?? null,
+      areaId:             await safeAreaId(body.areaId, orgId),
+      vatRate:            safeVatRate(body.vatRate),
+      receiptPath:        typeof body.receiptPath === 'string' && body.receiptPath ? body.receiptPath : null,
+      receiptName:        typeof body.receiptName === 'string' && body.receiptName ? body.receiptName : null,
     },
   })
   return NextResponse.json({ success: true, data: expense })
@@ -82,6 +98,10 @@ export async function PUT(req: NextRequest) {
       isRecurring:        body.isRecurring,
       recurrenceInterval: body.recurrenceInterval,
       notes:              body.notes,
+      areaId:             body.areaId !== undefined ? await safeAreaId(body.areaId, orgId ?? '') : undefined,
+      vatRate:            body.vatRate !== undefined ? safeVatRate(body.vatRate) : undefined,
+      receiptPath:        typeof body.receiptPath === 'string' ? (body.receiptPath || null) : undefined,
+      receiptName:        typeof body.receiptName === 'string' ? (body.receiptName || null) : undefined,
     },
   })
   return NextResponse.json({ success: true, data: updated })
