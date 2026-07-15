@@ -115,6 +115,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             label="Mitarbeiter" active={active('/dashboard/team')} collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/schedule" icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             label="Schichtplan" active={active('/dashboard/schedule')} collapsed={collapsed && !mobile}/>
+          <NavLink href="/dashboard/measures" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+            label="Maßnahmen" active={active('/dashboard/measures')} collapsed={collapsed && !mobile}/>
           <SectionLabel label="Mein Weg" collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/mein-weg" icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
             label="Fortschritt" active={active('/dashboard/mein-weg', true)} collapsed={collapsed && !mobile}/>
