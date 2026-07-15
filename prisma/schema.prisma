@@ -47,6 +47,11 @@ model Organization {
   recurringEntries RecurringEntry[]
   alertRules       AlertRule[]
   alertEvents      AlertEvent[]
+  employees        Employee[]
+  shifts           Shift[]
+  shiftTemplates   ShiftTemplate[]
+  absences         Absence[]
+  planShareToken   PlanShareToken?
 }
 
 model OrganizationMember {
@@ -326,6 +331,7 @@ model Area {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   expenses     Expense[]
   revenues     Revenue[]
+  shifts       Shift[]
 
   @@unique([organizationId, name])
 }
@@ -380,4 +386,87 @@ model AlertEvent {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, createdAt])
+}
+
+// ─── Team: Mitarbeiter, Schichten, Abwesenheiten (Phase 3) ───────────────────
+// Chef pflegt alles — keine Mitarbeiter-Logins (V2). Zeiten als Minuten seit
+// 0:00 (startMin/endMin, 0–1440); Nachtschichten über Mitternacht = V2.
+
+model Employee {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  name               String
+  position           String?
+  email              String?
+  phone              String?
+  address            String?
+  hourlyWageCents    Int?
+  monthlySalaryCents Int?
+  weeklyHours        Float?
+  vacationDaysPerYear Int?
+  defaultAreaId      String?
+  color              String   @default("#0E1A33")
+  active             Boolean  @default(true)
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  shifts       Shift[]
+  absences     Absence[]
+}
+
+model Shift {
+  id             String   @id @default(cuid())
+  organizationId String
+  employeeId     String
+  date           DateTime // Tag (UTC-Mitternacht)
+  startMin       Int      // Minuten seit 0:00
+  endMin         Int      // > startMin, max 1440
+  areaId         String?
+  note           String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  area         Area?        @relation(fields: [areaId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, date])
+}
+
+model ShiftTemplate {
+  id             String  @id @default(cuid())
+  organizationId String
+  label          String
+  startMin       Int
+  endMin         Int
+  areaId         String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Absence {
+  id             String   @id @default(cuid())
+  organizationId String
+  employeeId     String
+  type           String   // VACATION | SICK | OFF
+  startDate      DateTime
+  endDate        DateTime
+  note           String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, employeeId])
+}
+
+// Öffentlicher Read-only-Link auf den Wochenplan (Mitarbeiter ohne Login)
+model PlanShareToken {
+  id             String  @id @default(cuid())
+  organizationId String  @unique
+  token          String  @unique
+  active         Boolean @default(true)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
