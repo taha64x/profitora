@@ -226,7 +226,69 @@ function getBusinessConfig(businessType: string): BusinessConfig {
 
 // ─── Prompt Builder ───────────────────────────────────────────────────────────
 
-function buildReportPrompt(data: AnalysisResult): string {
+export interface MeasureForPrompt {
+  title: string
+  status: 'OPEN' | 'IMPLEMENTED' | 'DISCARDED'
+  potentialSavingsEur: number | null
+  implementedAt: string | null
+}
+
+export interface ReportExtras {
+  /** Vom Nutzer gewählte Analyse-Schwerpunkte (max. 3) */
+  focusAreas?: string[]
+  /** Maßnahmen aus dem Tracker: offene + kürzlich umgesetzte */
+  measures?: MeasureForPrompt[]
+}
+
+const FOCUS_LABELS: Record<string, string> = {
+  personal: 'Personal & Produktivität',
+  wareneinsatz: 'Wareneinsatz & Einkauf',
+  energie: 'Energie & Versorgung',
+  preise: 'Preise & Auslastung',
+  marketing: 'Marketing & Provisionen',
+  fixkosten: 'Fixkosten & Verträge',
+}
+
+function focusSection(focusAreas?: string[]): string {
+  if (!focusAreas || focusAreas.length === 0) return ''
+  const labels = focusAreas.map((f) => FOCUS_LABELS[f] ?? f).join(', ')
+  return `
+══════════════════════════════════════════════════════
+ANALYSE-SCHWERPUNKTE (vom Nutzer gewählt)
+══════════════════════════════════════════════════════
+Der Nutzer hat folgende Schwerpunkte gewählt: ${labels}.
+- Behandle diese Themen mit DOPPELTER Tiefe: mehr Kennzahlen, mehr Rechenwege, mindestens je ein Werthebel in Abschnitt 8, konkretere Maßnahmen in Abschnitt 9.
+- Alle übrigen Themen kompakt halten (keine Auslassung, aber kürzer).
+- Fehlen für einen gewählten Schwerpunkt die Daten, benenne das prominent in Abschnitt 2 und in Abschnitt 10 (Regel 3 — nichts erfinden).
+`
+}
+
+function measuresSection(measures?: MeasureForPrompt[]): string {
+  if (!measures || measures.length === 0) return ''
+  const rows = measures
+    .map(
+      (m) =>
+        `- [${m.status === 'IMPLEMENTED' ? `UMGESETZT am ${m.implementedAt ?? 'unbekannt'}` : m.status === 'OPEN' ? 'OFFEN' : 'VERWORFEN'}] ${m.title}${m.potentialSavingsEur ? ` (geschätztes Potenzial ${m.potentialSavingsEur} EUR/Jahr)` : ''}`,
+    )
+    .join('\n')
+  return `
+══════════════════════════════════════════════════════
+MASSNAHMEN AUS DEM TRACKER (Vorgeschichte)
+══════════════════════════════════════════════════════
+${rows}
+
+ZUSATZABSCHNITT (nur weil Maßnahmen vorliegen) — füge NACH Abschnitt 8 ein:
+<section id="measure-review">
+Titel: "8b. Wirkungs-Check bisheriger Maßnahmen"
+- Je UMGESETZTER Maßnahme: Lässt sich in den Zahlen eine Wirkung erkennen (Vorher-Nachher der betroffenen Kategorie/Kennzahl, ab Umsetzungsdatum)? Vorsichtig formulieren — Korrelation, kein Kausalbeweis; andere Einflüsse benennen.
+- Reicht die Datenlage nicht (z. B. Umsetzung zu jung, Kategorie nicht trennbar): exakt "Wirkung noch nicht messbar – Datengrundlage fehlt" (Regel 3).
+- Je OFFENER Maßnahme: kurz einordnen, ob sie laut aktuellen Zahlen weiter sinnvoll ist (weiterempfehlen / anpassen / neu bewerten).
+- VERWORFENE nur erwähnen, wenn die Zahlen eine Neubewertung nahelegen.
+</section>
+`
+}
+
+function buildReportPrompt(data: AnalysisResult, extras?: ReportExtras): string {
   const businessType = data.businessType ?? 'other'
   const bc = getBusinessConfig(businessType)
   const kpis = data.businessKpis
@@ -287,10 +349,15 @@ REGEL 6 – HAFTUNGSAUSSCHLUSS: An jede Empfehlung: "(Entscheidungshilfe – kei
 REGEL 7 – WESENTLICHKEIT: Markiere Abweichungen nur dann als "wesentlich", wenn sie die übergebene Wesentlichkeitsschwelle (materiality) übersteigen. Kleinere Abweichungen als "unwesentlich" einordnen.
 REGEL 8 – SKEPSIS OHNE VORWURF: plausibilityFlags sind neutrale Hinweise zur Selbstprüfung (z. B. fehlende/unvollständige Daten). NIEMALS als Betrug, Täuschung oder Schuldzuweisung formulieren.
 
+${focusSection(extras?.focusAreas)}${measuresSection(extras?.measures)}
 ══════════════════════════════════════════════════════
 ANALYSEDATEN
 ══════════════════════════════════════════════════════
 ${JSON.stringify(data, null, 2)}
+
+Hinweis zu "plannedLaborByMonth" (falls in den Daten): geplante Lohnkosten aus dem
+Schichtplan (nur Stundenlöhner, aggregiert — keine Personen). In Abschnitt 5 dem
+IST der Personal-Kategorie gegenüberstellen (Plan-Ist-Abweichung), Regel 3 beachten.
 
 ══════════════════════════════════════════════════════
 BERICHTSSTRUKTUR – 10 ABSCHNITTE (als <section id="...">)
@@ -409,8 +476,11 @@ SELBSTPRÜFUNG VOR AUSGABE (intern abarbeiten, erst dann ausgeben):
 
 // ─── Report-Generierung ───────────────────────────────────────────────────────
 
-export async function generateBusinessReport(data: AnalysisResult, options?: { model?: string }): Promise<string> {
-  const prompt = buildReportPrompt(data)
+export async function generateBusinessReport(
+  data: AnalysisResult,
+  options?: { model?: string } & ReportExtras,
+): Promise<string> {
+  const prompt = buildReportPrompt(data, options)
 
   if (AI_PROVIDER === 'anthropic') {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY nicht gesetzt')

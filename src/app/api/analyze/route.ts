@@ -18,8 +18,14 @@ interface TrackedFinanceData {
   months: Array<{ month: string; revenues: number; expenses: number; balance: number }>
   expensesByCategory: Record<string, number>
   revenuesByCategory: Record<string, number>
+  expensesByArea?: Record<string, number>
+  revenuesByArea?: Record<string, number>
   recurringExpenses: Array<{ description: string; amount: number; interval: string | null }>
+  /** Geplante Lohnkosten aus dem Schichtplan (nur Stundenlöhner, aggregiert, keine Personen) */
+  plannedLaborByMonth?: Record<string, number>
 }
+
+const FOCUS_WHITELIST = new Set(['personal', 'wareneinsatz', 'energie', 'preise', 'marketing', 'fixkosten'])
 
 type EnrichedResult = AnalysisResult & { trackedFinanceData?: TrackedFinanceData }
 
@@ -31,6 +37,8 @@ export async function POST(req: Request) {
     // Optionaler Fragebogen (zweite Datenquelle neben Dateien/Finanztracking).
     // Größe begrenzen, damit kein überlanger Prompt entsteht.
     let questionnaireData: Record<string, unknown> | null = null
+    let focusAreas: string[] = []
+    let periodMonths = 12
     try {
       const body = await req.json()
       if (body?.questionnaireData && typeof body.questionnaireData === 'object') {
@@ -39,6 +47,10 @@ export async function POST(req: Request) {
         }
         questionnaireData = body.questionnaireData
       }
+      if (Array.isArray(body?.focusAreas)) {
+        focusAreas = body.focusAreas.filter((f: unknown): f is string => typeof f === 'string' && FOCUS_WHITELIST.has(f)).slice(0, 3)
+      }
+      if ([1, 3, 12].includes(Number(body?.periodMonths))) periodMonths = Number(body.periodMonths)
     } catch {
       // Kein/ungültiger Body = Analyse ohne Fragebogen (bisheriges Verhalten)
     }
@@ -64,7 +76,20 @@ export async function POST(req: Request) {
       },
     })
 
-    const financeData = await loadTrackedFinanceData(org.id)
+    const financeData = await loadTrackedFinanceData(org.id, periodMonths)
+
+    // Maßnahmen aus dem Tracker: offene + in den letzten 6 Monaten umgesetzte —
+    // die Folge-Analyse bewertet deren Wirkung (nur Titel/Status, keine PII).
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+    const measures = await db.measure.findMany({
+      where: {
+        organizationId: org.id,
+        OR: [{ status: 'OPEN' }, { status: 'IMPLEMENTED', implementedAt: { gte: sixMonthsAgo } }],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    })
 
     if (uploads.length === 0 && !financeData && !questionnaireData) {
       return NextResponse.json(
@@ -143,7 +168,15 @@ export async function POST(req: Request) {
       },
     })
 
-    const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, questionnaireData, user.email).catch(
+    const task = runAnalysis(report.id, uploads, org, plan.id, plan.aiModel, financeData, questionnaireData, user.email, {
+      focusAreas,
+      measures: measures.map((m) => ({
+        title: m.title,
+        status: m.status as 'OPEN' | 'IMPLEMENTED' | 'DISCARDED',
+        potentialSavingsEur: m.potentialSavingsCents ? Math.round(m.potentialSavingsCents / 100) : null,
+        implementedAt: m.implementedAt ? m.implementedAt.toISOString().slice(0, 10) : null,
+      })),
+    }).catch(
       async (err) => {
         console.error('[analyze] Fehler:', err)
         await db.analysisReport.update({
@@ -176,19 +209,25 @@ export async function POST(req: Request) {
   }
 }
 
-/** Eingetragene Finanzdaten (Finanztracking) der letzten 12 Monate aggregieren */
-async function loadTrackedFinanceData(organizationId: string): Promise<TrackedFinanceData | null> {
+/** Eingetragene Finanzdaten (Finanztracking) des gewählten Zeitraums aggregieren */
+async function loadTrackedFinanceData(organizationId: string, periodMonths = 12): Promise<TrackedFinanceData | null> {
   const since = new Date()
-  since.setMonth(since.getMonth() - 12)
+  since.setMonth(since.getMonth() - periodMonths)
 
-  const [expenses, revenues] = await Promise.all([
+  const [expenses, revenues, shifts] = await Promise.all([
     db.expense.findMany({
       where: { organizationId, date: { gte: since } },
-      select: { date: true, category: true, description: true, amount: true, isRecurring: true, recurrenceInterval: true },
+      select: { date: true, category: true, description: true, amount: true, isRecurring: true, recurrenceInterval: true, area: { select: { name: true } } },
     }),
     db.revenue.findMany({
       where: { organizationId, date: { gte: since } },
-      select: { date: true, category: true, amount: true },
+      select: { date: true, category: true, amount: true, area: { select: { name: true } } },
+    }),
+    // Plan-Personalkosten aus dem Schichtplan — bewusst OHNE Namen (nur Aggregate,
+    // Beschäftigtendatenschutz: keine Mitarbeiter-PII in KI-Prompts).
+    db.shift.findMany({
+      where: { organizationId, date: { gte: since } },
+      select: { date: true, startMin: true, endMin: true, employee: { select: { hourlyWageCents: true } } },
     }),
   ])
 
@@ -197,22 +236,33 @@ async function loadTrackedFinanceData(organizationId: string): Promise<TrackedFi
   const byMonth: Record<string, { revenues: number; expenses: number }> = {}
   const expensesByCategory: Record<string, number> = {}
   const revenuesByCategory: Record<string, number> = {}
+  const expensesByArea: Record<string, number> = {}
+  const revenuesByArea: Record<string, number> = {}
+  const plannedLaborByMonth: Record<string, number> = {}
 
   for (const e of expenses) {
     const key = e.date.toISOString().slice(0, 7)
     byMonth[key] = byMonth[key] ?? { revenues: 0, expenses: 0 }
     byMonth[key].expenses += e.amount
     expensesByCategory[e.category] = (expensesByCategory[e.category] ?? 0) + e.amount
+    if (e.area?.name) expensesByArea[e.area.name] = (expensesByArea[e.area.name] ?? 0) + e.amount
   }
   for (const r of revenues) {
     const key = r.date.toISOString().slice(0, 7)
     byMonth[key] = byMonth[key] ?? { revenues: 0, expenses: 0 }
     byMonth[key].revenues += r.amount
     revenuesByCategory[r.category] = (revenuesByCategory[r.category] ?? 0) + r.amount
+    if (r.area?.name) revenuesByArea[r.area.name] = (revenuesByArea[r.area.name] ?? 0) + r.amount
+  }
+  for (const s of shifts) {
+    const wage = s.employee.hourlyWageCents
+    if (!wage) continue
+    const key = s.date.toISOString().slice(0, 7)
+    plannedLaborByMonth[key] = Math.round(((plannedLaborByMonth[key] ?? 0) + ((s.endMin - s.startMin) / 60) * (wage / 100)) * 100) / 100
   }
 
   return {
-    source: 'Vom Nutzer im Profitora-Finanztracking eingetragene Einnahmen und Ausgaben (letzte 12 Monate)',
+    source: `Vom Nutzer im Profitora-Finanztracking eingetragene Einnahmen und Ausgaben (letzte ${periodMonths} Monate)`,
     months: Object.entries(byMonth)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, v]) => ({
@@ -223,9 +273,12 @@ async function loadTrackedFinanceData(organizationId: string): Promise<TrackedFi
       })),
     expensesByCategory,
     revenuesByCategory,
+    expensesByArea: Object.keys(expensesByArea).length ? expensesByArea : undefined,
+    revenuesByArea: Object.keys(revenuesByArea).length ? revenuesByArea : undefined,
     recurringExpenses: expenses
       .filter((e) => e.isRecurring)
       .map((e) => ({ description: e.description, amount: e.amount, interval: e.recurrenceInterval })),
+    plannedLaborByMonth: Object.keys(plannedLaborByMonth).length ? plannedLaborByMonth : undefined,
   }
 }
 
@@ -238,6 +291,7 @@ async function runAnalysis(
   financeData: TrackedFinanceData | null,
   questionnaireData: Record<string, unknown> | null,
   userEmail?: string,
+  extras?: import('@/lib/ai').ReportExtras,
 ) {
   let analysisResult: EnrichedResult
 
@@ -292,7 +346,7 @@ async function runAnalysis(
     ;(analysisResult as EnrichedResult & { questionnaireData?: unknown }).questionnaireData = questionnaireData
   }
 
-  const htmlContent = await generateBusinessReport(analysisResult, { model: aiModel })
+  const htmlContent = await generateBusinessReport(analysisResult, { model: aiModel, ...extras })
 
   // Tarif-Snapshot: bestimmt später das Teaser-Gating im Bericht (siehe report-teaser.ts).
   // Erst nach der KI-Generierung gesetzt, damit es nicht in den Prompt gelangt.
