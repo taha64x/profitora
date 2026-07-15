@@ -23,7 +23,15 @@ export async function POST(req: NextRequest) {
     }
 
     await db.$transaction([
-      db.user.update({ where: { id: entry.userId }, data: { passwordHash: await hashPassword(password) } }),
+      db.user.update({
+        where: { id: entry.userId },
+        data: {
+          passwordHash: await hashPassword(password),
+          // Alle bestehenden Sessions sofort invalidieren (Session-Fixation-Schutz):
+          // getCurrentUser() vergleicht den pv-Claim mit dieser Version.
+          tokenVersion: { increment: 1 },
+        },
+      }),
       db.passwordResetToken.deleteMany({ where: { userId: entry.userId } }),
     ])
     return NextResponse.json({ success: true })

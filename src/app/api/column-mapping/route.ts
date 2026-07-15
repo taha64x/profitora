@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 
 export async function POST(req: Request) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const body = await req.json() as { uploadId?: string; mapping?: Record<string, string> }

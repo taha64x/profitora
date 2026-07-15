@@ -157,6 +157,8 @@ export interface TokenPayload {
   userId: string
   email: string
   organizationId?: string
+  /** Session-Version — Tokens mit alter Version sind nach Passwort-Reset ungültig */
+  pv?: number
 }
 
 // ─── KPIs (universal für alle Unternehmensarten) ─────────────────────────────

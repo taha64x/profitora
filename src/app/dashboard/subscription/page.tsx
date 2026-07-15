@@ -12,7 +12,7 @@ import { getEntitlements, subscriptionsLive } from '@/lib/entitlements'
 const PACKS = Object.values(CREDIT_PACKS)
 
 export default async function SubscriptionPage() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
   const m = await db.organizationMember.findFirst({ where: { userId: user.userId } })
   const sub = m ? await db.subscription.findUnique({ where: { organizationId: m.organizationId } }) : null

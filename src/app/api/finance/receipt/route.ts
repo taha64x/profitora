@@ -15,7 +15,7 @@ async function orgIdFor(userId: string): Promise<string | null> {
 
 // POST: Beleg hochladen → { path, name } für receiptPath/receiptName am Eintrag.
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const orgId = await orgIdFor(user.userId)
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
 // GET ?kind=expense|revenue&id=… : Org-geprüfter Zugriff auf den Beleg.
 export async function GET(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   const orgId = await orgIdFor(user.userId)
   if (!orgId) return NextResponse.json({ error: 'Kein Unternehmen gefunden.' }, { status: 404 })

@@ -14,7 +14,7 @@ import { htmlToPdf } from '@/lib/pdf'
  */
 export async function GET(_req: Request, { params }: { params: { purchaseId: string } }) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const purchase = await db.stripePurchase.findUnique({ where: { id: params.purchaseId } })

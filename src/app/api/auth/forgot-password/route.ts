@@ -13,6 +13,13 @@ export async function POST(req: NextRequest) {
 
     const user = await db.user.findUnique({ where: { email } })
     if (user) {
+      // Rate-Limit gegen Mail-Bombing: max. eine Reset-Mail pro Konto alle 5 Minuten.
+      // Antwort bleibt success (kein Unterschied nach außen sichtbar).
+      const recent = await db.passwordResetToken.findFirst({
+        where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
+      })
+      if (recent) return NextResponse.json({ success: true })
+
       // Alte Tokens entwerten, damit immer nur der neueste Link gilt
       await db.passwordResetToken.deleteMany({ where: { userId: user.id } })
       const token = randomBytes(32).toString('base64url')

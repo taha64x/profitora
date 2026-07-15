@@ -26,11 +26,13 @@ export async function POST(request: NextRequest) {
 
     const valid = await verifyPassword(password, user.passwordHash)
     if (!valid) {
+      // Kleine konstante Bremse gegen Online-Brute-Force (zusätzlich zu bcrypt-Kosten)
+      await new Promise((r) => setTimeout(r, 350))
       return NextResponse.json({ error: 'E-Mail oder Passwort falsch.' }, { status: 401 })
     }
 
     const membership = await db.organizationMember.findFirst({ where: { userId: user.id } })
-    const token = signToken({ userId: user.id, email: user.email, organizationId: membership?.organizationId })
+    const token = signToken({ userId: user.id, email: user.email, organizationId: membership?.organizationId, pv: user.tokenVersion })
     setAuthCookie(token)
 
     return NextResponse.json({ success: true })

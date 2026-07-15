@@ -14,7 +14,7 @@ async function orgFor(userId: string) {
 
 // GET: Bereiche der Org; seedet Branchen-Defaults beim ersten Aufruf.
 export async function GET() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const org = await orgFor(user.userId)
@@ -33,7 +33,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const org = await orgFor(user.userId)
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const org = await orgFor(user.userId)

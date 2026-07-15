@@ -8,7 +8,7 @@ import { buildTaxExportCsv, type TaxExportRow } from '@/lib/tax-export'
 // GET ?year=2026 → Steuerberater-CSV (alle Einnahmen + Ausgaben des Jahres).
 // Business+ (flag-gated): DATEV-/Steuerberater-Export ist Teil des Business-Abos.
 export async function GET(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
 

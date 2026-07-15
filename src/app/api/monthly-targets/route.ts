@@ -5,7 +5,7 @@ import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
     if (await cockpitBlocked()) return cockpitForbiddenResponse()
 
@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
     if (await cockpitBlocked()) return cockpitForbiddenResponse()
 
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
     if (await cockpitBlocked()) return cockpitForbiddenResponse()
 

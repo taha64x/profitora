@@ -6,7 +6,7 @@ import { forecastSeries } from '@/lib/forecast'
 
 // 24 Monate Historie + 12 Monate Prognose für Einnahmen und Ausgaben (Premium).
 export async function GET() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await featureBlocked('forecast')) return featureForbiddenResponse('Der Forecast')
   const ctx = await getOrgContext()

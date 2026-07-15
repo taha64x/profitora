@@ -7,7 +7,7 @@ import { isAbsent, shiftsOverlap, weekDates } from '@/lib/shifts'
 // POST { fromWeek: 'YYYY-MM-DD', toWeek: 'YYYY-MM-DD' } — kopiert alle Schichten
 // der Quellwoche tagesversetzt in die Zielwoche; Konflikte werden übersprungen.
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()

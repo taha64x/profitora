@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Optional: Nutzer-Zuordnung falls eingeloggt
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     const orgId = user?.organizationId ?? undefined
 
     const request = await db.analysisRequest.create({
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) {
     return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   }

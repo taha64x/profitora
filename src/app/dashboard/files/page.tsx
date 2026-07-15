@@ -44,7 +44,7 @@ function FileIcon({ type }: { type: string }) {
 }
 
 export default async function FilesPage() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const member = await db.organizationMember.findFirst({ where: { userId: user.userId } })

@@ -37,7 +37,7 @@ function ProgressBar({ value, target, color }: { value: number; target: number; 
 }
 
 export default async function MeinWegPage() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const membership = await db.organizationMember.findFirst({

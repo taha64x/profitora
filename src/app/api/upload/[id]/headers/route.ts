@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const upload = await db.upload.findUnique({

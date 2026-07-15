@@ -101,6 +101,7 @@ export async function GET(req: NextRequest) {
       userId: user.id,
       email: user.email,
       organizationId: user.memberships[0]?.organizationId,
+      pv: user.tokenVersion,
     })
     setAuthCookie(token)
 

@@ -6,7 +6,7 @@ import { getOrgContext, shiftsBlocked, shiftsForbiddenResponse } from '@/lib/ent
 const TYPES = new Set(['VACATION', 'SICK', 'OFF'])
 
 export async function GET() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()
@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()

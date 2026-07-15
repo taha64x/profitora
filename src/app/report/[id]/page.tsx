@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export default async function ReportPage({ params }: PageProps) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const report = await db.analysisReport.findUnique({

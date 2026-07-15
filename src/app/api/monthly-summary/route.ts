@@ -7,7 +7,7 @@ import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
     if (await cockpitBlocked()) return cockpitForbiddenResponse()
 

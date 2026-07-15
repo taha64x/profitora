@@ -29,7 +29,7 @@ function parseBody(body: any) {
 }
 
 export async function GET() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const ctx = await getOrgContext()
@@ -43,7 +43,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const ctx = await getOrgContext()
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const ctx = await getOrgContext()
@@ -98,7 +98,7 @@ export async function PUT(req: NextRequest) {
 
 // DELETE = deaktivieren (Soft-Delete: Schichten/Kostenhistorie bleiben erhalten)
 export async function DELETE(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const ctx = await getOrgContext()

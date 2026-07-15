@@ -15,7 +15,7 @@ const MAX_ROWS = 2000
 
 // POST { kind: 'expense'|'revenue', rows: ImportRow[], defaults: { category, areaId?, vatRate? } }
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const m = await db.organizationMember.findFirst({ where: { userId: user.userId } })

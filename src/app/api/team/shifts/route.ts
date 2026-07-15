@@ -14,7 +14,7 @@ function weekRange(weekParam: string | null): { days: string[]; from: Date; to: 
 }
 
 export async function GET(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()
@@ -68,7 +68,7 @@ async function validateAndConflictCheck(
 }
 
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()
@@ -133,7 +133,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   if (await shiftsBlocked()) return shiftsForbiddenResponse()
   const ctx = await getOrgContext()

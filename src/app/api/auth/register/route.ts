@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     })
 
     const org = user.memberships[0]?.organization
-    const token = signToken({ userId: user.id, email: user.email, organizationId: org?.id })
+    const token = signToken({ userId: user.id, email: user.email, organizationId: org?.id, pv: user.tokenVersion })
     setAuthCookie(token)
 
     sendWelcomeEmail(user.email, user.name ?? '', org?.name ?? organizationName).catch(console.error)

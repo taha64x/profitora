@@ -20,7 +20,7 @@ const MAX_SIZE_MB = parseInt(process.env.MAX_FILE_SIZE_MB || '20')
 
 export async function POST(request: NextRequest) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
     }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const membership = await db.organizationMember.findFirst({ where: { userId: user.userId } })

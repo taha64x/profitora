@@ -15,7 +15,7 @@ export interface OrgContext {
 
 /** Org + Entitlements des eingeloggten Nutzers laden (null = kein Login / keine Org) */
 export async function getOrgContext(): Promise<OrgContext | null> {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return null
   const membership = await db.organizationMember.findFirst({
     where: { userId: user.userId },

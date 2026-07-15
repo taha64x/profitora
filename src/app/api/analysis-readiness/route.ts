@@ -6,7 +6,7 @@ import { classifyCategory } from '@/lib/benchmarks'
 // Datenqualitäts-Score für den Analyse-Wizard: Wie gut ist die Datenlage,
 // was würde im Bericht fehlen? (Spec §5.1 — ehrliche Erwartungssteuerung.)
 export async function GET() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
   const m = await db.organizationMember.findFirst({ where: { userId: user.userId } })
   if (!m) return NextResponse.json({ error: 'Kein Unternehmen gefunden.' }, { status: 404 })

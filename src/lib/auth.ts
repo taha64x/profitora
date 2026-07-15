@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
+import { db } from '@/lib/db'
 import type { TokenPayload } from '@/types'
 
 const JWT_SECRET = process.env.JWT_SECRET!
@@ -40,11 +41,24 @@ export function clearAuthCookie() {
   cookies().set('auth_token', '', { maxAge: 0, path: '/' })
 }
 
-export function getCurrentUser(): TokenPayload | null {
+/**
+ * Eingeloggten Nutzer aus dem JWT lesen UND gegen die aktuelle tokenVersion
+ * prüfen — nach einem Passwort-Reset (Version +1) sind alle älteren Sessions
+ * sofort ungültig (Session-Fixation-Schutz). Tokens ohne pv-Claim (Altbestand
+ * vor diesem Update) gelten nur, solange die Version noch 0 ist.
+ */
+export async function getCurrentUser(): Promise<TokenPayload | null> {
   const token = cookies().get('auth_token')?.value
   if (!token) return null
   try {
-    return verifyToken(token)
+    const payload = verifyToken(token)
+    const user = await db.user.findUnique({
+      where: { id: payload.userId },
+      select: { tokenVersion: true },
+    })
+    if (!user) return null
+    if ((payload.pv ?? 0) !== user.tokenVersion) return null
+    return payload
   } catch {
     return null
   }

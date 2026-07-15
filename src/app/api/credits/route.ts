@@ -7,7 +7,7 @@ import { getCurrentUser } from '@/lib/auth'
 /** Analyse-Guthaben der eigenen Organisation (für Dashboard/Neue-Analyse-Seite) */
 export async function GET() {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const membership = await db.organizationMember.findFirst({

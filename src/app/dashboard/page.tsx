@@ -88,7 +88,7 @@ function Progress({ label, current, target, invert = false }: { label: string; c
 }
 
 export default async function DashboardPage() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const membership = await db.organizationMember.findFirst({

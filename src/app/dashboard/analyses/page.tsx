@@ -36,7 +36,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default async function AnalysesPage() {
-  const user = getCurrentUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const member = await db.organizationMember.findFirst({ where: { userId: user.userId } })

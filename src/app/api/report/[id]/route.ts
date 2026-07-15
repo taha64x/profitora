@@ -8,7 +8,7 @@ interface Params {
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const report = await db.analysisReport.findUnique({
@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = getCurrentUser()
+    const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
     const report = await db.analysisReport.findUnique({ where: { id: params.id } })
