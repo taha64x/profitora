@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import { useModalDismiss } from '@/components/ui/useModalDismiss'
 import { labelToMinutes, minutesToLabel, plannedWageCents, weekDates } from '@/lib/shifts'
 
 interface Area { id: string; name: string }
@@ -42,6 +44,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState<ShiftForm | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
+  const dismissModal = useModalDismiss(Boolean(form), () => { setForm(null); setEditId(null) })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -231,7 +234,7 @@ export default function SchedulePage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-gray-400">Lädt…</td></tr>
+                  <TableSkeleton cols={8} rows={3} />
                 ) : active.map((emp) => (
                   <tr key={emp.id} className="border-b border-gray-50 align-top">
                     <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">
@@ -273,8 +276,8 @@ export default function SchedulePage() {
 
       {/* Schicht-Modal */}
       {form && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={dismissModal}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h2 className="font-semibold text-gray-900">
                 {editId ? 'Schicht bearbeiten' : 'Neue Schicht'} · {empById.get(form.employeeId)?.name} · {fmt(form.dateKey)}

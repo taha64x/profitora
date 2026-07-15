@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import { useModalDismiss } from '@/components/ui/useModalDismiss'
+import { parseGermanAmount } from '@/lib/csv'
 
 interface Measure {
   id: string
@@ -27,6 +29,7 @@ export default function MeasuresPage() {
   const [tab, setTab] = useState<Measure['status']>('OPEN')
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', savingsEur: '' })
+  const dismissModal = useModalDismiss(modalOpen, () => setModalOpen(false))
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -45,7 +48,10 @@ export default function MeasuresPage() {
       body: JSON.stringify({
         title: form.title,
         description: form.description,
-        potentialSavingsCents: form.savingsEur ? Math.round(Number(form.savingsEur) * 100) : null,
+        potentialSavingsCents: (() => {
+          const parsed = form.savingsEur ? parseGermanAmount(form.savingsEur) : null
+          return parsed && parsed > 0 ? Math.round(parsed * 100) : null
+        })(),
       }),
     })
     if (!res.ok) toast.error('Fehler beim Speichern')
@@ -159,7 +165,7 @@ export default function MeasuresPage() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={dismissModal}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h2 className="font-semibold text-gray-900">Neue Maßnahme</h2>
@@ -169,7 +175,7 @@ export default function MeasuresPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Titel *</label>
                 <input type="text" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  placeholder="z.B. Energieanbieter wechseln" className="input"/>
+                  placeholder="z.B. Energieanbieter wechseln" className="input" autoFocus/>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Beschreibung</label>
@@ -178,7 +184,7 @@ export default function MeasuresPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Geschätzte Ersparnis (€/Jahr)</label>
-                <input type="number" min="0" value={form.savingsEur} onChange={(e) => setForm((f) => ({ ...f, savingsEur: e.target.value }))} className="input"/>
+                <input type="text" inputMode="decimal" placeholder="0,00" value={form.savingsEur} onChange={(e) => setForm((f) => ({ ...f, savingsEur: e.target.value }))} className="input"/>
               </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">

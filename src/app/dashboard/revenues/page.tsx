@@ -6,6 +6,9 @@ import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import ReceiptField from '@/components/finance/ReceiptField'
 import CsvImportDialog from '@/components/finance/CsvImportDialog'
+import AmountInput from '@/components/ui/AmountInput'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import { useModalDismiss } from '@/components/ui/useModalDismiss'
 import { REVENUE_CATEGORIES as CATEGORIES, RECURRENCE_INTERVALS } from '@/lib/finance-categories'
 
 const PAYMENT_STATUSES = [{ value: 'paid', label: 'Bezahlt' }, { value: 'open', label: 'Offen' }, { value: 'cancelled', label: 'Storniert' }]
@@ -59,13 +62,14 @@ function Modal({ open, onClose, onSave, initial, areas }: {
 }) {
   const [form, setForm] = useState(initial ?? EMPTY)
   useEffect(() => setForm(initial ?? EMPTY), [initial, open])
+  const dismiss = useModalDismiss(open, onClose)
   if (!open) return null
   const set = (k: string, v: string | number | boolean | null | { path: string; name: string }) =>
     setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={dismiss}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">{initial ? 'Einnahme bearbeiten' : 'Neue Einnahme'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg></button>
@@ -78,7 +82,7 @@ function Modal({ open, onClose, onSave, initial, areas }: {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Betrag (€) *</label>
-              <input type="number" step="0.01" min="0" value={form.amount || ''} onChange={(e) => set('amount', Number(e.target.value))} placeholder="0,00" className="input" required/>
+              <AmountInput value={form.amount} onChange={(n) => set('amount', n)} autoFocus required/>
             </div>
           </div>
           <div>
@@ -240,7 +244,7 @@ export default function RevenuesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Gesamteinnahmen', value: formatEur(total), color: 'text-green-600' },
             { label: 'Bezahlt', value: formatEur(paid), color: 'text-green-600' },
@@ -264,17 +268,22 @@ export default function RevenuesPage() {
         </div>
 
         <div className="table-card">
-          <table className="w-full text-sm min-w-[640px]">
+          <table className="w-full text-sm md:min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                {['Datum', 'Kategorie', 'Bereich', 'Beschreibung', 'Kunde / Quelle', 'Status', 'Wiederh.', 'Betrag', ''].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                {[
+                  { h: 'Datum' }, { h: 'Kategorie', cls: 'hidden sm:table-cell' }, { h: 'Bereich', cls: 'hidden md:table-cell' },
+                  { h: 'Beschreibung' }, { h: 'Kunde / Quelle', cls: 'hidden lg:table-cell' },
+                  { h: 'Status' }, { h: 'Wiederh.', cls: 'hidden lg:table-cell' },
+                  { h: 'Betrag' }, { h: '' },
+                ].map((c, i) => (
+                  <th key={i} className={`text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide ${c.cls ?? ''}`}>{c.h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-12 text-gray-400">Lädt…</td></tr>
+                <TableSkeleton cols={9} />
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-12">
@@ -283,33 +292,31 @@ export default function RevenuesPage() {
                   </td>
                 </tr>
               ) : filtered.map((r) => (
-                <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                <tr key={r.id} onClick={() => { setEditTarget(r); setModalOpen(true) }}
+                  className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{new Date(r.date).toLocaleDateString('de-DE')}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 hidden sm:table-cell">
                     <span className="inline-flex items-center text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{r.category}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 hidden md:table-cell">
                     {r.area ? <span className="inline-flex items-center text-xs font-medium bg-au-gold/10 text-[#8a6d2f] px-2 py-0.5 rounded-full">{r.area.name}</span> : <span className="text-gray-300">–</span>}
                   </td>
                   <td className="px-4 py-3 text-gray-900 font-medium max-w-48 truncate">
                     {r.receiptPath && (
-                      <a href={`/api/finance/receipt?kind=revenue&id=${r.id}`} target="_blank" rel="noreferrer" title="Beleg öffnen" className="mr-1">📎</a>
+                      <a href={`/api/finance/receipt?kind=revenue&id=${r.id}`} target="_blank" rel="noreferrer" title="Beleg öffnen" className="mr-1" onClick={(ev) => ev.stopPropagation()}>📎</a>
                     )}
                     {r.description}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 max-w-32 truncate">{r.customerOrSource || '–'}</td>
+                  <td className="px-4 py-3 text-gray-500 max-w-32 truncate hidden lg:table-cell">{r.customerOrSource || '–'}</td>
                   <td className="px-4 py-3"><StatusBadge status={r.paymentStatus}/></td>
-                  <td className="px-4 py-3">{r.isRecurring && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Wiederh.</span>}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell">{r.isRecurring && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Wiederh.</span>}</td>
                   <td className="px-4 py-3 text-green-600 font-semibold whitespace-nowrap">{formatEur(r.amount)}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => { setEditTarget(r); setModalOpen(true) }} className="text-gray-400 hover:text-[#0D1630] p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5"><path d="M11 2L14 5L5 14H2V11L11 2Z"/></svg>
-                      </button>
-                      <button onClick={() => handleDelete(r.id)} disabled={deleting === r.id} className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8L13 4"/></svg>
-                      </button>
-                    </div>
+                    <button onClick={(ev) => { ev.stopPropagation(); handleDelete(r.id) }} disabled={deleting === r.id}
+                      title="Löschen"
+                      className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8L13 4"/></svg>
+                    </button>
                   </td>
                 </tr>
               ))}

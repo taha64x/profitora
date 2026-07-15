@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import AmountInput from '@/components/ui/AmountInput'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import { useModalDismiss } from '@/components/ui/useModalDismiss'
 import { EXPENSE_CATEGORIES, REVENUE_CATEGORIES, RECURRENCE_INTERVALS } from '@/lib/finance-categories'
 
 interface Area { id: string; name: string }
@@ -61,13 +64,14 @@ function Modal({ open, onClose, onSave, initial, areas, kind }: {
 }) {
   const [form, setForm] = useState(initial ?? EMPTY(kind))
   useEffect(() => setForm(initial ?? EMPTY(kind)), [initial, open, kind])
+  const dismiss = useModalDismiss(open, onClose)
   if (!open) return null
   const set = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }))
   const categories = form.kind === 'EXPENSE' ? EXPENSE_CATEGORIES : REVENUE_CATEGORIES
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={dismiss}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">
             {initial ? 'Posten bearbeiten' : form.kind === 'EXPENSE' ? 'Neue wiederkehrende Ausgabe' : 'Neue wiederkehrende Einnahme'}
@@ -78,7 +82,7 @@ function Modal({ open, onClose, onSave, initial, areas, kind }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Betrag (€) *</label>
-              <input type="number" step="0.01" min="0" value={form.amount || ''} onChange={(e) => set('amount', Number(e.target.value))} placeholder="0,00" className="input" required/>
+              <AmountInput value={form.amount} onChange={(n) => set('amount', n)} autoFocus required/>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Intervall *</label>
@@ -230,7 +234,7 @@ export default function RecurringPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">Lädt…</td></tr>
+                <TableSkeleton cols={8} />
               ) : visible.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12">

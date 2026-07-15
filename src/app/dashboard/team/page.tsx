@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import { useModalDismiss } from '@/components/ui/useModalDismiss'
+import { parseGermanAmount } from '@/lib/csv'
 
 interface Area { id: string; name: string }
 
@@ -59,11 +62,12 @@ function EmployeeModal({ open, onClose, onSave, initial }: {
 }) {
   const [form, setForm] = useState(initial ?? EMPTY_EMP)
   useEffect(() => setForm(initial ?? EMPTY_EMP), [initial, open])
+  const dismiss = useModalDismiss(open, onClose)
   if (!open) return null
   const set = (k: keyof EmpForm, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={dismiss}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">{initial ? 'Mitarbeiter bearbeiten' : 'Neuer Mitarbeiter'}</h2>
@@ -73,7 +77,7 @@ function EmployeeModal({ open, onClose, onSave, initial }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Name *</label>
-              <input type="text" value={form.name} onChange={(e) => set('name', e.target.value)} className="input" required/>
+              <input type="text" value={form.name} onChange={(e) => set('name', e.target.value)} className="input" autoFocus required/>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Position</label>
@@ -104,7 +108,7 @@ function EmployeeModal({ open, onClose, onSave, initial }: {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">{form.wageType === 'hourly' ? '€ / Stunde' : '€ / Monat'}</label>
-              <input type="number" step="0.01" min="0" value={form.wageEur} onChange={(e) => set('wageEur', e.target.value)} className="input"/>
+              <input type="text" inputMode="decimal" placeholder="0,00" value={form.wageEur} onChange={(e) => set('wageEur', e.target.value)} className="input"/>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Std. / Woche</label>
@@ -167,7 +171,9 @@ export default function TeamPage() {
   useEffect(() => { load() }, [load])
 
   const handleSave = async (f: EmpForm) => {
-    const wageCents = f.wageEur ? Math.round(Number(f.wageEur) * 100) : null
+    // Deutsche Eingabe erlauben ("16,50" statt nur "16.50")
+    const parsedWage = f.wageEur ? parseGermanAmount(f.wageEur) : null
+    const wageCents = parsedWage && parsedWage > 0 ? Math.round(parsedWage * 100) : null
     const payload = {
       name: f.name, position: f.position, email: f.email, phone: f.phone, address: f.address,
       hourlyWageCents: f.wageType === 'hourly' ? wageCents : null,
@@ -239,7 +245,7 @@ export default function TeamPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-12 text-gray-400">Lädt…</td></tr>
+                <TableSkeleton cols={7} />
               ) : employees.length === 0 ? (
                 <tr><td colSpan={7} className="text-center py-12">
                   <p className="text-gray-400 mb-3">Noch keine Mitarbeiter angelegt.</p>

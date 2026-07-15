@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import FirstSteps from '@/components/dashboard/FirstSteps'
 import KpiLight from '@/components/dashboard/KpiLight'
 import OnDutyCard from '@/components/dashboard/OnDutyCard'
 import TrendSparkline from '@/components/dashboard/TrendSparkline'
@@ -125,6 +126,13 @@ export default async function DashboardPage() {
       db.subscription.findUnique({ where: { organizationId: org.id } }),
     ])
 
+  // Für die Erste-Schritte-Karte: gibt es ÜBERHAUPT Daten (nicht nur im Monat)?
+  const [anyRevenue, anyExpense, anyEmployee] = await Promise.all([
+    db.revenue.count({ where: { organizationId: org.id }, take: 1 }),
+    db.expense.count({ where: { organizationId: org.id }, take: 1 }),
+    db.employee.count({ where: { organizationId: org.id }, take: 1 }),
+  ])
+
   const expensesByCategory = Object.fromEntries(expenseGroups.map((g) => [g.category, g._sum.amount ?? 0]))
   const totalExpenses = Object.values(expensesByCategory).reduce((a, b) => a + b, 0)
   const totalRevenues = revenueAgg._sum.amount ?? 0
@@ -189,6 +197,15 @@ export default async function DashboardPage() {
           <StatCard label="Ergebnis (Monat)" value={formatEur(profit)} sub={trendSub(profit, prevProfit)} color={profit >= 0 ? 'green' : 'red'}
             icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </div>
+
+        {!cockpitLocked && (
+          <FirstSteps
+            hasRevenue={anyRevenue > 0}
+            hasExpense={anyExpense > 0}
+            hasEmployee={anyEmployee > 0}
+            hasReport={reports.length > 0}
+          />
+        )}
 
         {cockpitLocked ? (
           /* Paywall-Teaser: Cockpit ist Teil des Abos */
