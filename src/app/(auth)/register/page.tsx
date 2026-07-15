@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
-import { getCreditPack, type CreditPack } from '@/lib/plans'
+import { getCreditPack, getSubscriptionPlan, type CreditPack, type SubscriptionPlan } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton'
 
@@ -15,9 +15,15 @@ export default function RegisterPage() {
   // damit wir nach der Anmeldung direkt zur Zahlung weiterleiten können.
   // 'premium' bleibt als Alias für die Einzelanalyse gültig (alte Links).
   const [pack, setPack] = useState<CreditPack | null>(null)
+  // Abo-Intention aus ?abo=starter|business|premium&interval=month|year
+  // (von den Tarif-Karten der Landing-Page)
+  const [abo, setAbo] = useState<SubscriptionPlan | null>(null)
+  const [aboInterval, setAboInterval] = useState<'month' | 'year'>('month')
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get('plan')
-    setPack(getCreditPack(p))
+    const params = new URLSearchParams(window.location.search)
+    setPack(getCreditPack(params.get('plan')))
+    setAbo(getSubscriptionPlan(params.get('abo')))
+    setAboInterval(params.get('interval') === 'year' ? 'year' : 'month')
   }, [])
   const [form, setForm] = useState({
     name: '',
@@ -54,7 +60,7 @@ export default function RegisterPage() {
       setError('Passwort muss mindestens 8 Zeichen haben.')
       return
     }
-    if (pack && !consent) {
+    if ((pack || abo) && !consent) {
       setError('Bitte stimmen Sie der sofortigen Ausführung zu, um fortzufahren.')
       return
     }
@@ -79,14 +85,18 @@ export default function RegisterPage() {
         return
       }
 
-      // Direkt-Kauf: bei gewähltem Analyse-Paket sofort zum Stripe-Checkout,
-      // ohne Umweg über das Dashboard (weniger Reibung = mehr Abschlüsse).
-      if (pack) {
+      // Direkt-Kauf: bei gewähltem Abo oder Analyse-Paket sofort zum Stripe-
+      // Checkout, ohne Umweg über das Dashboard (weniger Reibung = mehr Abschlüsse).
+      if (pack || abo) {
         try {
           const checkoutRes = await fetch('/api/stripe/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan: pack.id, consent }),
+            body: JSON.stringify(
+              abo
+                ? { kind: 'subscription', plan: abo.id, interval: aboInterval, consent }
+                : { plan: pack!.id, consent },
+            ),
           })
           const checkoutData = await checkoutRes.json()
           if (checkoutRes.ok && checkoutData.url) {
@@ -96,7 +106,7 @@ export default function RegisterPage() {
         } catch {
           /* Checkout (noch) nicht möglich – sanft auf die Tarif-Seite ausweichen */
         }
-        router.push('/dashboard/subscription')
+        router.push('/dashboard/subscription?upgrade=1')
         return
       }
 
@@ -117,14 +127,24 @@ export default function RegisterPage() {
             <span className="text-2xl font-bold text-hotel-navy">Profitora</span>
           </Link>
           <p className="mt-2 text-gray-500 text-sm">
-            {pack
-              ? 'Account erstellen – danach geht es direkt zur Zahlung'
-              : 'Kostenlosen Account erstellen'}
+            {abo
+              ? 'Account erstellen – danach startet Ihr kostenloser Testzeitraum'
+              : pack
+                ? 'Account erstellen – danach geht es direkt zur Zahlung'
+                : 'Kostenlosen Account erstellen'}
           </p>
         </div>
 
         <div className="card p-8">
-          {pack && (
+          {abo && (
+            <div className="mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
+              <span className="text-sm text-gray-600">Gewählter Tarif</span>
+              <span className="text-sm font-semibold text-hotel-navy">
+                {abo.name} · {((aboInterval === 'year' ? abo.priceYearlyPerMonthCents : abo.priceMonthlyCents) / 100).toLocaleString('de-DE')} €/Monat · 14 Tage kostenlos
+              </span>
+            </div>
+          )}
+          {pack && !abo && (
             <div className="mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
               <span className="text-sm text-gray-600">Gewähltes Paket</span>
               <span className="text-sm font-semibold text-hotel-navy">
@@ -222,7 +242,7 @@ export default function RegisterPage() {
 
               <h1 className="text-xl font-semibold text-gray-900">Account erstellen</h1>
 
-              <GoogleLoginButton plan={pack?.id} />
+              <GoogleLoginButton plan={pack?.id ?? (abo ? 'abo' : undefined)} />
 
               <div>
                 <label className="label">Ihr Name</label>
@@ -310,7 +330,7 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {pack && (
+              {(pack || abo) && (
                 <label className="flex items-start gap-2 text-xs text-gray-500 leading-snug cursor-pointer">
                   <input
                     type="checkbox"
@@ -319,8 +339,9 @@ export default function RegisterPage() {
                     className="mt-0.5 shrink-0 accent-hotel-navy"
                   />
                   <span>
-                    Ich stimme ausdrücklich zu, dass mit der Ausführung sofort begonnen wird, und bestätige,
-                    dass ich mit Beginn der Ausführung mein Widerrufsrecht verliere.
+                    {abo
+                      ? 'Ich verlange ausdrücklich, dass mit der Bereitstellung des Dienstes vor Ablauf der Widerrufsfrist begonnen wird. Bei Widerruf zahle ich Wertersatz für bereits erbrachte Leistungen.'
+                      : 'Ich stimme ausdrücklich zu, dass mit der Ausführung sofort begonnen wird, und bestätige, dass ich mit Beginn der Ausführung mein Widerrufsrecht verliere.'}
                   </span>
                 </label>
               )}

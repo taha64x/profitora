@@ -104,13 +104,17 @@ export async function GET(req: NextRequest) {
     })
     setAuthCookie(token)
 
-    // Ziel: gewähltes Paket → Kaufseite (dort liegt die Widerrufs-Zustimmung);
-    // neuer Nutzer → Onboarding; sonst Dashboard.
-    const target = plan
-      ? '/dashboard/subscription'
-      : isNew
-        ? '/onboarding'
-        : '/dashboard'
+    // Ziel: Abo-Intention → Tarifseite mit Hinweis-Banner; gewähltes Paket →
+    // Kaufseite (dort liegt die Widerrufs-Zustimmung); neuer Nutzer →
+    // Onboarding; sonst Dashboard.
+    const target =
+      plan === 'abo'
+        ? '/dashboard/subscription?upgrade=1'
+        : plan
+          ? '/dashboard/subscription'
+          : isNew
+            ? '/onboarding'
+            : '/dashboard'
     return NextResponse.redirect(new URL(target, appUrl))
   } catch (err) {
     console.error('[google-callback]', err)
