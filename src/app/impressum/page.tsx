@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { COMPANY } from '@/lib/company'
+import { COMPANY, VAT_NOTE } from '@/lib/company'
 
 export const metadata = { title: 'Impressum – Profitora' }
 
@@ -41,8 +41,7 @@ export default function ImpressumPage() {
           <div>
             <h2 className="font-semibold text-gray-900 mb-2">Umsatzsteuer</h2>
             <p className="text-gray-700 text-sm leading-relaxed">
-              Als Kleinunternehmer im Sinne von § 19 UStG wird keine Umsatzsteuer berechnet und ausgewiesen.
-              Eine Umsatzsteuer-Identifikationsnummer liegt daher nicht vor.
+              {VAT_NOTE} Eine Umsatzsteuer-Identifikationsnummer liegt daher nicht vor.
             </p>
           </div>
 

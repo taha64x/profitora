@@ -245,7 +245,7 @@ export function renderInvoiceHtml(d: InvoiceData): string {
     <div class="col">
       <div class="head">Steuerliche Angaben</div>
       ${COMPANY.taxNumber ? `Steuernummer: ${esc(COMPANY.taxNumber)}<br>` : ''}
-      Kleinunternehmer gemäß § 19 UStG –<br>keine Umsatzsteuer ausgewiesen.
+      ${esc(COMPANY.vatNote)}
     </div>
   </div>
 

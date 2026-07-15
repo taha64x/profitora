@@ -18,7 +18,7 @@ export default function WiderrufPage() {
 
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Widerrufsbelehrung</h1>
-        <p className="text-gray-500 text-sm mb-8">Stand: Juni 2026</p>
+        <p className="text-gray-500 text-sm mb-8">Stand: Juli 2026</p>
 
         <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-8 text-sm text-gray-700">
 
@@ -62,6 +62,14 @@ export default function WiderrufPage() {
               unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über
               Ihren Widerruf dieses Vertrags bei uns eingegangen ist.
             </p>
+            <p className="leading-relaxed mt-3">
+              <strong>Besonderheit bei Abonnements (Dienstleistungen):</strong> Haben Sie verlangt, dass die
+              Bereitstellung des Abonnements während der Widerrufsfrist beginnt (Zustimmung im Bestellvorgang), so
+              zahlen Sie uns im Widerrufsfall einen angemessenen Betrag, der dem Anteil der bis zum Widerruf bereits
+              erbrachten Leistung im Vergleich zum Gesamtumfang des Vertrags entspricht (§ 357a BGB). Beginnt das
+              Abonnement mit einem kostenlosen Testzeitraum, fällt für die Zeit bis zur ersten Abbuchung kein
+              Wertersatz an.
+            </p>
           </section>
 
           <section>
@@ -76,8 +84,10 @@ export default function WiderrufPage() {
                 <li>Ihre Kenntnis davon bestätigt haben, dass Sie durch diese Zustimmung mit Beginn der Ausführung Ihr Widerrufsrecht verlieren (§ 356 Abs. 4 und 5 BGB).</li>
               </ul>
               <p className="leading-relaxed text-amber-800 mt-2">
-                Diese Zustimmung holen wir vor dem Kauf im Bestellvorgang ein. Die Komplettanalyse wird unmittelbar
+                Diese Zustimmung holen wir vor dem Kauf im Bestellvorgang ein. Die KI-Analyse wird unmittelbar
                 nach dem Kauf bereitgestellt; das Widerrufsrecht erlischt entsprechend mit Beginn der Ausführung.
+                Bei Abonnements erlischt das Widerrufsrecht mit vollständiger Erbringung der Leistung; bis dahin gilt
+                bei Widerruf die oben beschriebene Wertersatzpflicht.
               </p>
             </div>
           </section>

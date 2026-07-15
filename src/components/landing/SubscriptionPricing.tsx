@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ANALYSIS_SOLO_PRICE_CENTS, SUBSCRIPTION_PLANS } from '@/lib/plans'
+import { VAT_NOTE } from '@/lib/company'
 
 const TIERS = [SUBSCRIPTION_PLANS.starter, SUBSCRIPTION_PLANS.business, SUBSCRIPTION_PLANS.premium]
 
@@ -135,7 +136,7 @@ export default function SubscriptionPricing() {
 
         <p className="text-center text-gray-400 text-xs mt-8 max-w-lg mx-auto leading-relaxed">
           Abo-Analysen: Starter 499 € · Business 299 € · Premium 199 € (statt {euro(ANALYSIS_SOLO_PRICE_CENTS)} € einzeln).
-          Monatlich kündbar, Kündigung jederzeit im Kundenkonto.
+          Monatlich kündbar, Kündigung jederzeit im Kundenkonto. {VAT_NOTE}
           Alle Analysen sind betriebswirtschaftliche Entscheidungshilfen –
           kein Ersatz für Steuerberater, Rechtsanwalt oder gesetzlichen Wirtschaftsprüfer.
         </p>

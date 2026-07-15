@@ -39,7 +39,8 @@ export default function DatenschutzPage() {
             <ul className="list-disc pl-5 space-y-1.5 leading-relaxed">
               <li><strong>Registrierungsdaten:</strong> Name, E-Mail-Adresse, Unternehmensname, Branche – zur Bereitstellung des Accounts (Art. 6 Abs. 1 lit. b DSGVO)</li>
               <li><strong>Finanzdaten:</strong> Kosten- und Einnahmendaten, die Sie manuell eingeben oder als Datei hochladen – zur KI-Analyse (Art. 6 Abs. 1 lit. b DSGVO)</li>
-              <li><strong>Mitarbeiterdaten:</strong> Werden anonymisiert/pseudonymisiert verarbeitet. Keine Einzelbewertung von Mitarbeitern.</li>
+              <li><strong>Mitarbeiterdaten (Team-Modul):</strong> Im Rahmen der Team- und Schichtplan-Funktion können Sie als Arbeitgeber Stammdaten Ihrer Mitarbeiter erfassen (Name, Position, Kontaktdaten, Adresse, Vergütung, Arbeits- und Abwesenheitszeiten). Verantwortlicher für diese Daten sind Sie; wir verarbeiten sie als Auftragsverarbeiter zur Bereitstellung der Funktion (Art. 28 DSGVO). Sie sichern zu, zur Eingabe berechtigt zu sein und Ihre Mitarbeiter zu informieren (Art. 13/14 DSGVO). In KI-Analysen fließen ausschließlich aggregierte Werte ohne Namen ein; es erfolgt keine Bewertung einzelner Mitarbeiter. Beim Löschen eines Mitarbeiters werden dessen Personendaten deaktiviert bzw. anonymisiert.</li>
+              <li><strong>Öffentlicher Schichtplan-Link:</strong> Optional können Sie eine Nur-Lese-Ansicht des Wochenplans (Namen, Arbeitszeiten, Bereiche) über einen nicht erratbaren Link teilen. Der Link ist nicht indexierbar, kann jederzeit erneuert und damit entwertet werden; die Weitergabe verantworten Sie.</li>
               <li><strong>Nutzungsdaten:</strong> Technische Logs für Betrieb und Sicherheit (Art. 6 Abs. 1 lit. f DSGVO)</li>
             </ul>
           </section>

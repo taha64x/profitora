@@ -2,6 +2,7 @@ import Link from 'next/link'
 import ScrollReveal from './ScrollReveal'
 import { CREDIT_PACKS } from '@/lib/plans'
 import { subscriptionsLive } from '@/lib/entitlements'
+import { VAT_NOTE } from '@/lib/company'
 import SubscriptionPricing from './SubscriptionPricing'
 
 const PLANS = [
@@ -141,7 +142,7 @@ export default function PricingSection() {
           <p className="text-center text-gray-400 text-xs mt-8 max-w-lg mx-auto leading-relaxed">
             Kostenloser Account inklusive: Finanztracking, Beispielbericht und KI-Assistent zum Kennenlernen –{' '}
             <Link href="/register" className="underline hover:text-gray-600">jetzt kostenlos registrieren</Link>.
-            Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
+            {VAT_NOTE}
             Alle Analysen sind betriebswirtschaftliche Entscheidungshilfen –
             kein Ersatz für Steuerberater, Rechtsanwalt oder gesetzlichen Wirtschaftsprüfer.
           </p>

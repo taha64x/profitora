@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import CheckoutButton from '@/components/subscription/CheckoutButton'
 import PortalButton from '@/components/subscription/PortalButton'
 import { SUBSCRIPTION_PLANS } from '@/lib/plans'
+import { VAT_NOTE } from '@/lib/company'
 
 interface Props {
   planId: 'free' | 'starter' | 'business' | 'premium'
@@ -191,6 +192,7 @@ export default function PlanManager({
             Verträge hier kündigen: Über „Abo & Rechnungen verwalten" → „Abo kündigen".
           </p>
         )}
+        <p className="text-xs text-gray-400 mt-3">{VAT_NOTE} Es gelten die <a href="/agb" className="underline hover:text-gray-600">AGB</a> und die <a href="/widerruf" className="underline hover:text-gray-600">Widerrufsbelehrung</a>.</p>
       </div>
     </div>
   )

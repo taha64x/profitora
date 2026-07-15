@@ -5,6 +5,14 @@
 // durch deine echten Daten ersetzt werden – sonst ist die Rechnung nicht gültig.
 // Steuerlicher Status: Kleinunternehmer gemäß §19 UStG (keine Umsatzsteuer).
 
+/**
+ * USt-Pflichthinweis — EINZIGE Stelle für den Steuerstatus (auch client-seitig
+ * importierbar, enthält kein Server-Env). Bei Wechsel weg vom Kleinunternehmer
+ * (§ 19 UStG, z. B. wegen Abo-Umsätzen — mit Steuerberater klären!) NUR diesen
+ * Text ändern; Pricing, Checkout-Seiten, Rechnungen und AGB ziehen ihn von hier.
+ */
+export const VAT_NOTE = 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.'
+
 export const COMPANY = {
   /** Rechtlicher Name des Anbieters (Vor- und Nachname bei Einzelunternehmen) */
   legalName: 'Taha Aslan',
@@ -24,8 +32,8 @@ export const COMPANY = {
   email: 'kontakt@profitora.de',
   phone: '0170 7877462',
   domain: 'profitora.de',
-  /** Kleinunternehmer-Pflichthinweis nach §19 UStG */
-  vatNote: 'Gemäß §19 UStG wird keine Umsatzsteuer berechnet.',
+  /** Kleinunternehmer-Pflichthinweis nach §19 UStG (zentral, s. VAT_NOTE oben) */
+  vatNote: VAT_NOTE,
 } as const
 
 /** Einzeiler für Footer / Impressum-Kurzform */
