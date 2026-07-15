@@ -43,6 +43,10 @@ model Organization {
   subscription   Subscription?
   settings       Settings?
   monthlyTargets MonthlyTarget[]
+  areas            Area[]
+  recurringEntries RecurringEntry[]
+  alertRules       AlertRule[]
+  alertEvents      AlertEvent[]
 }
 
 model OrganizationMember {
@@ -145,6 +149,12 @@ model Expense {
   currency            String   @default("EUR")
   paymentMethod       String?
   vendor              String?
+  areaId              String?
+  vatRate             Int?      // 0 | 7 | 19
+  receiptPath         String?   // Blob: receipts/<orgId>/<uuid>.<ext>
+  receiptName         String?
+  importHash          String?   // Duplikat-Schutz CSV-Import
+  recurringEntryId    String?   // Herkunft: Cron-generiert aus RecurringEntry
   isRecurring         Boolean  @default(false)
   recurrenceInterval  String?  // monthly | quarterly | yearly
   fileId              String?
@@ -153,6 +163,7 @@ model Expense {
   updatedAt           DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  area         Area?        @relation(fields: [areaId], references: [id], onDelete: SetNull)
 }
 
 // ─── Einnahmen ────────────────────────────────────────────────────────────────
@@ -168,6 +179,12 @@ model Revenue {
   currency            String   @default("EUR")
   customerOrSource    String?
   paymentStatus       String   @default("paid") // paid | open | cancelled
+  areaId              String?
+  vatRate             Int?      // 0 | 7 | 19
+  receiptPath         String?   // Blob: receipts/<orgId>/<uuid>.<ext>
+  receiptName         String?
+  importHash          String?   // Duplikat-Schutz CSV-Import
+  recurringEntryId    String?   // Herkunft: Cron-generiert aus RecurringEntry
   isRecurring         Boolean  @default(false)
   recurrenceInterval  String?
   fileId              String?
@@ -176,6 +193,7 @@ model Revenue {
   updatedAt           DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  area         Area?        @relation(fields: [areaId], references: [id], onDelete: SetNull)
 }
 
 // ─── Abonnement ───────────────────────────────────────────────────────────────
@@ -294,4 +312,72 @@ model AnalysisRequest {
   organizationId      String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+}
+
+// ─── Bereiche (Finanzen + später Schichtplan) ────────────────────────────────
+
+model Area {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  expenses     Expense[]
+  revenues     Revenue[]
+
+  @@unique([organizationId, name])
+}
+
+// ─── Wiederkehrende Posten (Cron erzeugt Einträge) ───────────────────────────
+
+model RecurringEntry {
+  id             String    @id @default(cuid())
+  organizationId String
+  kind           String    // INCOME | EXPENSE
+  amount         Float
+  category       String
+  areaId         String?
+  vatRate        Int?
+  vendor         String?   // EXPENSE: Lieferant · INCOME: Kunde/Quelle
+  description    String
+  interval       String    // monthly | quarterly | yearly
+  nextRun        DateTime
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── KPI-Alerts ───────────────────────────────────────────────────────────────
+
+model AlertRule {
+  id             String    @id @default(cuid())
+  organizationId String
+  metric         String    // laborCostRatio | goodsCostRatio | netMarginPercent
+  threshold      Float
+  direction      String    // ABOVE | BELOW (wann feuern)
+  active         Boolean   @default(true)
+  lastFiredAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, metric])
+}
+
+model AlertEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  metric         String
+  value          Float
+  threshold      Float
+  message        String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
 }
