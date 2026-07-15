@@ -206,6 +206,22 @@ export async function sendPaymentFailedEmail(to: string) {
   })
 }
 
+export async function sendKpiAlertEmail(to: string, orgName: string, message: string) {
+  if (!process.env.RESEND_API_KEY) return
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `KPI-Hinweis für ${orgName}`,
+    html: baseHtml(`
+      <h1>KPI-Hinweis</h1>
+      <p>${message}</p>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Zum Cockpit</a>
+      <div class="disclaimer">Automatischer Hinweis auf Basis Ihrer Finanzdaten – Entscheidungshilfe, keine rechtsverbindliche Prüfung.</div>
+    `),
+  })
+}
+
 export async function sendPasswordResetEmail(to: string, resetToken: string) {
   if (!process.env.RESEND_API_KEY) return
 
