@@ -1,25 +1,26 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, subscriptionPlanFromPriceId } from '@/lib/stripe'
 import { db } from '@/lib/db'
-import { getPlan, getCreditPack } from '@/lib/plans'
-import { sendOrderConfirmationEmail } from '@/lib/email'
-
-/** Analyse-Limit aus der zentralen Tarif-Konfiguration (null = unbegrenzt → 9999) */
-function limitFor(planName: string): number {
-  return getPlan(planName).analysisLimit ?? 9999
-}
+import { getCreditPack, getSubscriptionPlan } from '@/lib/plans'
+import { sendOrderConfirmationEmail, sendPaymentFailedEmail } from '@/lib/email'
 
 /** Anzeigename eines Packs für die Auftragsbestätigung */
 function creditPackName(packId: string): string {
+  if (packId === 'analysis') return 'Einzelanalyse'
   return getCreditPack(packId)?.name ?? 'Komplettanalyse'
 }
 
+// Stripe Basil-API: Perioden liegen auf dem Subscription-Item, ältere
+// API-Versionen top-level — beide Quellen abfragen.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getPeriod(sub: any) {
+  const item = sub?.items?.data?.[0]
+  const start = item?.current_period_start ?? sub?.current_period_start
+  const end = item?.current_period_end ?? sub?.current_period_end
   return {
-    start: sub.current_period_start ? new Date(sub.current_period_start * 1000) : undefined,
-    end: sub.current_period_end ? new Date(sub.current_period_end * 1000) : undefined,
+    start: start ? new Date(start * 1000) : undefined,
+    end: end ? new Date(end * 1000) : undefined,
   }
 }
 
@@ -45,6 +46,36 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object
+
+        // ── Abo-Abschluss: Subscription-Zeile setzen (idempotent per Upsert) ──
+        if (session.mode === 'subscription') {
+          const subOrgId = session.metadata?.organizationId
+          const plan = getSubscriptionPlan(session.metadata?.subscriptionPlan)
+          if (!subOrgId || !plan) break
+          const interval = session.metadata?.interval === 'year' ? 'year' : 'month'
+
+          const stripeSub = session.subscription
+            ? await getStripe().subscriptions.retrieve(String(session.subscription))
+            : null
+          const period = getPeriod(stripeSub)
+
+          const data = {
+            planName: plan.id,
+            status: stripeSub?.status ?? 'trialing',
+            billingInterval: interval,
+            stripeCustomerId: (session.customer as string) ?? null,
+            stripeSubscriptionId: stripeSub?.id ?? null,
+            currentPeriodStart: period.start,
+            currentPeriodEnd: period.end,
+          }
+          await db.subscription.upsert({
+            where: { organizationId: subOrgId },
+            create: { organizationId: subOrgId, ...data },
+            update: data,
+          })
+          break
+        }
+
         const orgId = session.metadata?.organizationId
         // Neues Modell: Credits aus den Session-Metadaten. Alte Sessions (plan=premium)
         // ohne credits-Feld werden als Einzelanalyse (1 Credit) gewertet.
@@ -95,18 +126,19 @@ export async function POST(req: Request) {
             },
           })
 
+          // Credits gutschreiben. planName wird NICHT mehr angefasst — der alte
+          // 'premium'-Marker kollidiert mit dem echten Premium-Abo-Tier; Alt-
+          // Zeilen fängt resolvePlanId() über den fehlenden stripeSubscriptionId ab.
           await tx.subscription.upsert({
             where: { organizationId: orgId },
             create: {
               organizationId: orgId,
-              planName: 'premium',
+              planName: 'free',
               status: 'active',
               analysisCredits: credits,
               stripeCustomerId: session.customer as string,
             },
             update: {
-              planName: 'premium',
-              status: 'active',
               analysisCredits: { increment: credits },
               stripeCustomerId: session.customer as string,
             },
@@ -145,15 +177,19 @@ export async function POST(req: Request) {
 
       case 'customer.subscription.updated': {
         const sub = event.data.object
-        const plan = (sub.metadata?.plan as string) ?? 'standard'
+        // Plan primär über die Price-ID bestimmen (robust bei Upgrades im
+        // Stripe-Portal), Fallback: Metadaten aus dem Checkout.
+        const mapped = subscriptionPlanFromPriceId(sub.items?.data?.[0]?.price?.id)
+        const planId = mapped?.plan ?? getSubscriptionPlan(sub.metadata?.subscriptionPlan)?.id ?? null
+        if (!planId) break // fremdes/unbekanntes Abo – nichts anfassen
         const period = getPeriod(sub)
 
         await db.subscription.updateMany({
           where: { stripeSubscriptionId: sub.id },
           data: {
             status: sub.status,
-            planName: plan,
-            monthlyAnalysisLimit: limitFor(plan),
+            planName: planId,
+            ...(mapped ? { billingInterval: mapped.interval } : {}),
             currentPeriodStart: period.start,
             currentPeriodEnd: period.end,
           },
@@ -168,7 +204,7 @@ export async function POST(req: Request) {
           data: {
             status: 'cancelled',
             planName: 'free',
-            monthlyAnalysisLimit: limitFor('free'),
+            billingInterval: null,
             stripeSubscriptionId: null,
           },
         })
@@ -183,6 +219,12 @@ export async function POST(req: Request) {
             where: { stripeSubscriptionId: subId },
             data: { status: 'past_due' },
           })
+          const email = invoice.customer_email as string | null
+          if (email) {
+            await sendPaymentFailedEmail(email).catch((mailErr) =>
+              console.error('[webhook] payment_failed-Mail fehlgeschlagen:', mailErr),
+            )
+          }
         }
         break
       }

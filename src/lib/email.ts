@@ -189,6 +189,23 @@ export async function sendOrderConfirmationEmail(params: {
   })
 }
 
+export async function sendPaymentFailedEmail(to: string) {
+  if (!process.env.RESEND_API_KEY) return
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: 'Zahlung fehlgeschlagen – Ihr Profitora-Abo',
+    html: baseHtml(`
+      <h1>Zahlung fehlgeschlagen</h1>
+      <p>Die letzte Abbuchung für Ihr Profitora-Abo konnte nicht durchgeführt werden.
+      Bitte aktualisieren Sie Ihre Zahlungsmethode – Stripe versucht die Abbuchung
+      automatisch erneut. Ihr Zugang bleibt vorerst bestehen.</p>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription" class="btn">Zahlungsmethode aktualisieren</a>
+    `),
+  })
+}
+
 export async function sendPasswordResetEmail(to: string, resetToken: string) {
   if (!process.env.RESEND_API_KEY) return
 
