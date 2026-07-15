@@ -249,7 +249,7 @@ const FOCUS_LABELS: Record<string, string> = {
   fixkosten: 'Fixkosten & Verträge',
 }
 
-function focusSection(focusAreas?: string[]): string {
+export function focusSection(focusAreas?: string[]): string {
   if (!focusAreas || focusAreas.length === 0) return ''
   const labels = focusAreas.map((f) => FOCUS_LABELS[f] ?? f).join(', ')
   return `
@@ -263,7 +263,7 @@ Der Nutzer hat folgende Schwerpunkte gewählt: ${labels}.
 `
 }
 
-function measuresSection(measures?: MeasureForPrompt[]): string {
+export function measuresSection(measures?: MeasureForPrompt[]): string {
   if (!measures || measures.length === 0) return ''
   const rows = measures
     .map(
