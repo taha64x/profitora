@@ -7,6 +7,7 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { generateBusinessReport } from '@/lib/ai'
 import { PLANS } from '@/lib/plans'
+import { canUseIncludedAnalysis, getEntitlements, startOfQuarter, subscriptionsLive } from '@/lib/entitlements'
 import { sendAnalysisCompletedEmail } from '@/lib/email'
 import { runEngineAnalysis } from '@/lib/analyze-engine'
 import { presignBlobGetUrl } from '@/lib/blob'
@@ -75,6 +76,8 @@ export async function POST(req: Request) {
     // Bezahlmodell: jede Analyse verbraucht genau 1 Credit. Der Abzug ist atomar
     // (nur wenn noch mindestens 1 Credit da ist) und damit race-sicher; ohne
     // Subscription-Zeile oder ohne Guthaben wird nichts gestartet.
+    // Premium-Abo hat zusätzlich 1 Inklusivanalyse pro Kalenderquartal.
+    let consumedIncluded = false
     const charged = await db.subscription.updateMany({
       where: { organizationId: org.id, analysisCredits: { gte: 1 } },
       data: {
@@ -83,13 +86,49 @@ export async function POST(req: Request) {
       },
     })
     if (charged.count === 0) {
-      return NextResponse.json(
-        {
-          error: 'Kein Analyse-Guthaben verfügbar. Kaufen Sie eine Einzelanalyse oder sparen Sie mit dem 3er-/5er-Paket.',
-          needCredits: true,
-        },
-        { status: 402 }
-      )
+      if (subscriptionsLive() && canUseIncludedAnalysis(org.subscription)) {
+        // Atomar: nur wenn in diesem Kalenderquartal noch keine Inklusivanalyse lief.
+        const included = await db.subscription.updateMany({
+          where: {
+            organizationId: org.id,
+            planName: 'premium',
+            status: 'active',
+            OR: [
+              { lastIncludedAnalysisAt: null },
+              { lastIncludedAnalysisAt: { lt: startOfQuarter(new Date()) } },
+            ],
+          },
+          data: {
+            lastIncludedAnalysisAt: new Date(),
+            usedAnalysesThisMonth: { increment: 1 },
+          },
+        })
+        consumedIncluded = included.count > 0
+      }
+      if (!consumedIncluded) {
+        if (subscriptionsLive()) {
+          const ent = getEntitlements(org.subscription)
+          return NextResponse.json(
+            {
+              error:
+                ent.planId === 'free'
+                  ? 'Kein Analyse-Guthaben verfügbar. Kaufen Sie eine Einzelanalyse – oder sichern Sie sich das Abo mit deutlich günstigeren Analysen.'
+                  : `Kein Analyse-Guthaben verfügbar. Mit Ihrem ${ent.planId.charAt(0).toUpperCase() + ent.planId.slice(1)}-Abo kostet die Analyse nur ${(ent.analysisPriceCents / 100).toLocaleString('de-DE')} €.`,
+              needCredits: true,
+              analysisPriceCents: ent.analysisPriceCents,
+              planId: ent.planId,
+            },
+            { status: 402 }
+          )
+        }
+        return NextResponse.json(
+          {
+            error: 'Kein Analyse-Guthaben verfügbar. Kaufen Sie eine Einzelanalyse oder sparen Sie mit dem 3er-/5er-Paket.',
+            needCredits: true,
+          },
+          { status: 402 }
+        )
+      }
     }
 
     const report = await db.analysisReport.create({
@@ -111,11 +150,18 @@ export async function POST(req: Request) {
           where: { id: report.id },
           data: { status: 'FAILED' },
         })
-        // Fehlgeschlagene Analyse darf kein Guthaben kosten – Credit zurückgeben.
-        await db.subscription.updateMany({
-          where: { organizationId: org.id },
-          data: { analysisCredits: { increment: 1 } },
-        }).catch((refundErr) => console.error('[analyze] Credit-Rückgabe fehlgeschlagen:', refundErr))
+        // Fehlgeschlagene Analyse darf nichts kosten: Credit zurück bzw.
+        // Inklusivanalyse wieder freigeben.
+        await (consumedIncluded
+          ? db.subscription.updateMany({
+              where: { organizationId: org.id },
+              data: { lastIncludedAnalysisAt: null },
+            })
+          : db.subscription.updateMany({
+              where: { organizationId: org.id },
+              data: { analysisCredits: { increment: 1 } },
+            })
+        ).catch((refundErr) => console.error('[analyze] Rückgabe fehlgeschlagen:', refundErr))
       },
     )
 
