@@ -46,3 +46,18 @@ export function cockpitForbiddenResponse(): NextResponse {
     { status: 403 },
   )
 }
+
+/** true = Schichtplan-Features verweigern (Business+; greift erst mit Launch-Flag) */
+export async function shiftsBlocked(): Promise<boolean> {
+  if (!subscriptionsLive()) return false
+  const ctx = await getOrgContext()
+  return !ctx || !ctx.entitlements.shifts
+}
+
+/** Einheitliche 403-Antwort für Business+-Features (Schichtplan etc.) */
+export function shiftsForbiddenResponse(): NextResponse {
+  return NextResponse.json(
+    { error: 'Der Schichtplan ist Teil des Business-Abos.', upgradeRequired: true },
+    { status: 403 },
+  )
+}
