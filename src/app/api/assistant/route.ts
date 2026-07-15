@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { getPlan } from '@/lib/plans'
+import { getEntitlements, subscriptionsLive } from '@/lib/entitlements'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -27,8 +28,27 @@ export async function POST(req: NextRequest) {
   const org = membership.organization
   const plan = getPlan(org.subscription?.planName)
 
-  // Monatslimit für den Assistenten prüfen
-  if (plan.assistantLimit !== null && org.subscription) {
+  // Monatslimit: mit Launch-Flag aus den Entitlements (free = 0 → Abo-CTA),
+  // davor Legacy-Verhalten über plans.ts.
+  // Bekannte Lücke: assistantMsgsThisMonth hat noch keinen Monats-Reset (Phase-2-Cron).
+  if (subscriptionsLive()) {
+    const ent = getEntitlements(org.subscription)
+    if (ent.assistantMsgsPerMonth <= 0) {
+      return NextResponse.json(
+        { error: 'Der KI-Assistent ist Teil des Profitora-Abos.', upgradeRequired: true },
+        { status: 403 },
+      )
+    }
+    if ((org.subscription?.assistantMsgsThisMonth ?? 0) >= ent.assistantMsgsPerMonth) {
+      return NextResponse.json(
+        {
+          error: `Ihr Monatslimit von ${ent.assistantMsgsPerMonth} Fragen ist erreicht. Upgraden Sie für mehr Fragen.`,
+          limitReached: true,
+        },
+        { status: 429 },
+      )
+    }
+  } else if (plan.assistantLimit !== null && org.subscription) {
     if (org.subscription.assistantMsgsThisMonth >= plan.assistantLimit) {
       return NextResponse.json(
         {
