@@ -9,7 +9,7 @@ const env = {
   STRIPE_PRICE_BUSINESS_YEARLY: 'price_by',
   STRIPE_PRICE_PREMIUM_MONTHLY: 'price_pm',
   STRIPE_PRICE_PREMIUM_YEARLY: 'price_py',
-} as NodeJS.ProcessEnv
+} as unknown as NodeJS.ProcessEnv
 
 describe('priceIdForSubscription', () => {
   it('löst Plan+Intervall zur Price-ID auf', () => {
@@ -17,7 +17,7 @@ describe('priceIdForSubscription', () => {
     expect(priceIdForSubscription(SUBSCRIPTION_PLANS.premium, 'year', env)).toBe('price_py')
   })
   it('liefert leeren String ohne Konfiguration', () => {
-    expect(priceIdForSubscription(SUBSCRIPTION_PLANS.starter, 'month', {} as NodeJS.ProcessEnv)).toBe('')
+    expect(priceIdForSubscription(SUBSCRIPTION_PLANS.starter, 'month', {} as unknown as NodeJS.ProcessEnv)).toBe('')
   })
 })
 
