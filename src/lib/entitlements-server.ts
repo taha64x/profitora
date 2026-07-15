@@ -47,17 +47,32 @@ export function cockpitForbiddenResponse(): NextResponse {
   )
 }
 
-/** true = Schichtplan-Features verweigern (Business+; greift erst mit Launch-Flag) */
-export async function shiftsBlocked(): Promise<boolean> {
+/**
+ * true = boolesches Entitlement-Feature verweigern (greift erst mit Launch-Flag).
+ * key: 'shifts' | 'alerts' | 'datevExport' | 'forecast' | 'measures' | 'cockpit'
+ */
+export async function featureBlocked(
+  key: 'shifts' | 'alerts' | 'datevExport' | 'forecast' | 'measures' | 'cockpit',
+): Promise<boolean> {
   if (!subscriptionsLive()) return false
   const ctx = await getOrgContext()
-  return !ctx || !ctx.entitlements.shifts
+  return !ctx || !ctx.entitlements[key]
+}
+
+/** Einheitliche 403-Antwort für tarifgebundene Features */
+export function featureForbiddenResponse(label: string): NextResponse {
+  return NextResponse.json(
+    { error: `${label} ist Teil des Business-Abos.`, upgradeRequired: true },
+    { status: 403 },
+  )
+}
+
+/** true = Schichtplan-Features verweigern (Business+; greift erst mit Launch-Flag) */
+export async function shiftsBlocked(): Promise<boolean> {
+  return featureBlocked('shifts')
 }
 
 /** Einheitliche 403-Antwort für Business+-Features (Schichtplan etc.) */
 export function shiftsForbiddenResponse(): NextResponse {
-  return NextResponse.json(
-    { error: 'Der Schichtplan ist Teil des Business-Abos.', upgradeRequired: true },
-    { status: 403 },
-  )
+  return featureForbiddenResponse('Der Schichtplan')
 }
