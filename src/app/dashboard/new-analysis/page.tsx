@@ -46,15 +46,23 @@ function NewAnalysisContent() {
   const [uploadMsg, setUploadMsg] = useState('')
   const [mode, setMode] = useState<'files' | 'questionnaire'>('files')
   const [businessType, setBusinessType] = useState('other')
+  const [readiness, setReadiness] = useState<{ score: number; hints: string[] } | null>(null)
+  const [focusAreas, setFocusAreas] = useState<string[]>([])
+  const [periodMonths, setPeriodMonths] = useState(12)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const loadState = useCallback(async () => {
     try {
-      const [creditsRes, uploadsRes, orgRes] = await Promise.all([
+      const [creditsRes, uploadsRes, orgRes, readyRes] = await Promise.all([
         fetch('/api/credits'),
         fetch('/api/upload'),
         fetch('/api/organization'),
+        fetch('/api/analysis-readiness'),
       ])
+      if (readyRes.ok) {
+        const r = await readyRes.json()
+        if (r?.success) setReadiness(r.data)
+      }
       if (creditsRes.ok) {
         const c = await creditsRes.json()
         setCredits(c.credits ?? 0)
@@ -120,7 +128,11 @@ function NewAnalysisContent() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(questionnaireData ? { questionnaireData } : {}),
+        body: JSON.stringify({
+          ...(questionnaireData ? { questionnaireData } : {}),
+          focusAreas,
+          periodMonths,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -174,7 +186,7 @@ function NewAnalysisContent() {
             </p>
             {!hasCredits && credits !== null && (
               <p className="text-amber-700 text-xs mt-1">
-                Kein Guthaben – kaufen Sie eine Einzelanalyse (1.990 €) oder sparen Sie mit dem 3er-/5er-Paket.
+                Kein Guthaben – kaufen Sie eine Analyse unter „Abo & Analysen".
               </p>
             )}
           </div>
@@ -196,6 +208,76 @@ function NewAnalysisContent() {
             )}
           </div>
         )}
+
+        {/* Datenqualitäts-Score (Spec §5.1): ehrlich zeigen, was der Bericht kann */}
+        {readiness && (
+          <div className="mb-6 bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="flex items-center gap-4 mb-3">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-black text-white shrink-0 ${
+                readiness.score >= 70 ? 'bg-green-500' : readiness.score >= 40 ? 'bg-amber-400' : 'bg-red-500'
+              }`}>
+                {readiness.score}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm">Datenqualität für Ihre Analyse</p>
+                <p className="text-xs text-gray-500">
+                  {readiness.score >= 70
+                    ? 'Gute Grundlage — der Bericht kann in die Tiefe gehen.'
+                    : readiness.score >= 40
+                      ? 'Brauchbare Grundlage — einzelne Abschnitte bleiben lückenhaft.'
+                      : 'Dünne Datenlage — der Bericht wird deutliche Lücken haben. Erst Daten ergänzen lohnt sich.'}
+                </p>
+              </div>
+            </div>
+            {readiness.hints.length > 0 && (
+              <ul className="space-y-1.5">
+                {readiness.hints.map((h) => (
+                  <li key={h} className="flex gap-2 text-xs text-gray-500">
+                    <span className="text-amber-500 shrink-0">•</span>{h}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Schwerpunkte + Zeitraum */}
+        <div className="mb-6 bg-white rounded-2xl border border-gray-200 p-5">
+          <p className="font-semibold text-gray-900 text-sm mb-1">Analyse-Schwerpunkte <span className="text-gray-400 font-normal">(optional, max. 3)</span></p>
+          <p className="text-xs text-gray-500 mb-3">Gewählte Themen behandelt der Bericht mit doppelter Tiefe.</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[
+              { value: 'personal', label: 'Personal & Produktivität' },
+              { value: 'wareneinsatz', label: 'Wareneinsatz & Einkauf' },
+              { value: 'energie', label: 'Energie & Versorgung' },
+              { value: 'preise', label: 'Preise & Auslastung' },
+              { value: 'marketing', label: 'Marketing & Provisionen' },
+              { value: 'fixkosten', label: 'Fixkosten & Verträge' },
+            ].map((f) => {
+              const selected = focusAreas.includes(f.value)
+              return (
+                <button key={f.value} type="button"
+                  onClick={() => setFocusAreas((prev) =>
+                    selected ? prev.filter((x) => x !== f.value) : prev.length >= 3 ? prev : [...prev, f.value],
+                  )}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${
+                    selected ? 'bg-[#0D1630] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  {f.label}
+                </button>
+              )
+            })}
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-xs font-medium text-gray-600">Datenzeitraum:</label>
+            <select value={periodMonths} onChange={(e) => setPeriodMonths(Number(e.target.value))}
+              className="input w-48 text-sm">
+              <option value={1}>Dieser Monat</option>
+              <option value={3}>Letztes Quartal</option>
+              <option value={12}>Letzte 12 Monate</option>
+            </select>
+          </div>
+        </div>
 
         {/* Datenquelle wählen */}
         <div className="grid grid-cols-2 gap-3 mb-6">
