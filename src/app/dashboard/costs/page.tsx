@@ -1,38 +1,56 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import ReceiptField from '@/components/finance/ReceiptField'
+import CsvImportDialog from '@/components/finance/CsvImportDialog'
+import { EXPENSE_CATEGORIES as CATEGORIES, PAYMENT_METHODS, RECURRENCE_INTERVALS } from '@/lib/finance-categories'
 
-const CATEGORIES = ['Personal', 'Miete', 'Energie', 'Software', 'Marketing', 'Einkauf', 'Fahrzeuge', 'Versicherungen', 'Steuern/Buchhaltung', 'Dienstleister', 'Reparaturen', 'Sonstiges']
-const PAYMENT_METHODS = ['Überweisung', 'Kreditkarte', 'Bar', 'SEPA-Lastschrift', 'PayPal', 'Sonstiges']
+interface Area { id: string; name: string }
 
 interface Expense {
   id: string; date: string; category: string; description: string
   amount: number; currency: string; paymentMethod?: string; vendor?: string
   isRecurring: boolean; notes?: string
+  areaId?: string | null; vatRate?: number | null
+  receiptPath?: string | null; receiptName?: string | null
+  recurrenceInterval?: string | null
+  area?: Area | null
 }
 
-const EMPTY: Omit<Expense, 'id'> = {
+interface FormState {
+  date: string; category: string; description: string; amount: number
+  currency: string; paymentMethod: string; vendor: string
+  isRecurring: boolean; notes: string
+  areaId: string; vatRate: string; recurrenceInterval: string
+  receipt: { path: string; name: string } | null
+}
+
+const EMPTY: FormState = {
   date: new Date().toISOString().split('T')[0], category: 'Sonstiges',
   description: '', amount: 0, currency: 'EUR', paymentMethod: '',
   vendor: '', isRecurring: false, notes: '',
+  areaId: '', vatRate: '', recurrenceInterval: 'monthly', receipt: null,
 }
 
 function formatEur(n: number) {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n)
 }
 
-function Modal({ open, onClose, onSave, initial }: {
+function Modal({ open, onClose, onSave, initial, areas }: {
   open: boolean; onClose: () => void
-  onSave: (data: Omit<Expense, 'id'>) => void
-  initial?: Omit<Expense, 'id'>
+  onSave: (data: FormState) => void
+  initial?: FormState
+  areas: Area[]
 }) {
   const [form, setForm] = useState(initial ?? EMPTY)
   useEffect(() => setForm(initial ?? EMPTY), [initial, open])
   if (!open) return null
 
-  const set = (k: string, v: string | number | boolean) => setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: string, v: string | number | boolean | null | { path: string; name: string }) =>
+    setForm((f) => ({ ...f, [k]: v }))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -75,6 +93,25 @@ function Modal({ open, onClose, onSave, initial }: {
               <input type="text" value={form.vendor} onChange={(e) => set('vendor', e.target.value)} placeholder="z.B. Deutsche Telekom" className="input"/>
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Bereich</label>
+              <select value={form.areaId} onChange={(e) => set('areaId', e.target.value)} className="input">
+                <option value="">Ohne Bereich</option>
+                {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">MwSt</label>
+              <select value={form.vatRate} onChange={(e) => set('vatRate', e.target.value)} className="input">
+                <option value="">–</option>
+                <option value="0">0 %</option>
+                <option value="7">7 %</option>
+                <option value="19">19 %</option>
+              </select>
+            </div>
+          </div>
+          <ReceiptField value={form.receipt} onChange={(v) => set('receipt', v)} />
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Notiz</label>
             <input type="text" value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Optionale Notiz" className="input"/>
@@ -83,6 +120,16 @@ function Modal({ open, onClose, onSave, initial }: {
             <input type="checkbox" checked={form.isRecurring} onChange={(e) => set('isRecurring', e.target.checked)} className="rounded border-gray-300"/>
             <span className="text-sm text-gray-600">Wiederkehrende Ausgabe</span>
           </label>
+          {form.isRecurring && (
+            <div className="flex items-center gap-3">
+              <select value={form.recurrenceInterval} onChange={(e) => set('recurrenceInterval', e.target.value)} className="input w-44">
+                {RECURRENCE_INTERVALS.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}
+              </select>
+              <span className="text-xs text-gray-400">
+                Automatisch anlegen lassen? → <Link href="/dashboard/recurring" className="underline hover:text-gray-600">Wiederkehrende Posten</Link>
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex gap-3 px-6 pb-6">
           <button onClick={onClose} className="flex-1 btn-outline">Abbrechen</button>
@@ -101,8 +148,14 @@ export default function CostsPage() {
   const [filterCat, setFilterCat] = useState('')
   const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7))
   const [modalOpen, setModalOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Expense | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [areas, setAreas] = useState<Area[]>([])
+
+  useEffect(() => {
+    fetch('/api/areas').then((r) => r.json()).then((d) => d?.success && setAreas(d.data)).catch(() => {})
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -117,11 +170,20 @@ export default function CostsPage() {
 
   useEffect(() => { load() }, [load])
 
-  const handleSave = async (data: Omit<Expense, 'id'>) => {
+  const handleSave = async (data: FormState) => {
+    const { receipt, ...rest } = data
+    const payload = {
+      ...rest,
+      vatRate: data.vatRate === '' ? null : Number(data.vatRate),
+      areaId: data.areaId || null,
+      recurrenceInterval: data.isRecurring ? data.recurrenceInterval : null,
+      receiptPath: receipt?.path ?? '',
+      receiptName: receipt?.name ?? '',
+    }
     try {
       const res = editTarget
-        ? await fetch('/api/expenses', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data, id: editTarget.id }) })
-        : await fetch('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        ? await fetch('/api/expenses', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, id: editTarget.id }) })
+        : await fetch('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!res.ok) throw new Error()
       toast.success(editTarget ? 'Ausgabe aktualisiert' : 'Ausgabe gespeichert')
     } catch {
@@ -157,10 +219,16 @@ export default function CostsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Kosten</h1>
             <p className="text-gray-500 text-sm mt-0.5">Alle Ausgaben erfassen, verwalten und auswerten</p>
           </div>
-          <button onClick={() => { setEditTarget(null); setModalOpen(true) }}
-            className="flex items-center gap-2 bg-[#0D1630] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#152040] transition-colors">
-            + Ausgabe hinzufügen
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setImportOpen(true)}
+              className="flex items-center gap-2 border border-gray-300 text-gray-700 font-semibold text-sm px-4 py-2.5 rounded-xl hover:border-gray-400 transition-colors">
+              CSV importieren
+            </button>
+            <button onClick={() => { setEditTarget(null); setModalOpen(true) }}
+              className="flex items-center gap-2 bg-[#0D1630] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#152040] transition-colors">
+              + Ausgabe hinzufügen
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -195,17 +263,17 @@ export default function CostsPage() {
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                {['Datum', 'Kategorie', 'Beschreibung', 'Anbieter', 'Zahlungsart', 'Wiederh.', 'Betrag', ''].map((h) => (
+                {['Datum', 'Kategorie', 'Bereich', 'Beschreibung', 'Anbieter', 'Zahlungsart', 'Wiederh.', 'Betrag', ''].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">Lädt…</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-gray-400">Lädt…</td></tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12">
+                  <td colSpan={9} className="text-center py-12">
                     <p className="text-gray-400 mb-3">Noch keine Ausgaben für diesen Zeitraum.</p>
                     <button onClick={() => setModalOpen(true)} className="btn-primary text-xs px-4 py-2">+ Ausgabe hinzufügen</button>
                   </td>
@@ -217,7 +285,15 @@ export default function CostsPage() {
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{e.category}</span>
                     </td>
-                    <td className="px-4 py-3 text-gray-900 font-medium max-w-48 truncate">{e.description}</td>
+                    <td className="px-4 py-3">
+                      {e.area ? <span className="inline-flex items-center text-xs font-medium bg-au-gold/10 text-[#8a6d2f] px-2 py-0.5 rounded-full">{e.area.name}</span> : <span className="text-gray-300">–</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-900 font-medium max-w-48 truncate">
+                      {e.receiptPath && (
+                        <a href={`/api/finance/receipt?kind=expense&id=${e.id}`} target="_blank" rel="noreferrer" title="Beleg öffnen" className="mr-1">📎</a>
+                      )}
+                      {e.description}
+                    </td>
                     <td className="px-4 py-3 text-gray-500 max-w-32 truncate">{e.vendor || '–'}</td>
                     <td className="px-4 py-3 text-gray-500">{e.paymentMethod || '–'}</td>
                     <td className="px-4 py-3">
@@ -255,7 +331,16 @@ export default function CostsPage() {
       </div>
 
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditTarget(null) }}
-        onSave={handleSave} initial={editTarget ? { date: editTarget.date, category: editTarget.category, description: editTarget.description, amount: editTarget.amount, currency: editTarget.currency, paymentMethod: editTarget.paymentMethod, vendor: editTarget.vendor, isRecurring: editTarget.isRecurring, notes: editTarget.notes } : undefined}/>
+        onSave={handleSave} areas={areas}
+        initial={editTarget ? {
+          date: editTarget.date.slice(0, 10), category: editTarget.category, description: editTarget.description,
+          amount: editTarget.amount, currency: editTarget.currency, paymentMethod: editTarget.paymentMethod ?? '',
+          vendor: editTarget.vendor ?? '', isRecurring: editTarget.isRecurring, notes: editTarget.notes ?? '',
+          areaId: editTarget.areaId ?? '', vatRate: editTarget.vatRate == null ? '' : String(editTarget.vatRate),
+          recurrenceInterval: editTarget.recurrenceInterval ?? 'monthly',
+          receipt: editTarget.receiptPath ? { path: editTarget.receiptPath, name: editTarget.receiptName ?? 'Beleg' } : null,
+        } : undefined}/>
+      <CsvImportDialog kind="expense" categories={CATEGORIES} open={importOpen} onClose={() => setImportOpen(false)} onDone={load}/>
     </DashboardLayout>
   )
 }
