@@ -13,6 +13,16 @@ function getResend(): Resend {
 
 const FROM = process.env.EMAIL_FROM ?? 'Profitora <noreply@profitora.de>'
 
+/** HTML-Escape für nutzerkontrollierte Strings (orgName, Namen, Titel) —
+ *  verhindert HTML-Injection in Mail-Templates. */
+function esc(v: string): string {
+  return v
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 // ─── Templates ───────────────────────────────────────────────────────────────
 
 function baseHtml(content: string) {
@@ -49,8 +59,8 @@ export async function sendWelcomeEmail(to: string, name: string, orgName: string
     subject: `Willkommen bei Profitora, ${name || orgName}!`,
     html: baseHtml(`
       <h1>Willkommen bei Profitora!</h1>
-      <p>Hallo ${name || 'dort'},<br><br>
-      Ihr Konto für <strong>${orgName}</strong> wurde erfolgreich erstellt. Sie können jetzt Ihre ersten Einnahmen und Ausgaben eintragen oder direkt eine KI-Analyse starten.</p>
+      <p>Hallo ${esc(name || 'dort')},<br><br>
+      Ihr Konto für <strong>${esc(orgName)}</strong> wurde erfolgreich erstellt. Sie können jetzt Ihre ersten Einnahmen und Ausgaben eintragen oder direkt eine KI-Analyse starten.</p>
       <p><strong>Ihre nächsten Schritte:</strong></p>
       <ol style="color:#4b5563;font-size:15px;line-height:1.8;padding-left:20px;">
         <li>Einnahmen diesen Monat eintragen</li>
@@ -74,7 +84,7 @@ export async function sendAnalysisCompletedEmail(to: string, orgName: string, re
     subject: `Ihre KI-Analyse ist fertig – ${reportTitle}`,
     html: baseHtml(`
       <h1>Ihre Analyse ist abgeschlossen</h1>
-      <p>Die KI-Wirtschaftlichkeitsanalyse für <strong>${orgName}</strong> wurde erfolgreich erstellt.</p>
+      <p>Die KI-Wirtschaftlichkeitsanalyse für <strong>${esc(orgName)}</strong> wurde erfolgreich erstellt.</p>
       <p>Der Bericht enthält:</p>
       <ul style="color:#4b5563;font-size:15px;line-height:1.8;padding-left:20px;">
         <li>Management-Zusammenfassung mit Kernergebnissen</li>
@@ -99,8 +109,8 @@ export async function sendMonthlyReminderEmail(to: string, name: string, orgName
     subject: `Monatserinnerung: ${monthLabel} – Daten für ${orgName} eintragen`,
     html: baseHtml(`
       <h1>Zeit für Ihren Monatsüberblick</h1>
-      <p>Hallo ${name || 'dort'},<br><br>
-      der Monat ${monthLabel} hat begonnen. Tragen Sie Ihre aktuellen Einnahmen und Ausgaben ein, um Ihren Fortschritt in "Mein Weg" zu verfolgen.</p>
+      <p>Hallo ${esc(name || 'dort')},<br><br>
+      der Monat ${esc(monthLabel)} hat begonnen. Tragen Sie Ihre aktuellen Einnahmen und Ausgaben ein, um Ihren Fortschritt in "Mein Weg" zu verfolgen.</p>
       <p>Regelmäßige Dateneingabe hilft Ihnen:</p>
       <ul style="color:#4b5563;font-size:15px;line-height:1.8;padding-left:20px;">
         <li>Trends frühzeitig zu erkennen</li>
@@ -143,7 +153,7 @@ export async function sendOrderConfirmationEmail(params: {
   const buyerBlock = buyerName || orgName
     ? `<p style="font-size:13px;color:#6b7280;margin-bottom:4px;"><strong>Rechnungsempfänger:</strong></p>
        <p style="font-size:13px;color:#6b7280;margin-top:0;">
-         ${[orgName, buyerName, ...(addressLines ?? [])].filter(Boolean).join('<br>')}
+         ${[orgName, buyerName, ...(addressLines ?? [])].filter((v): v is string => Boolean(v)).map(esc).join('<br>')}
        </p>`
     : ''
 
@@ -153,7 +163,7 @@ export async function sendOrderConfirmationEmail(params: {
     subject: `Auftragsbestätigung & Rechnung ${invoiceNumber} – ${COMPANY.brand}`,
     html: baseHtml(`
       <h1>Vielen Dank für Ihren Kauf!</h1>
-      <p>Ihre Bestellung für <strong>${orgName}</strong> ist eingegangen und Ihr Zugang zur Komplettanalyse wurde freigeschaltet. Diese E-Mail ist zugleich Ihre Auftragsbestätigung und Rechnung.</p>
+      <p>Ihre Bestellung für <strong>${esc(orgName)}</strong> ist eingegangen und Ihr Zugang zur Komplettanalyse wurde freigeschaltet. Diese E-Mail ist zugleich Ihre Auftragsbestätigung und Rechnung.</p>
 
       <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;margin:8px 0 20px;">
         <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Rechnung</p>
@@ -161,7 +171,7 @@ export async function sendOrderConfirmationEmail(params: {
           <tr><td style="padding:4px 0;color:#6b7280;">Rechnungsnummer</td><td style="padding:4px 0;text-align:right;font-weight:600;">${invoiceNumber}</td></tr>
           <tr><td style="padding:4px 0;color:#6b7280;">Datum</td><td style="padding:4px 0;text-align:right;">${dateStr}</td></tr>
           <tr><td colspan="2" style="padding:12px 0 4px;border-top:1px solid #f3f4f6;"></td></tr>
-          <tr><td style="padding:4px 0;">${productName} (einmalig)</td><td style="padding:4px 0;text-align:right;font-weight:600;">${amount}</td></tr>
+          <tr><td style="padding:4px 0;">${esc(productName)} (einmalig)</td><td style="padding:4px 0;text-align:right;font-weight:600;">${amount}</td></tr>
           <tr><td style="padding:10px 0 0;border-top:1px solid #f3f4f6;font-weight:700;color:#111827;">Gesamtbetrag</td><td style="padding:10px 0 0;border-top:1px solid #f3f4f6;text-align:right;font-weight:700;color:#111827;">${amount}</td></tr>
         </table>
         <p style="margin:14px 0 0;font-size:12px;color:#9ca3af;">${COMPANY.vatNote}</p>
@@ -215,7 +225,7 @@ export async function sendKpiAlertEmail(to: string, orgName: string, message: st
     subject: `KPI-Hinweis für ${orgName}`,
     html: baseHtml(`
       <h1>KPI-Hinweis</h1>
-      <p>${message}</p>
+      <p>${esc(message)}</p>
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Zum Cockpit</a>
       <div class="disclaimer">Automatischer Hinweis auf Basis Ihrer Finanzdaten – Entscheidungshilfe, keine rechtsverbindliche Prüfung.</div>
     `),
@@ -248,7 +258,7 @@ export async function sendMonthlyReportEmail(to: string, orgName: string, d: Mon
       : `<p>Ergebnis-Veränderung zum Vormonat: <strong>${(d.profit - d.prevProfit >= 0 ? '+' : '') + eur(d.profit - d.prevProfit)}</strong></p>`
   const hints =
     d.full && d.hints.length
-      ? `<p><strong>Hinweise:</strong></p><ul style="color:#4b5563;font-size:14px;line-height:1.7;padding-left:20px">${d.hints.map((h) => `<li>${h}</li>`).join('')}</ul>`
+      ? `<p><strong>Hinweise:</strong></p><ul style="color:#4b5563;font-size:14px;line-height:1.7;padding-left:20px">${d.hints.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>`
       : ''
 
   await getResend().emails.send({
@@ -256,8 +266,8 @@ export async function sendMonthlyReportEmail(to: string, orgName: string, d: Mon
     to,
     subject: `Ihr Monatsreport ${d.monthLabel} – ${orgName}`,
     html: baseHtml(`
-      <h1>Monatsreport ${d.monthLabel}</h1>
-      <p>Ihre Zahlen für <strong>${orgName}</strong> auf einen Blick:</p>
+      <h1>Monatsreport ${esc(d.monthLabel)}</h1>
+      <p>Ihre Zahlen für <strong>${esc(orgName)}</strong> auf einen Blick:</p>
       <table style="width:100%;border-collapse:collapse;margin:12px 0">
         <tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">Einnahmen</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px;text-align:right">${eur(d.revenue)}</td></tr>
         <tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">Ausgaben</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px;text-align:right">${eur(d.expenses)}</td></tr>
