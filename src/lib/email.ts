@@ -222,6 +222,56 @@ export async function sendKpiAlertEmail(to: string, orgName: string, message: st
   })
 }
 
+export interface MonthlyReportData {
+  monthLabel: string
+  revenue: number
+  expenses: number
+  profit: number
+  prevProfit: number | null
+  kpiRows: Array<{ label: string; value: string; light: 'green' | 'yellow' | 'red' | null }>
+  hints: string[]
+  full: boolean
+}
+
+export async function sendMonthlyReportEmail(to: string, orgName: string, d: MonthlyReportData) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const eur = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' EUR'
+  const dot = (l: 'green' | 'yellow' | 'red' | null) =>
+    l ? `<span style="display:inline-block;width:9px;height:9px;border-radius:9px;background:${l === 'green' ? '#22c55e' : l === 'yellow' ? '#f59e0b' : '#ef4444'};margin-right:6px"></span>` : ''
+  const rows = d.kpiRows
+    .map((r) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">${dot(r.light)}${r.label}</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px;text-align:right">${r.value}</td></tr>`)
+    .join('')
+  const delta =
+    d.prevProfit === null
+      ? ''
+      : `<p>Ergebnis-Veränderung zum Vormonat: <strong>${(d.profit - d.prevProfit >= 0 ? '+' : '') + eur(d.profit - d.prevProfit)}</strong></p>`
+  const hints =
+    d.full && d.hints.length
+      ? `<p><strong>Hinweise:</strong></p><ul style="color:#4b5563;font-size:14px;line-height:1.7;padding-left:20px">${d.hints.map((h) => `<li>${h}</li>`).join('')}</ul>`
+      : ''
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `Ihr Monatsreport ${d.monthLabel} – ${orgName}`,
+    html: baseHtml(`
+      <h1>Monatsreport ${d.monthLabel}</h1>
+      <p>Ihre Zahlen für <strong>${orgName}</strong> auf einen Blick:</p>
+      <table style="width:100%;border-collapse:collapse;margin:12px 0">
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">Einnahmen</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px;text-align:right">${eur(d.revenue)}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">Ausgaben</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px;text-align:right">${eur(d.expenses)}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#4b5563;font-size:14px">Ergebnis</td><td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:14px;text-align:right;color:${d.profit >= 0 ? '#16a34a' : '#dc2626'}">${eur(d.profit)}</td></tr>
+        ${rows}
+      </table>
+      ${delta}
+      ${hints}
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Zum Cockpit</a>
+      <div class="disclaimer">Automatischer Report auf Basis Ihrer eingetragenen Daten – Entscheidungshilfe, keine rechtsverbindliche Prüfung.</div>
+    `),
+  })
+}
+
 export async function sendPasswordResetEmail(to: string, resetToken: string) {
   if (!process.env.RESEND_API_KEY) return
 
