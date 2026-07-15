@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import KpiLight from '@/components/dashboard/KpiLight'
+import OnDutyCard from '@/components/dashboard/OnDutyCard'
 import TrendSparkline from '@/components/dashboard/TrendSparkline'
 import { benchmarksFor, computeFinanceKpis, METRIC_LABELS, type MetricKey } from '@/lib/benchmarks'
 import { getEntitlements, subscriptionsLive } from '@/lib/entitlements'
@@ -326,15 +327,19 @@ export default async function DashboardPage() {
                 )}
               </div>
 
-              {/* Team-Teaser (Phase 3) */}
-              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 flex flex-col justify-center">
-                <p className="text-xs font-semibold text-[#B8923A] uppercase tracking-widest mb-2">In Kürze</p>
-                <h2 className="font-semibold text-gray-900 text-sm mb-1.5">Team & Schichtplan</h2>
-                <p className="text-gray-500 text-xs leading-relaxed">
-                  Mitarbeiter verwalten, Wochenpläne erstellen und live sehen, wer gerade arbeitet —
-                  direkt hier im Cockpit.
-                </p>
-              </div>
+              {/* Team: Wer ist jetzt im Dienst? (Business+ nach Launch) */}
+              {ent.shifts || !subscriptionsLive() ? (
+                <OnDutyCard organizationId={org.id} />
+              ) : (
+                <div className="rounded-xl border border-dashed border-au-gold/40 bg-au-gold/5 p-6 flex flex-col justify-center">
+                  <p className="text-xs font-semibold text-[#B8923A] uppercase tracking-widest mb-2">Business-Abo</p>
+                  <h2 className="font-semibold text-gray-900 text-sm mb-1.5">Team & Schichtplan</h2>
+                  <p className="text-gray-500 text-xs leading-relaxed mb-3">
+                    Wochenpläne erstellen und live sehen, wer gerade arbeitet.
+                  </p>
+                  <Link href="/dashboard/subscription?upgrade=1" className="text-xs text-[#0D1630] font-semibold hover:underline">Upgrade ansehen →</Link>
+                </div>
+              )}
             </div>
           </>
         )}

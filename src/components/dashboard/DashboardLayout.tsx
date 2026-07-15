@@ -110,6 +110,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             label="Finanzübersicht" active={active('/dashboard/finance')} collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/recurring" icon="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             label="Wiederkehrend" active={active('/dashboard/recurring')} collapsed={collapsed && !mobile}/>
+          <SectionLabel label="Team" collapsed={collapsed && !mobile}/>
+          <NavLink href="/dashboard/team" icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            label="Mitarbeiter" active={active('/dashboard/team')} collapsed={collapsed && !mobile}/>
+          <NavLink href="/dashboard/schedule" icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            label="Schichtplan" active={active('/dashboard/schedule')} collapsed={collapsed && !mobile}/>
           <SectionLabel label="Mein Weg" collapsed={collapsed && !mobile}/>
           <NavLink href="/dashboard/mein-weg" icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
             label="Fortschritt" active={active('/dashboard/mein-weg', true)} collapsed={collapsed && !mobile}/>
