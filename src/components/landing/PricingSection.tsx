@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import ScrollReveal from './ScrollReveal'
 import { CREDIT_PACKS } from '@/lib/plans'
+import { subscriptionsLive } from '@/lib/entitlements'
+import SubscriptionPricing from './SubscriptionPricing'
 
 const PLANS = [
   {
@@ -39,6 +41,9 @@ const PLANS = [
 ]
 
 export default function PricingSection() {
+  // Launch-Schalter: neues Abo-Pricing statt Legacy-Credit-Pakete (Spec §3.4)
+  if (subscriptionsLive()) return <SubscriptionPricing />
+
   return (
     <section id="preise" className="bg-white py-28 px-6">
       <div className="max-w-6xl mx-auto">
