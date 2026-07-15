@@ -2,12 +2,14 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
+import { cockpitBlocked, cockpitForbiddenResponse } from '@/lib/entitlements-server'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
     const user = getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+    if (await cockpitBlocked()) return cockpitForbiddenResponse()
 
     const membership = await db.organizationMember.findFirst({
       where: { userId: user.userId },

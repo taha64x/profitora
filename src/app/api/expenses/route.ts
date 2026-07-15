@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import { cockpitBlocked, cockpitForbiddenResponse } from '@/lib/entitlements-server'
 
 async function getOrgId(userId: string) {
   const m = await db.organizationMember.findFirst({ where: { userId } })
@@ -10,6 +11,7 @@ async function getOrgId(userId: string) {
 export async function GET(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
+  if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const orgId = await getOrgId(user.userId)
   if (!orgId) return NextResponse.json({ error: 'Kein Unternehmen gefunden.' }, { status: 404 })
 
@@ -34,6 +36,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
+  if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const orgId = await getOrgId(user.userId)
   if (!orgId) return NextResponse.json({ error: 'Kein Unternehmen gefunden.' }, { status: 404 })
 
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
+  if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const orgId = await getOrgId(user.userId)
 
   const body = await req.json()
@@ -86,6 +90,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const user = getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 401 })
+  if (await cockpitBlocked()) return cockpitForbiddenResponse()
   const orgId = await getOrgId(user.userId)
 
   const { searchParams } = new URL(req.url)
