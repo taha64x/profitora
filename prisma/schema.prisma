@@ -21,6 +21,7 @@ model User {
   memberships OrganizationMember[]
   uploads     Upload[]
   reports     AnalysisReport[]
+  resetTokens PasswordResetToken[]
 }
 
 // ─── Organisation / Unternehmen ───────────────────────────────────────────────
@@ -491,4 +492,20 @@ model Measure {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, status])
+}
+
+// ─── Passwort-Reset (Auth-UX) ────────────────────────────────────────────────
+// Es wird nur der SHA-256-Hash des Tokens gespeichert — der Klartext-Token
+// existiert ausschließlich im E-Mail-Link (60 Minuten gültig, einmalig).
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

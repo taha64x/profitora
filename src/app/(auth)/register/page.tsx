@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { BUSINESS_TYPES, getBusinessTypeConfig } from '@/types'
 import { getCreditPack, getSubscriptionPlan, type CreditPack, type SubscriptionPlan } from '@/lib/plans'
 import { BusinessTypeIcon } from '@/components/ui/icons'
+import AuthShell from '@/components/auth/AuthShell'
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton'
+import PasswordInput from '@/components/auth/PasswordInput'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -118,26 +120,41 @@ export default function RegisterPage() {
     }
   }
 
+  // Marken-Panel zeigt bei Abo-Intention die Tarif-Zusammenfassung statt der Standard-Vorteile
+  const aboPanel = abo ? (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <p className="text-au-gold text-xs font-bold uppercase tracking-widest mb-2">Ihr gewählter Tarif</p>
+      <p className="text-2xl font-extrabold mb-1">{abo.name}</p>
+      <p className="text-white/60 text-sm mb-4">
+        {((aboInterval === 'year' ? abo.priceYearlyPerMonthCents : abo.priceMonthlyCents) / 100).toLocaleString('de-DE')} €/Monat
+        {aboInterval === 'year' ? ' bei jährlicher Zahlung' : ', monatlich kündbar'} · 14 Tage kostenlos
+      </p>
+      <ul className="space-y-2.5">
+        {abo.features.slice(0, 5).map((f) => (
+          <li key={f} className="flex items-center gap-2.5 text-sm text-white/70">
+            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 flex-shrink-0"><path d="M2 6l3 3 5-5" stroke="#C9A84C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            {f}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : undefined
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-1">
-            <span className="text-2xl font-bold text-hotel-navy">Profitora</span>
-          </Link>
-          <p className="mt-2 text-gray-500 text-sm">
-            {abo
-              ? 'Account erstellen – danach startet Ihr kostenloser Testzeitraum'
-              : pack
-                ? 'Account erstellen – danach geht es direkt zur Zahlung'
-                : 'Kostenlosen Account erstellen'}
-          </p>
-        </div>
+    <AuthShell panel={aboPanel}>
+      <div className="w-full">
+        <p className="text-gray-500 text-sm mb-4 text-center">
+          {abo
+            ? 'Account erstellen – danach startet Ihr kostenloser Testzeitraum'
+            : pack
+              ? 'Account erstellen – danach geht es direkt zur Zahlung'
+              : 'Kostenlosen Account erstellen'}
+        </p>
 
         <div className="card p-8">
           {abo && (
-            <div className="mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
+            /* Desktop zeigt den Tarif im Marken-Panel links — hier nur mobil */
+            <div className="lg:hidden mb-6 flex items-center justify-between rounded-xl bg-hotel-navy/5 border border-hotel-navy/15 px-4 py-3">
               <span className="text-sm text-gray-600">Gewählter Tarif</span>
               <span className="text-sm font-semibold text-hotel-navy">
                 {abo.name} · {((aboInterval === 'year' ? abo.priceYearlyPerMonthCents : abo.priceMonthlyCents) / 100).toLocaleString('de-DE')} €/Monat · 14 Tage kostenlos
@@ -308,25 +325,22 @@ export default function RegisterPage() {
 
               <div>
                 <label className="label">Passwort</label>
-                <input
-                  type="password"
-                  required
-                  className="input"
-                  placeholder="Mindestens 8 Zeichen"
+                <PasswordInput
                   value={form.password}
-                  onChange={(e) => update('password', e.target.value)}
+                  onChange={(v) => update('password', v)}
+                  placeholder="Mindestens 8 Zeichen"
+                  autoComplete="new-password"
+                  required
                 />
               </div>
 
               <div>
                 <label className="label">Passwort wiederholen</label>
-                <input
-                  type="password"
-                  required
-                  className="input"
-                  placeholder="••••••••"
+                <PasswordInput
                   value={form.passwordConfirm}
-                  onChange={(e) => update('passwordConfirm', e.target.value)}
+                  onChange={(v) => update('passwordConfirm', v)}
+                  autoComplete="new-password"
+                  required
                 />
               </div>
 
@@ -365,6 +379,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   )
 }
